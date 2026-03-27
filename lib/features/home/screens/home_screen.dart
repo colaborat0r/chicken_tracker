@@ -70,28 +70,20 @@ class HomeScreen extends ConsumerWidget {
                     icon: Icons.pets,
                     color: Colors.orange,
                     provider: activeChickensCountProvider,
-                    ref: ref,
                   ),
                   _StatCardAsync(
                     label: 'Eggs Today',
                     icon: Icons.egg,
                     color: Colors.amber,
-                    provider: todayProductionProvider.select((data) => 
-                      data.when(
-                        data: (prod) => prod?.totalEggs ?? 0,
-                        loading: () => -1,
-                        error: (err, st) => 0,
-                      )),
-                    ref: ref,
+                    provider: todayEggCountProvider,
                   ),
                   _StatCardAsync(
                     label: 'This Week',
                     icon: Icons.calendar_month,
                     color: Colors.blue,
                     provider: weeklyEggTotalProvider,
-                    ref: ref,
                   ),
-                  _StatCard(
+                  const _StatCard(
                     label: 'Health Alerts',
                     value: '0',
                     icon: Icons.warning_amber,
@@ -253,7 +245,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   child: Column(
                     children: [
-                      SizedBox(
+                      const SizedBox(
                         width: 50,
                         height: 50,
                         child: CircularProgressIndicator(
@@ -357,15 +349,13 @@ class _StatCardAsync extends ConsumerWidget {
   final String label;
   final IconData icon;
   final Color color;
-  final dynamic provider;
-  final WidgetRef ref;
+  final ProviderListenable<dynamic> provider;
 
   const _StatCardAsync({
     required this.label,
     required this.icon,
     required this.color,
     required this.provider,
-    required this.ref,
   });
 
   @override
@@ -374,66 +364,74 @@ class _StatCardAsync extends ConsumerWidget {
       elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: ref.watch(provider).when(
-          data: (value) => Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: color, size: 32),
-              const SizedBox(height: 8),
-              Text(
-                value.toString(),
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
-          loading: () => Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: color, size: 32),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: 30,
-                height: 30,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(color),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
-          error: (err, stack) => Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: Colors.grey, size: 32),
-              const SizedBox(height: 8),
-              Text(
-                'Error',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.red,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
+        child: Builder(
+          builder: (context) {
+            final asyncValue = ref.watch(provider);
+            if (asyncValue.isLoading) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: color, size: 32),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              );
+            } else if (asyncValue is AsyncError) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: Colors.grey, size: 32),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Error',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.red,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              );
+            } else {
+              final value = asyncValue.value;
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: color, size: 32),
+                  const SizedBox(height: 8),
+                  Text(
+                    value.toString(),
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              );
+            }
+          },
         ),
       ),
     );

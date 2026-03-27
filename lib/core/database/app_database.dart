@@ -1,54 +1,12 @@
 // lib/core/database/app_database.dart
 import 'package:drift/drift.dart';
+import 'package:drift_flutter/drift_flutter.dart';
 import 'dart:async';
+import 'dart:io';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 part 'app_database.g.dart';
-
-/// MVP Database stub - currently returns empty results
-/// TODO: Implement proper SQLite persistence using drift_flutter
-class _StubExecutor implements QueryExecutor {
-  @override
-  SqlDialect get dialect => SqlDialect.sqlite;
-
-  @override
-  Future<void> close() async {}
-
-  @override
-  Future<T> doWhenOpened<T>(FutureOr<T> Function(QueryExecutor p1) fn) async =>
-      await fn(this);
-
-  @override
-  TransactionExecutor beginTransaction() =>
-      throw UnimplementedError('MVP version does not support transactions');
-
-  @override
-  TransactionExecutor beginExclusive() =>
-      throw UnimplementedError('MVP version does not support transactions');
-
-  @override
-  Future<bool> ensureOpen(QueryExecutorUser user) async => true;
-
-  @override
-  Future<void> runBatched(BatchedStatements statements) async {}
-
-  @override
-  Future<List<Map<String, dynamic>>> runSelect(String statement,
-      List<dynamic> args) async {
-    return [];
-  }
-
-  @override
-  Future<int> runUpdate(String statement, List<dynamic> args) async => 0;
-
-  @override
-  Future<int> runDelete(String statement, List<dynamic> args) async => 0;
-
-  @override
-  Future<int> runInsert(String statement, List<dynamic> args) async => 0;
-
-  @override
-  Future<void> runCustom(String statement, [List<Object?>? args]) async {}
-}
 
 // ====================== TABLES ======================
 
@@ -64,6 +22,7 @@ class Birds extends Table {
 
 // 2. Daily Log (core of the original spreadsheet)
 class DailyLogs extends Table {
+  IntColumn get id => integer().autoIncrement()();
   DateTimeColumn get date => dateTime()();
   IntColumn get layingHens => integer().withDefault(const Constant(0))();
   IntColumn get eggsBrown => integer().withDefault(const Constant(0))();
@@ -72,9 +31,7 @@ class DailyLogs extends Table {
   TextColumn get notes => text().nullable()();
   
   @override
-  List<Set<Column>> get uniqueKeys => [
-    {date},
-  ];
+  Set<Column> get primaryKey => {id};
 }
 
 // 3. Sales
@@ -133,9 +90,7 @@ class AppDatabase extends _$AppDatabase {
   int get schemaVersion => 1;
 
   static QueryExecutor _openConnection() {
-    // MVP implementation - uses stub executor
-    // TODO: Replace with actual implementation using drift_flutter
-    return _StubExecutor();
+    return driftDatabase(name: 'chicken_tracker');
   }
 
   // ====================== BIRDS DAO ======================

@@ -71,16 +71,28 @@ final todayProductionProvider =
   );
 });
 
-/// Provider for total eggs this week
+/// Provider for today's total egg count
+final todayEggCountProvider = FutureProvider<int>((ref) async {
+  final production = await ref.watch(todayProductionProvider.future);
+  return production?.totalEggs ?? 0;
+});
+
+/// Provider for total eggs this week (last 7 days including today)
 final weeklyEggTotalProvider = 
     FutureProvider<int>((ref) async {
   final logs = await ref.watch(allDailyLogsProvider.future);
   final today = DateTime.now();
-  final sevenDaysAgo = today.subtract(const Duration(days: 7));
+  final sevenDaysAgo = today.subtract(const Duration(days: 6)); // Include today and 6 previous days
   
   int total = 0;
   for (var log in logs) {
-    if (log.date.isAfter(sevenDaysAgo) && log.date.isBefore(today)) {
+    // Compare dates by year, month, day to ignore time components
+    final logDate = DateTime(log.date.year, log.date.month, log.date.day);
+    final todayDate = DateTime(today.year, today.month, today.day);
+    final sevenDaysAgoDate = DateTime(sevenDaysAgo.year, sevenDaysAgo.month, sevenDaysAgo.day);
+    
+    if (logDate.isAtSameMomentAs(todayDate) || 
+        (logDate.isAfter(sevenDaysAgoDate) && logDate.isBefore(todayDate))) {
       total += log.totalEggs;
     }
   }

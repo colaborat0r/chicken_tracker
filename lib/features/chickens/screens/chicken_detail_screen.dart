@@ -142,8 +142,8 @@ class _ChickenDetailScreenState extends ConsumerState<ChickenDetailScreen> {
             PopupMenuButton(
               itemBuilder: (context) => [
                 PopupMenuItem(
-                  child: const Text('Delete'),
                   onTap: _deleteChicken,
+                  child: const Text('Delete'),
                 ),
               ],
             ),
@@ -234,7 +234,7 @@ class _ChickenDetailScreenState extends ConsumerState<ChickenDetailScreen> {
                           : color.toLowerCase(),
                       child: Text(color),
                     );
-                  }).toList(),
+                  }),
                 ],
                 onChanged: _isLoading
                     ? null

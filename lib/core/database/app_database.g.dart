@@ -341,6 +341,15 @@ class $DailyLogsTable extends DailyLogs
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $DailyLogsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
   static const VerificationMeta _dateMeta = const VerificationMeta('date');
   @override
   late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
@@ -385,7 +394,7 @@ class $DailyLogsTable extends DailyLogs
       type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns =>
-      [date, layingHens, eggsBrown, eggsColored, eggsWhite, notes];
+      [id, date, layingHens, eggsBrown, eggsColored, eggsWhite, notes];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -396,6 +405,9 @@ class $DailyLogsTable extends DailyLogs
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
     if (data.containsKey('date')) {
       context.handle(
           _dateMeta, date.isAcceptableOrUnknown(data['date']!, _dateMeta));
@@ -430,15 +442,13 @@ class $DailyLogsTable extends DailyLogs
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
-  @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [
-        {date},
-      ];
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   DailyLog map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DailyLog(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       date: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}date'])!,
       layingHens: attachedDatabase.typeMapping
@@ -461,6 +471,7 @@ class $DailyLogsTable extends DailyLogs
 }
 
 class DailyLog extends DataClass implements Insertable<DailyLog> {
+  final int id;
   final DateTime date;
   final int layingHens;
   final int eggsBrown;
@@ -468,7 +479,8 @@ class DailyLog extends DataClass implements Insertable<DailyLog> {
   final int eggsWhite;
   final String? notes;
   const DailyLog(
-      {required this.date,
+      {required this.id,
+      required this.date,
       required this.layingHens,
       required this.eggsBrown,
       required this.eggsColored,
@@ -477,6 +489,7 @@ class DailyLog extends DataClass implements Insertable<DailyLog> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
     map['date'] = Variable<DateTime>(date);
     map['laying_hens'] = Variable<int>(layingHens);
     map['eggs_brown'] = Variable<int>(eggsBrown);
@@ -490,6 +503,7 @@ class DailyLog extends DataClass implements Insertable<DailyLog> {
 
   DailyLogsCompanion toCompanion(bool nullToAbsent) {
     return DailyLogsCompanion(
+      id: Value(id),
       date: Value(date),
       layingHens: Value(layingHens),
       eggsBrown: Value(eggsBrown),
@@ -504,6 +518,7 @@ class DailyLog extends DataClass implements Insertable<DailyLog> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DailyLog(
+      id: serializer.fromJson<int>(json['id']),
       date: serializer.fromJson<DateTime>(json['date']),
       layingHens: serializer.fromJson<int>(json['layingHens']),
       eggsBrown: serializer.fromJson<int>(json['eggsBrown']),
@@ -516,6 +531,7 @@ class DailyLog extends DataClass implements Insertable<DailyLog> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
       'date': serializer.toJson<DateTime>(date),
       'layingHens': serializer.toJson<int>(layingHens),
       'eggsBrown': serializer.toJson<int>(eggsBrown),
@@ -526,13 +542,15 @@ class DailyLog extends DataClass implements Insertable<DailyLog> {
   }
 
   DailyLog copyWith(
-          {DateTime? date,
+          {int? id,
+          DateTime? date,
           int? layingHens,
           int? eggsBrown,
           int? eggsColored,
           int? eggsWhite,
           Value<String?> notes = const Value.absent()}) =>
       DailyLog(
+        id: id ?? this.id,
         date: date ?? this.date,
         layingHens: layingHens ?? this.layingHens,
         eggsBrown: eggsBrown ?? this.eggsBrown,
@@ -542,6 +560,7 @@ class DailyLog extends DataClass implements Insertable<DailyLog> {
       );
   DailyLog copyWithCompanion(DailyLogsCompanion data) {
     return DailyLog(
+      id: data.id.present ? data.id.value : this.id,
       date: data.date.present ? data.date.value : this.date,
       layingHens:
           data.layingHens.present ? data.layingHens.value : this.layingHens,
@@ -556,6 +575,7 @@ class DailyLog extends DataClass implements Insertable<DailyLog> {
   @override
   String toString() {
     return (StringBuffer('DailyLog(')
+          ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('layingHens: $layingHens, ')
           ..write('eggsBrown: $eggsBrown, ')
@@ -567,12 +587,13 @@ class DailyLog extends DataClass implements Insertable<DailyLog> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(date, layingHens, eggsBrown, eggsColored, eggsWhite, notes);
+  int get hashCode => Object.hash(
+      id, date, layingHens, eggsBrown, eggsColored, eggsWhite, notes);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is DailyLog &&
+          other.id == this.id &&
           other.date == this.date &&
           other.layingHens == this.layingHens &&
           other.eggsBrown == this.eggsBrown &&
@@ -582,73 +603,76 @@ class DailyLog extends DataClass implements Insertable<DailyLog> {
 }
 
 class DailyLogsCompanion extends UpdateCompanion<DailyLog> {
+  final Value<int> id;
   final Value<DateTime> date;
   final Value<int> layingHens;
   final Value<int> eggsBrown;
   final Value<int> eggsColored;
   final Value<int> eggsWhite;
   final Value<String?> notes;
-  final Value<int> rowid;
   const DailyLogsCompanion({
+    this.id = const Value.absent(),
     this.date = const Value.absent(),
     this.layingHens = const Value.absent(),
     this.eggsBrown = const Value.absent(),
     this.eggsColored = const Value.absent(),
     this.eggsWhite = const Value.absent(),
     this.notes = const Value.absent(),
-    this.rowid = const Value.absent(),
   });
   DailyLogsCompanion.insert({
+    this.id = const Value.absent(),
     required DateTime date,
     this.layingHens = const Value.absent(),
     this.eggsBrown = const Value.absent(),
     this.eggsColored = const Value.absent(),
     this.eggsWhite = const Value.absent(),
     this.notes = const Value.absent(),
-    this.rowid = const Value.absent(),
   }) : date = Value(date);
   static Insertable<DailyLog> custom({
+    Expression<int>? id,
     Expression<DateTime>? date,
     Expression<int>? layingHens,
     Expression<int>? eggsBrown,
     Expression<int>? eggsColored,
     Expression<int>? eggsWhite,
     Expression<String>? notes,
-    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (id != null) 'id': id,
       if (date != null) 'date': date,
       if (layingHens != null) 'laying_hens': layingHens,
       if (eggsBrown != null) 'eggs_brown': eggsBrown,
       if (eggsColored != null) 'eggs_colored': eggsColored,
       if (eggsWhite != null) 'eggs_white': eggsWhite,
       if (notes != null) 'notes': notes,
-      if (rowid != null) 'rowid': rowid,
     });
   }
 
   DailyLogsCompanion copyWith(
-      {Value<DateTime>? date,
+      {Value<int>? id,
+      Value<DateTime>? date,
       Value<int>? layingHens,
       Value<int>? eggsBrown,
       Value<int>? eggsColored,
       Value<int>? eggsWhite,
-      Value<String?>? notes,
-      Value<int>? rowid}) {
+      Value<String?>? notes}) {
     return DailyLogsCompanion(
+      id: id ?? this.id,
       date: date ?? this.date,
       layingHens: layingHens ?? this.layingHens,
       eggsBrown: eggsBrown ?? this.eggsBrown,
       eggsColored: eggsColored ?? this.eggsColored,
       eggsWhite: eggsWhite ?? this.eggsWhite,
       notes: notes ?? this.notes,
-      rowid: rowid ?? this.rowid,
     );
   }
 
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
     if (date.present) {
       map['date'] = Variable<DateTime>(date.value);
     }
@@ -667,22 +691,19 @@ class DailyLogsCompanion extends UpdateCompanion<DailyLog> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
     return map;
   }
 
   @override
   String toString() {
     return (StringBuffer('DailyLogsCompanion(')
+          ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('layingHens: $layingHens, ')
           ..write('eggsBrown: $eggsBrown, ')
           ..write('eggsColored: $eggsColored, ')
           ..write('eggsWhite: $eggsWhite, ')
-          ..write('notes: $notes, ')
-          ..write('rowid: $rowid')
+          ..write('notes: $notes')
           ..write(')'))
         .toString();
   }
@@ -2514,22 +2535,22 @@ typedef $$BirdsTableProcessedTableManager = ProcessedTableManager<
     Bird,
     PrefetchHooks Function()>;
 typedef $$DailyLogsTableCreateCompanionBuilder = DailyLogsCompanion Function({
+  Value<int> id,
   required DateTime date,
   Value<int> layingHens,
   Value<int> eggsBrown,
   Value<int> eggsColored,
   Value<int> eggsWhite,
   Value<String?> notes,
-  Value<int> rowid,
 });
 typedef $$DailyLogsTableUpdateCompanionBuilder = DailyLogsCompanion Function({
+  Value<int> id,
   Value<DateTime> date,
   Value<int> layingHens,
   Value<int> eggsBrown,
   Value<int> eggsColored,
   Value<int> eggsWhite,
   Value<String?> notes,
-  Value<int> rowid,
 });
 
 class $$DailyLogsTableFilterComposer
@@ -2541,6 +2562,9 @@ class $$DailyLogsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
   ColumnFilters<DateTime> get date => $composableBuilder(
       column: $table.date, builder: (column) => ColumnFilters(column));
 
@@ -2569,6 +2593,9 @@ class $$DailyLogsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get date => $composableBuilder(
       column: $table.date, builder: (column) => ColumnOrderings(column));
 
@@ -2597,6 +2624,9 @@ class $$DailyLogsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
   GeneratedColumn<DateTime> get date =>
       $composableBuilder(column: $table.date, builder: (column) => column);
 
@@ -2639,40 +2669,40 @@ class $$DailyLogsTableTableManager extends RootTableManager<
           createComputedFieldComposer: () =>
               $$DailyLogsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
             Value<DateTime> date = const Value.absent(),
             Value<int> layingHens = const Value.absent(),
             Value<int> eggsBrown = const Value.absent(),
             Value<int> eggsColored = const Value.absent(),
             Value<int> eggsWhite = const Value.absent(),
             Value<String?> notes = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
           }) =>
               DailyLogsCompanion(
+            id: id,
             date: date,
             layingHens: layingHens,
             eggsBrown: eggsBrown,
             eggsColored: eggsColored,
             eggsWhite: eggsWhite,
             notes: notes,
-            rowid: rowid,
           ),
           createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
             required DateTime date,
             Value<int> layingHens = const Value.absent(),
             Value<int> eggsBrown = const Value.absent(),
             Value<int> eggsColored = const Value.absent(),
             Value<int> eggsWhite = const Value.absent(),
             Value<String?> notes = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
           }) =>
               DailyLogsCompanion.insert(
+            id: id,
             date: date,
             layingHens: layingHens,
             eggsBrown: eggsBrown,
             eggsColored: eggsColored,
             eggsWhite: eggsWhite,
             notes: notes,
-            rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
