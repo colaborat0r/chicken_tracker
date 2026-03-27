@@ -1,0 +1,52 @@
+name: chicken_tracker
+description: Beautiful offline-first Chicken & Egg Production Tracker for homesteaders.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Database - Drift (SQLite)
+  drift: ^2.21.0
+  drift_flutter: ^0.2.0
+  sqlite3_flutter_libs: ^0.5.26
+
+  # Navigation
+  go_router: ^14.2.0
+
+  # Charts
+  fl_chart: ^0.70.0
+
+  # Utilities
+  intl: ^0.19.0
+  path_provider: ^2.1.4
+  path: ^1.9.0
+  share_plus: ^10.0.0
+  permission_handler: ^11.3.1
+  csv: ^6.0.0
+  pdf: ^3.11.1
+  printing: ^5.12.0
+
+  # Material You dynamic colors
+  dynamic_color: ^1.7.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  riverpod_generator: ^2.4.0
+  build_runner: ^2.4.12
+  drift_dev: ^2.21.0
+
+flutter:
+  uses-material-design: true
+  # Assets will be added later for icons, etc.
