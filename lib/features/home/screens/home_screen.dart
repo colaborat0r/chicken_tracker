@@ -19,6 +19,128 @@ class HomeScreen extends ConsumerWidget {
         ),
         elevation: 0,
       ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  const Icon(Icons.agriculture, size: 48, color: Colors.white),
+                  const SizedBox(height: 8),
+                  Text(
+                    '🐔 Chicken Tracker',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            const Divider(),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Text('Flock', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.pets, color: Colors.orange),
+              title: const Text('View Flock'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(Routes.chickenList);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.shopping_bag, color: Colors.teal),
+              title: const Text('Flock Purchases'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(Routes.flockPurchases);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.warning_amber, color: Colors.red),
+              title: const Text('Flock Losses'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(Routes.flockLosses);
+              },
+            ),
+            const Divider(),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Text('Production', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.add_circle_outline, color: Colors.green),
+              title: const Text('Log Egg Production'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(Routes.logProduction);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.history, color: Colors.blue),
+              title: const Text('Production History'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(Routes.productionHistory);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.bar_chart_outlined, color: Colors.purple),
+              title: const Text('Analytics'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(Routes.analytics);
+              },
+            ),
+            const Divider(),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Text('Finance', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.receipt_long, color: Colors.indigo),
+              title: const Text('Sales'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(Routes.sales);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.account_balance_wallet, color: Colors.deepOrange),
+              title: const Text('Expenses'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(Routes.expenses);
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.file_download_outlined, color: Colors.cyan),
+              title: const Text('Reports & Exports'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(Routes.reports);
+              },
+            ),
+          ],
+        ),
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -144,12 +266,34 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   _ActionButton(
-                    label: 'Record Health Check',
-                    icon: Icons.favorite_border,
+                    label: 'Sales',
+                    icon: Icons.receipt_long,
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Coming soon: Health Check')),
-                      );
+                      context.push(Routes.sales);
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  _ActionButton(
+                    label: 'Expenses',
+                    icon: Icons.account_balance_wallet,
+                    onPressed: () {
+                      context.push(Routes.expenses);
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  _ActionButton(
+                    label: 'Flock Purchases',
+                    icon: Icons.shopping_bag,
+                    onPressed: () {
+                      context.push(Routes.flockPurchases);
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  _ActionButton(
+                    label: 'Flock Losses',
+                    icon: Icons.warning_amber,
+                    onPressed: () {
+                      context.push(Routes.flockLosses);
                     },
                   ),
                 ],

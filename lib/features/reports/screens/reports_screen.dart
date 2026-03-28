@@ -19,6 +19,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   DateTime? _selectedEndDate;
   bool _isExporting = false;
   String? _exportStatus;
+  String _selectedReportType = 'production'; // 'production', 'sales', 'expenses', 'purchases', 'losses'
 
   @override
   void initState() {
@@ -81,6 +82,161 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     );
   }
 
+  Future<SalesReport?> _generateSalesReport(String title) async {
+    if (_selectedStartDate == null || _selectedEndDate == null) return null;
+
+    final sales = await ref.read(allSalesProvider.future);
+
+    final filteredSales = sales
+        .where((sale) =>
+            sale.date.isAfter(_selectedStartDate!.subtract(const Duration(days: 1))) &&
+            sale.date.isBefore(_selectedEndDate!.add(const Duration(days: 1))))
+        .toList()
+        ..sort((a, b) => a.date.compareTo(b.date));
+
+    final lineItems = filteredSales
+        .map((sale) => SalesReportLineItem(
+              date: sale.date,
+              type: sale.type,
+              quantity: sale.quantity,
+              amount: sale.amount,
+              unitPrice: sale.unitPrice,
+              customerName: sale.customerName,
+            ))
+        .toList();
+
+    return SalesReport(
+      startDate: _selectedStartDate!,
+      endDate: _selectedEndDate!,
+      lineItems: lineItems,
+      title: title,
+      totalRevenue: filteredSales.fold(0.0, (sum, sale) => sum + sale.amount),
+      totalEggsSold: filteredSales
+          .where((sale) => sale.type == 'eggs')
+          .fold(0, (sum, sale) => sum + sale.quantity),
+      totalChickensSold: filteredSales
+          .where((sale) => sale.type == 'chickens')
+          .fold(0, (sum, sale) => sum + sale.quantity),
+    );
+  }
+
+  Future<ExpensesReport?> _generateExpensesReport(String title) async {
+    if (_selectedStartDate == null || _selectedEndDate == null) return null;
+
+    final expenses = await ref.read(allExpensesProvider.future);
+
+    final filteredExpenses = expenses
+        .where((expense) =>
+            expense.date.isAfter(_selectedStartDate!.subtract(const Duration(days: 1))) &&
+            expense.date.isBefore(_selectedEndDate!.add(const Duration(days: 1))))
+        .toList()
+        ..sort((a, b) => a.date.compareTo(b.date));
+
+    final lineItems = filteredExpenses
+        .map((expense) => ExpensesReportLineItem(
+              date: expense.date,
+              category: expense.category,
+              amount: expense.amount,
+              description: expense.description,
+              pounds: expense.pounds,
+              costPerPound: expense.costPerPound,
+            ))
+        .toList();
+
+    // Group by category for summary
+    final categoryTotals = <String, double>{};
+    for (final expense in filteredExpenses) {
+      categoryTotals[expense.category] =
+          (categoryTotals[expense.category] ?? 0) + expense.amount;
+    }
+
+    return ExpensesReport(
+      startDate: _selectedStartDate!,
+      endDate: _selectedEndDate!,
+      lineItems: lineItems,
+      title: title,
+      totalExpenses: filteredExpenses.fold(0.0, (sum, expense) => sum + expense.amount),
+      categoryBreakdown: categoryTotals,
+    );
+  }
+
+  Future<FlockPurchasesReport?> _generateFlockPurchasesReport(String title) async {
+    if (_selectedStartDate == null || _selectedEndDate == null) return null;
+
+    final purchases = await ref.read(allFlockPurchasesProvider.future);
+
+    final filteredPurchases = purchases
+        .where((purchase) =>
+            purchase.date.isAfter(_selectedStartDate!.subtract(const Duration(days: 1))) &&
+            purchase.date.isBefore(_selectedEndDate!.add(const Duration(days: 1))))
+        .toList()
+        ..sort((a, b) => a.date.compareTo(b.date));
+
+    final lineItems = filteredPurchases
+        .map((purchase) => FlockPurchasesReportLineItem(
+              date: purchase.date,
+              type: purchase.type,
+              quantity: purchase.quantity,
+              cost: purchase.cost,
+              costPerUnit: purchase.costPerUnit,
+              supplier: purchase.supplier,
+              hatchedCount: purchase.hatchedCount,
+              hatchRate: purchase.hatchRate,
+            ))
+        .toList();
+
+    return FlockPurchasesReport(
+      startDate: _selectedStartDate!,
+      endDate: _selectedEndDate!,
+      lineItems: lineItems,
+      title: title,
+      totalCost: filteredPurchases.fold(0.0, (sum, purchase) => sum + purchase.cost),
+      totalChicksPurchased: filteredPurchases
+          .where((purchase) => purchase.type == 'live_chicks')
+          .fold(0, (sum, purchase) => sum + purchase.quantity),
+      totalEggsPurchased: filteredPurchases
+          .where((purchase) => purchase.type == 'hatching_eggs')
+          .fold(0, (sum, purchase) => sum + purchase.quantity),
+    );
+  }
+
+  Future<FlockLossesReport?> _generateFlockLossesReport(String title) async {
+    if (_selectedStartDate == null || _selectedEndDate == null) return null;
+
+    final losses = await ref.read(allFlockLossesProvider.future);
+
+    final filteredLosses = losses
+        .where((loss) =>
+            loss.date.isAfter(_selectedStartDate!.subtract(const Duration(days: 1))) &&
+            loss.date.isBefore(_selectedEndDate!.add(const Duration(days: 1))))
+        .toList()
+        ..sort((a, b) => a.date.compareTo(b.date));
+
+    final lineItems = filteredLosses
+        .map((loss) => FlockLossesReportLineItem(
+              date: loss.date,
+              type: loss.type,
+              quantity: loss.quantity,
+              predatorSubtype: loss.predatorSubtype,
+            ))
+        .toList();
+
+    // Group by type for summary
+    final typeTotals = <String, int>{};
+    for (final loss in filteredLosses) {
+      typeTotals[loss.type] = (typeTotals[loss.type] ?? 0) + loss.quantity;
+    }
+
+    return FlockLossesReport(
+      startDate: _selectedStartDate!,
+      endDate: _selectedEndDate!,
+      lineItems: lineItems,
+      title: title,
+      totalLosses: filteredLosses.fold(0, (sum, loss) => sum + loss.quantity),
+      lossesByType: typeTotals,
+    );
+  }
+
   Future<void> _exportPdf() async {
     if (_selectedStartDate == null || _selectedEndDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -95,7 +251,34 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     });
 
     try {
-      final report = await _generateReport('Custom Production Report');
+      dynamic report;
+      String reportTitle;
+
+      switch (_selectedReportType) {
+        case 'production':
+          report = await _generateReport('Production Report');
+          reportTitle = 'Production Report';
+          break;
+        case 'sales':
+          report = await _generateSalesReport('Sales Report');
+          reportTitle = 'Sales Report';
+          break;
+        case 'expenses':
+          report = await _generateExpensesReport('Expenses Report');
+          reportTitle = 'Expenses Report';
+          break;
+        case 'purchases':
+          report = await _generateFlockPurchasesReport('Flock Purchases Report');
+          reportTitle = 'Flock Purchases Report';
+          break;
+        case 'losses':
+          report = await _generateFlockLossesReport('Flock Losses Report');
+          reportTitle = 'Flock Losses Report';
+          break;
+        default:
+          throw Exception('Unknown report type');
+      }
+
       if (report == null) throw Exception('Failed to generate report');
 
       final file = await PdfExportService.generatePdf(report);
@@ -104,7 +287,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
       await Share.shareXFiles(
         [XFile(file.path)],
-        subject: 'Production Report - ${DateFormat('MMM d, yyyy').format(_selectedStartDate!)}',
+        subject: '$reportTitle - ${DateFormat('MMM d, yyyy').format(_selectedStartDate!)}',
       );
 
       setState(() => _exportStatus = 'PDF exported successfully!');
@@ -135,7 +318,34 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     });
 
     try {
-      final report = await _generateReport('Custom Production Report');
+      dynamic report;
+      String reportTitle;
+
+      switch (_selectedReportType) {
+        case 'production':
+          report = await _generateReport('Production Report');
+          reportTitle = 'Production Report';
+          break;
+        case 'sales':
+          report = await _generateSalesReport('Sales Report');
+          reportTitle = 'Sales Report';
+          break;
+        case 'expenses':
+          report = await _generateExpensesReport('Expenses Report');
+          reportTitle = 'Expenses Report';
+          break;
+        case 'purchases':
+          report = await _generateFlockPurchasesReport('Flock Purchases Report');
+          reportTitle = 'Flock Purchases Report';
+          break;
+        case 'losses':
+          report = await _generateFlockLossesReport('Flock Losses Report');
+          reportTitle = 'Flock Losses Report';
+          break;
+        default:
+          throw Exception('Unknown report type');
+      }
+
       if (report == null) throw Exception('Failed to generate report');
 
       final file = await CsvExportService.generateCsv(report);
@@ -144,7 +354,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
       await Share.shareXFiles(
         [XFile(file.path)],
-        subject: 'Production Report - ${DateFormat('MMM d, yyyy').format(_selectedStartDate!)}',
+        subject: '$reportTitle - ${DateFormat('MMM d, yyyy').format(_selectedStartDate!)}',
       );
 
       setState(() => _exportStatus = 'CSV exported successfully!');
@@ -227,6 +437,60 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                           ),
                         ),
                       ],
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Report Type Section
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Report Type',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<String>(
+                        initialValue: _selectedReportType,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'production',
+                            child: Text('📊 Production Report'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'sales',
+                            child: Text('💰 Sales Report'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'expenses',
+                            child: Text('💸 Expenses Report'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'purchases',
+                            child: Text('🛒 Flock Purchases Report'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'losses',
+                            child: Text('⚠️ Flock Losses Report'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() => _selectedReportType = value);
+                          }
+                        },
+                      ),
                     ],
                   ),
                 ),

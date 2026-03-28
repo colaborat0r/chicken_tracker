@@ -135,6 +135,42 @@ final allExpensesProvider = StreamProvider<List<ExpenseModel>>((ref) async* {
   });
 });
 
+/// Provider for flock purchases data
+final allFlockPurchasesProvider = StreamProvider<List<FlockPurchaseModel>>((ref) async* {
+  final db = ref.watch(databaseProvider);
+  
+  yield* db.select(db.flockPurchases).watch().map((purchases) {
+    return purchases
+        .map((purchase) => FlockPurchaseModel(
+              id: purchase.id,
+              date: purchase.date,
+              type: purchase.type,
+              quantity: purchase.quantity,
+              cost: purchase.cost,
+              supplier: purchase.supplier,
+              hatchedCount: purchase.hatchedCount,
+            ))
+        .toList();
+  });
+});
+
+/// Provider for flock losses data
+final allFlockLossesProvider = StreamProvider<List<FlockLossModel>>((ref) async* {
+  final db = ref.watch(databaseProvider);
+  
+  yield* db.select(db.flockLosses).watch().map((losses) {
+    return losses
+        .map((loss) => FlockLossModel(
+              id: loss.id,
+              date: loss.date,
+              type: loss.type,
+              quantity: loss.quantity,
+              predatorSubtype: loss.predatorSubtype,
+            ))
+        .toList();
+  });
+});
+
 /// Family provider for getting a specific chicken by ID
 final chickenByIdProvider = 
     FutureProvider.family<ChickenModel?, int>((ref, id) async {
