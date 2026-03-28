@@ -144,12 +144,34 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   _ActionButton(
-                    label: 'Record Health Check',
-                    icon: Icons.favorite_border,
+                    label: 'Sales',
+                    icon: Icons.receipt_long,
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Coming soon: Health Check')),
-                      );
+                      context.push(Routes.sales);
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  _ActionButton(
+                    label: 'Expenses',
+                    icon: Icons.account_balance_wallet,
+                    onPressed: () {
+                      context.push(Routes.expenses);
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  _ActionButton(
+                    label: 'Flock Purchases',
+                    icon: Icons.shopping_bag,
+                    onPressed: () {
+                      context.push(Routes.flockPurchases);
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  _ActionButton(
+                    label: 'Flock Losses',
+                    icon: Icons.warning_amber,
+                    onPressed: () {
+                      context.push(Routes.flockLosses);
                     },
                   ),
                 ],

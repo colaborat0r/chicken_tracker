@@ -190,6 +190,91 @@ class ExpenseModel {
   }
 }
 
+/// Model for flock purchases (chicks, eggs, etc.)
+class FlockPurchaseModel {
+  final int id;
+  final DateTime date;
+  final String type; // 'live_chicks', 'hatching_eggs'
+  final int quantity;
+  final double cost;
+  final String? supplier;
+  final int? hatchedCount;
+
+  FlockPurchaseModel({
+    required this.id,
+    required this.date,
+    required this.type,
+    required this.quantity,
+    required this.cost,
+    this.supplier,
+    this.hatchedCount,
+  });
+
+  /// Get cost per unit
+  double get costPerUnit => cost / quantity;
+
+  /// Get hatch rate percentage (for hatching eggs)
+  double? get hatchRate {
+    if (type == 'hatching_eggs' && hatchedCount != null) {
+      return (hatchedCount! / quantity) * 100;
+    }
+    return null;
+  }
+
+  FlockPurchaseModel copyWith({
+    int? id,
+    DateTime? date,
+    String? type,
+    int? quantity,
+    double? cost,
+    String? supplier,
+    int? hatchedCount,
+  }) {
+    return FlockPurchaseModel(
+      id: id ?? this.id,
+      date: date ?? this.date,
+      type: type ?? this.type,
+      quantity: quantity ?? this.quantity,
+      cost: cost ?? this.cost,
+      supplier: supplier ?? this.supplier,
+      hatchedCount: hatchedCount ?? this.hatchedCount,
+    );
+  }
+}
+
+/// Model for flock losses (deaths, sales, etc.)
+class FlockLossModel {
+  final int id;
+  final DateTime date;
+  final String type; // 'human_consumption', 'natural_causes', 'predator', 'sold'
+  final int quantity;
+  final String? predatorSubtype; // 'raccoon', 'skunk', etc. (only for predator type)
+
+  FlockLossModel({
+    required this.id,
+    required this.date,
+    required this.type,
+    required this.quantity,
+    this.predatorSubtype,
+  });
+
+  FlockLossModel copyWith({
+    int? id,
+    DateTime? date,
+    String? type,
+    int? quantity,
+    String? predatorSubtype,
+  }) {
+    return FlockLossModel(
+      id: id ?? this.id,
+      date: date ?? this.date,
+      type: type ?? this.type,
+      quantity: quantity ?? this.quantity,
+      predatorSubtype: predatorSubtype ?? this.predatorSubtype,
+    );
+  }
+}
+
 /// Weekly production summary for analytics
 class WeeklyProductionSummary {
   final DateTime weekStart; // Monday of the week

@@ -8,6 +8,10 @@ import 'package:chicken_tracker/features/production/screens/log_production_scree
 import 'package:chicken_tracker/features/production/screens/production_history_screen.dart';
 import 'package:chicken_tracker/features/production/screens/analytics_dashboard_screen.dart';
 import 'package:chicken_tracker/features/reports/screens/reports_screen.dart';
+import 'package:chicken_tracker/features/sales/screens/sales_screen.dart';
+import 'package:chicken_tracker/features/expenses/screens/expenses_screen.dart';
+import 'package:chicken_tracker/features/flock_purchases/screens/flock_purchases_screen.dart';
+import 'package:chicken_tracker/features/flock_losses/screens/flock_losses_screen.dart';
 import 'package:chicken_tracker/core/models/chicken_model.dart';
 
 /// Route names for named navigation
@@ -20,6 +24,10 @@ class Routes {
   static const String productionHistory = '/production-history';
   static const String analytics = '/analytics';
   static const String reports = '/reports';
+  static const String sales = '/sales';
+  static const String expenses = '/expenses';
+  static const String flockPurchases = '/flock-purchases';
+  static const String flockLosses = '/flock-losses';
 }
 
 /// GoRouter configuration for the app
@@ -75,6 +83,30 @@ final goRouter = GoRouter(
     GoRoute(
       path: Routes.reports,
       builder: (context, state) => const ReportsScreen(),
+    ),
+
+    // Sales screen
+    GoRoute(
+      path: Routes.sales,
+      builder: (context, state) => const SalesScreen(),
+    ),
+
+    // Expenses screen
+    GoRoute(
+      path: Routes.expenses,
+      builder: (context, state) => const ExpensesScreen(),
+    ),
+
+    // Flock purchases screen
+    GoRoute(
+      path: Routes.flockPurchases,
+      builder: (context, state) => const FlockPurchasesScreen(),
+    ),
+
+    // Flock losses screen
+    GoRoute(
+      path: Routes.flockLosses,
+      builder: (context, state) => const FlockLossesScreen(),
     ),
   ],
   

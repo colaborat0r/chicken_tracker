@@ -180,3 +180,207 @@ class MonthlyBreakdown {
 
   String get displayText => '$monthName $year';
 }
+
+/// Sales report line item
+class SalesReportLineItem {
+  final DateTime date;
+  final String type;
+  final int quantity;
+  final double amount;
+  final double unitPrice;
+  final String? customerName;
+
+  SalesReportLineItem({
+    required this.date,
+    required this.type,
+    required this.quantity,
+    required this.amount,
+    required this.unitPrice,
+    this.customerName,
+  });
+
+  String get formattedDate => DateFormat('MMM d, yyyy').format(date);
+}
+
+/// Sales report
+class SalesReport {
+  final DateTime startDate;
+  final DateTime endDate;
+  final List<SalesReportLineItem> lineItems;
+  final String title;
+  final double totalRevenue;
+  final int totalEggsSold;
+  final int totalChickensSold;
+
+  SalesReport({
+    required this.startDate,
+    required this.endDate,
+    required this.lineItems,
+    required this.title,
+    required this.totalRevenue,
+    required this.totalEggsSold,
+    required this.totalChickensSold,
+  });
+
+  String get dateRangeDisplay {
+    final formatter = DateFormat('MMM d, yyyy');
+    if (startDate.year == endDate.year &&
+        startDate.month == endDate.month &&
+        startDate.day == endDate.day) {
+      return formatter.format(startDate);
+    }
+    return '${formatter.format(startDate)} - ${formatter.format(endDate)}';
+  }
+}
+
+/// Expenses report line item
+class ExpensesReportLineItem {
+  final DateTime date;
+  final String category;
+  final double amount;
+  final String? description;
+  final double? pounds;
+  final double? costPerPound;
+
+  ExpensesReportLineItem({
+    required this.date,
+    required this.category,
+    required this.amount,
+    this.description,
+    this.pounds,
+    this.costPerPound,
+  });
+
+  String get formattedDate => DateFormat('MMM d, yyyy').format(date);
+}
+
+/// Expenses report
+class ExpensesReport {
+  final DateTime startDate;
+  final DateTime endDate;
+  final List<ExpensesReportLineItem> lineItems;
+  final String title;
+  final double totalExpenses;
+  final Map<String, double> categoryBreakdown;
+
+  ExpensesReport({
+    required this.startDate,
+    required this.endDate,
+    required this.lineItems,
+    required this.title,
+    required this.totalExpenses,
+    required this.categoryBreakdown,
+  });
+
+  String get dateRangeDisplay {
+    final formatter = DateFormat('MMM d, yyyy');
+    if (startDate.year == endDate.year &&
+        startDate.month == endDate.month &&
+        startDate.day == endDate.day) {
+      return formatter.format(startDate);
+    }
+    return '${formatter.format(startDate)} - ${formatter.format(endDate)}';
+  }
+}
+
+/// Flock purchases report line item
+class FlockPurchasesReportLineItem {
+  final DateTime date;
+  final String type;
+  final int quantity;
+  final double cost;
+  final double costPerUnit;
+  final String? supplier;
+  final int? hatchedCount;
+  final double? hatchRate;
+
+  FlockPurchasesReportLineItem({
+    required this.date,
+    required this.type,
+    required this.quantity,
+    required this.cost,
+    required this.costPerUnit,
+    this.supplier,
+    this.hatchedCount,
+    this.hatchRate,
+  });
+
+  String get formattedDate => DateFormat('MMM d, yyyy').format(date);
+}
+
+/// Flock purchases report
+class FlockPurchasesReport {
+  final DateTime startDate;
+  final DateTime endDate;
+  final List<FlockPurchasesReportLineItem> lineItems;
+  final String title;
+  final double totalCost;
+  final int totalChicksPurchased;
+  final int totalEggsPurchased;
+
+  FlockPurchasesReport({
+    required this.startDate,
+    required this.endDate,
+    required this.lineItems,
+    required this.title,
+    required this.totalCost,
+    required this.totalChicksPurchased,
+    required this.totalEggsPurchased,
+  });
+
+  String get dateRangeDisplay {
+    final formatter = DateFormat('MMM d, yyyy');
+    if (startDate.year == endDate.year &&
+        startDate.month == endDate.month &&
+        startDate.day == endDate.day) {
+      return formatter.format(startDate);
+    }
+    return '${formatter.format(startDate)} - ${formatter.format(endDate)}';
+  }
+}
+
+/// Flock losses report line item
+class FlockLossesReportLineItem {
+  final DateTime date;
+  final String type;
+  final int quantity;
+  final String? predatorSubtype;
+
+  FlockLossesReportLineItem({
+    required this.date,
+    required this.type,
+    required this.quantity,
+    this.predatorSubtype,
+  });
+
+  String get formattedDate => DateFormat('MMM d, yyyy').format(date);
+}
+
+/// Flock losses report
+class FlockLossesReport {
+  final DateTime startDate;
+  final DateTime endDate;
+  final List<FlockLossesReportLineItem> lineItems;
+  final String title;
+  final int totalLosses;
+  final Map<String, int> lossesByType;
+
+  FlockLossesReport({
+    required this.startDate,
+    required this.endDate,
+    required this.lineItems,
+    required this.title,
+    required this.totalLosses,
+    required this.lossesByType,
+  });
+
+  String get dateRangeDisplay {
+    final formatter = DateFormat('MMM d, yyyy');
+    if (startDate.year == endDate.year &&
+        startDate.month == endDate.month &&
+        startDate.day == endDate.day) {
+      return formatter.format(startDate);
+    }
+    return '${formatter.format(startDate)} - ${formatter.format(endDate)}';
+  }
+}
