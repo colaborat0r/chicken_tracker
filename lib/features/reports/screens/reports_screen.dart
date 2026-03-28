@@ -293,6 +293,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       setState(() => _exportStatus = 'PDF exported successfully!');
       await Future.delayed(const Duration(seconds: 2));
     } catch (e) {
+      if (!mounted) return;
       setState(() => _exportStatus = 'Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error exporting PDF: $e')),
@@ -360,6 +361,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       setState(() => _exportStatus = 'CSV exported successfully!');
       await Future.delayed(const Duration(seconds: 2));
     } catch (e) {
+      if (!mounted) return;
       setState(() => _exportStatus = 'Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error exporting CSV: $e')),
@@ -645,7 +647,7 @@ class _ExportCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: color, size: 28),

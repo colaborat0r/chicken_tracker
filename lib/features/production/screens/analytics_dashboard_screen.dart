@@ -184,7 +184,7 @@ class AnalyticsDashboardScreen extends ConsumerWidget {
                                 ),
                                 belowBarData: BarAreaData(
                                   show: true,
-                                  color: Colors.amber[300]?.withOpacity(0.2),
+                                  color: Colors.amber[300]?.withValues(alpha: 0.2),
                                 ),
                               ),
                             ],

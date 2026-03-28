@@ -131,16 +131,16 @@ class ProductionRepository {
     // Check if log exists for today
     final existing = await database.getDailyLogByDate(today);
 
-    final log = DailyLog(
-      date: today,
-      layingHens: layingHens,
-      eggsBrown: eggsBrown,
-      eggsColored: eggsColored,
-      eggsWhite: eggsWhite,
-      notes: notes ?? existing?.notes,
-    );
-
     if (existing != null) {
+      final log = DailyLog(
+        id: existing.id,
+        date: today,
+        layingHens: layingHens,
+        eggsBrown: eggsBrown,
+        eggsColored: eggsColored,
+        eggsWhite: eggsWhite,
+        notes: notes ?? existing.notes,
+      );
       await database.updateDailyLog(log);
     } else {
       await database.addDailyLog(DailyLogsCompanion(

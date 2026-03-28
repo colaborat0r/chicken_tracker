@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../config/router.dart';
 import '../../../core/providers/database_providers.dart';
 
 class FlockLossesScreen extends ConsumerWidget {
@@ -178,7 +180,7 @@ class FlockLossesScreen extends ConsumerWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: _getLossColor(loss.type).withOpacity(0.1),
+                      color: _getLossColor(loss.type).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -218,10 +220,7 @@ class FlockLossesScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // TODO: Navigate to add loss screen
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Record loss feature coming soon!')),
-          );
+          context.push(Routes.addFlockLoss);
         },
         icon: const Icon(Icons.warning),
         label: const Text('Record Loss'),

@@ -184,7 +184,7 @@ class _ChickenCard extends StatelessWidget {
         child: ListTile(
           onTap: onTap,
           leading: CircleAvatar(
-            backgroundColor: statusColor.withOpacity(0.3),
+            backgroundColor: statusColor.withValues(alpha: 0.3),
             child: Text(
               statusEmoji,
               style: const TextStyle(fontSize: 24),

@@ -157,7 +157,7 @@ class _ChickenDetailScreenState extends ConsumerState<ChickenDetailScreen> {
             children: [
               // Status card
               Card(
-                color: statusColor.withOpacity(0.1),
+                color: statusColor.withValues(alpha: 0.1),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Row(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../config/router.dart';
 import '../../../core/providers/database_providers.dart';
 
 class SalesScreen extends ConsumerWidget {
@@ -165,10 +167,7 @@ class SalesScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // TODO: Navigate to add sale screen
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Add sale feature coming soon!')),
-          );
+          context.push(Routes.addSale);
         },
         icon: const Icon(Icons.add),
         label: const Text('Add Sale'),

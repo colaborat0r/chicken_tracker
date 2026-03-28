@@ -9,9 +9,13 @@ import 'package:chicken_tracker/features/production/screens/production_history_s
 import 'package:chicken_tracker/features/production/screens/analytics_dashboard_screen.dart';
 import 'package:chicken_tracker/features/reports/screens/reports_screen.dart';
 import 'package:chicken_tracker/features/sales/screens/sales_screen.dart';
+import 'package:chicken_tracker/features/sales/screens/add_sale_screen.dart';
 import 'package:chicken_tracker/features/expenses/screens/expenses_screen.dart';
+import 'package:chicken_tracker/features/expenses/screens/add_expense_screen.dart';
 import 'package:chicken_tracker/features/flock_purchases/screens/flock_purchases_screen.dart';
+import 'package:chicken_tracker/features/flock_purchases/screens/add_flock_purchase_screen.dart';
 import 'package:chicken_tracker/features/flock_losses/screens/flock_losses_screen.dart';
+import 'package:chicken_tracker/features/flock_losses/screens/add_flock_loss_screen.dart';
 import 'package:chicken_tracker/core/models/chicken_model.dart';
 
 /// Route names for named navigation
@@ -25,9 +29,13 @@ class Routes {
   static const String analytics = '/analytics';
   static const String reports = '/reports';
   static const String sales = '/sales';
+  static const String addSale = '/add-sale';
   static const String expenses = '/expenses';
+  static const String addExpense = '/add-expense';
   static const String flockPurchases = '/flock-purchases';
+  static const String addFlockPurchase = '/add-flock-purchase';
   static const String flockLosses = '/flock-losses';
+  static const String addFlockLoss = '/add-flock-loss';
 }
 
 /// GoRouter configuration for the app
@@ -91,10 +99,22 @@ final goRouter = GoRouter(
       builder: (context, state) => const SalesScreen(),
     ),
 
+    // Add sale screen
+    GoRoute(
+      path: Routes.addSale,
+      builder: (context, state) => const AddSaleScreen(),
+    ),
+
     // Expenses screen
     GoRoute(
       path: Routes.expenses,
       builder: (context, state) => const ExpensesScreen(),
+    ),
+
+    // Add expense screen
+    GoRoute(
+      path: Routes.addExpense,
+      builder: (context, state) => const AddExpenseScreen(),
     ),
 
     // Flock purchases screen
@@ -103,10 +123,22 @@ final goRouter = GoRouter(
       builder: (context, state) => const FlockPurchasesScreen(),
     ),
 
+    // Add flock purchase screen
+    GoRoute(
+      path: Routes.addFlockPurchase,
+      builder: (context, state) => const AddFlockPurchaseScreen(),
+    ),
+
     // Flock losses screen
     GoRoute(
       path: Routes.flockLosses,
       builder: (context, state) => const FlockLossesScreen(),
+    ),
+
+    // Add flock loss screen
+    GoRoute(
+      path: Routes.addFlockLoss,
+      builder: (context, state) => const AddFlockLossScreen(),
     ),
   ],
   

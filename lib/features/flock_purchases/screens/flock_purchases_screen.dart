@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../config/router.dart';
 import '../../../core/providers/database_providers.dart';
 
 class FlockPurchasesScreen extends ConsumerWidget {
@@ -107,6 +109,10 @@ class FlockPurchasesScreen extends ConsumerWidget {
                             '$totalQuantity total',
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
+                          Text(
+                            '$count purchases',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                         ],
                       ),
                     ),
@@ -202,10 +208,7 @@ class FlockPurchasesScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // TODO: Navigate to add purchase screen
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Add purchase feature coming soon!')),
-          );
+          context.push(Routes.addFlockPurchase);
         },
         icon: const Icon(Icons.add),
         label: const Text('Add Purchase'),
