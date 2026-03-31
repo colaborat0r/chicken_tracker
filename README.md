@@ -1,17 +1,29 @@
-# chicken_tracker
+# Chicken Tracker
 
-A new Flutter project.
+Chicken Tracker is a Flutter app for managing poultry farm records in one place.
 
-## Getting Started
+It helps track key day-to-day farm activities such as:
+- Flock purchases
+- Flock losses
+- Sales
+- Expenses
+- Reports
 
-This project is a starting point for a Flutter application.
+The goal of this project is to make farm record-keeping simple, organized, and easy to review over time.
 
-A few resources to get you started if this is your first Flutter project:
+## Run
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+1. Install Flutter and Android Studio.
+2. Open this project folder.
+3. Run:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+flutter pub get
+flutter run
+```
+
+## Build Release APK
+
+```bash
+flutter build apk --release
+```

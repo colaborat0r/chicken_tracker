@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../config/router.dart';
 import '../../../core/providers/database_providers.dart';
 
 class FlockPurchasesScreen extends ConsumerWidget {
@@ -108,7 +110,7 @@ class FlockPurchasesScreen extends ConsumerWidget {
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                           Text(
-                            '\$count purchases',
+                            '$count purchases',
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
