@@ -16,6 +16,7 @@ import 'package:chicken_tracker/features/flock_purchases/screens/flock_purchases
 import 'package:chicken_tracker/features/flock_purchases/screens/add_flock_purchase_screen.dart';
 import 'package:chicken_tracker/features/flock_losses/screens/flock_losses_screen.dart';
 import 'package:chicken_tracker/features/flock_losses/screens/add_flock_loss_screen.dart';
+import 'package:chicken_tracker/features/settings/screens/data_management_screen.dart';
 import 'package:chicken_tracker/core/models/chicken_model.dart';
 
 /// Route names for named navigation
@@ -36,6 +37,7 @@ class Routes {
   static const String addFlockPurchase = '/add-flock-purchase';
   static const String flockLosses = '/flock-losses';
   static const String addFlockLoss = '/add-flock-loss';
+  static const String dataManagement = '/data-management';
 }
 
 /// GoRouter configuration for the app
@@ -47,19 +49,19 @@ final goRouter = GoRouter(
       path: Routes.home,
       builder: (context, state) => const HomeScreen(),
     ),
-    
+
     // Add chicken screen
     GoRoute(
       path: Routes.addChicken,
       builder: (context, state) => const AddChickenScreen(),
     ),
-    
+
     // Chicken list screen
     GoRoute(
       path: Routes.chickenList,
       builder: (context, state) => const ChickenListScreen(),
     ),
-    
+
     // Chicken detail screen - receives chicken object via extras
     GoRoute(
       path: Routes.chickenDetail,
@@ -68,25 +70,25 @@ final goRouter = GoRouter(
         return ChickenDetailScreen(chicken: chicken);
       },
     ),
-    
+
     // Log production screen
     GoRoute(
       path: Routes.logProduction,
       builder: (context, state) => const LogProductionScreen(),
     ),
-    
+
     // Production history screen
     GoRoute(
       path: Routes.productionHistory,
       builder: (context, state) => const ProductionHistoryScreen(),
     ),
-    
+
     // Analytics dashboard screen
     GoRoute(
       path: Routes.analytics,
       builder: (context, state) => const AnalyticsDashboardScreen(),
     ),
-    
+
     // Reports screen
     GoRoute(
       path: Routes.reports,
@@ -140,8 +142,14 @@ final goRouter = GoRouter(
       path: Routes.addFlockLoss,
       builder: (context, state) => const AddFlockLossScreen(),
     ),
+
+    // Data management screen
+    GoRoute(
+      path: Routes.dataManagement,
+      builder: (context, state) => const DataManagementScreen(),
+    ),
   ],
-  
+
   // Global error handler
   errorBuilder: (context, state) => Scaffold(
     appBar: AppBar(

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/models/report_model.dart';
 import '../../../core/providers/database_providers.dart';
 import '../../../core/services/pdf_export_service.dart';
 import '../../../core/services/csv_export_service.dart';
+import '../../../core/widgets/app_ui_components.dart';
 
 class ReportsScreen extends ConsumerStatefulWidget {
   const ReportsScreen({super.key});
@@ -19,7 +21,9 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   DateTime? _selectedEndDate;
   bool _isExporting = false;
   String? _exportStatus;
-  String _selectedReportType = 'production'; // 'production', 'sales', 'expenses', 'purchases', 'losses'
+  String _selectedReportType =
+      'production'; // 'production', 'sales', 'expenses', 'purchases', 'losses'
+  String _periodView = 'daily'; // daily, weekly, monthly
 
   @override
   void initState() {
@@ -34,7 +38,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
       initialDateRange: DateTimeRange(
-        start: _selectedStartDate ?? DateTime.now().subtract(const Duration(days: 30)),
+        start: _selectedStartDate ??
+            DateTime.now().subtract(const Duration(days: 30)),
         end: _selectedEndDate ?? DateTime.now(),
       ),
     );
@@ -47,6 +52,14 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     }
   }
 
+  void _setQuickRange(int days) {
+    final end = DateTime.now();
+    setState(() {
+      _selectedEndDate = end;
+      _selectedStartDate = end.subtract(Duration(days: days));
+    });
+  }
+
   Future<ProductionReport?> _generateReport(String title) async {
     if (_selectedStartDate == null || _selectedEndDate == null) return null;
 
@@ -54,10 +67,11 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
     final filteredLogs = logs
         .where((log) =>
-            log.date.isAfter(_selectedStartDate!.subtract(const Duration(days: 1))) &&
+            log.date.isAfter(
+                _selectedStartDate!.subtract(const Duration(days: 1))) &&
             log.date.isBefore(_selectedEndDate!.add(const Duration(days: 1))))
         .toList()
-        ..sort((a, b) => a.date.compareTo(b.date));
+      ..sort((a, b) => a.date.compareTo(b.date));
 
     final lineItems = filteredLogs
         .map((log) => ReportLineItem(
@@ -74,7 +88,11 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         .toList();
 
     return ProductionReport(
-      reportType: ReportType.daily,
+      reportType: _periodView == 'monthly'
+          ? ReportType.monthly
+          : _periodView == 'weekly'
+              ? ReportType.weekly
+              : ReportType.daily,
       startDate: _selectedStartDate!,
       endDate: _selectedEndDate!,
       lineItems: lineItems,
@@ -89,10 +107,11 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
     final filteredSales = sales
         .where((sale) =>
-            sale.date.isAfter(_selectedStartDate!.subtract(const Duration(days: 1))) &&
+            sale.date.isAfter(
+                _selectedStartDate!.subtract(const Duration(days: 1))) &&
             sale.date.isBefore(_selectedEndDate!.add(const Duration(days: 1))))
         .toList()
-        ..sort((a, b) => a.date.compareTo(b.date));
+      ..sort((a, b) => a.date.compareTo(b.date));
 
     final lineItems = filteredSales
         .map((sale) => SalesReportLineItem(
@@ -127,10 +146,12 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
     final filteredExpenses = expenses
         .where((expense) =>
-            expense.date.isAfter(_selectedStartDate!.subtract(const Duration(days: 1))) &&
-            expense.date.isBefore(_selectedEndDate!.add(const Duration(days: 1))))
+            expense.date.isAfter(
+                _selectedStartDate!.subtract(const Duration(days: 1))) &&
+            expense.date
+                .isBefore(_selectedEndDate!.add(const Duration(days: 1))))
         .toList()
-        ..sort((a, b) => a.date.compareTo(b.date));
+      ..sort((a, b) => a.date.compareTo(b.date));
 
     final lineItems = filteredExpenses
         .map((expense) => ExpensesReportLineItem(
@@ -155,22 +176,26 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       endDate: _selectedEndDate!,
       lineItems: lineItems,
       title: title,
-      totalExpenses: filteredExpenses.fold(0.0, (sum, expense) => sum + expense.amount),
+      totalExpenses:
+          filteredExpenses.fold(0.0, (sum, expense) => sum + expense.amount),
       categoryBreakdown: categoryTotals,
     );
   }
 
-  Future<FlockPurchasesReport?> _generateFlockPurchasesReport(String title) async {
+  Future<FlockPurchasesReport?> _generateFlockPurchasesReport(
+      String title) async {
     if (_selectedStartDate == null || _selectedEndDate == null) return null;
 
     final purchases = await ref.read(allFlockPurchasesProvider.future);
 
     final filteredPurchases = purchases
         .where((purchase) =>
-            purchase.date.isAfter(_selectedStartDate!.subtract(const Duration(days: 1))) &&
-            purchase.date.isBefore(_selectedEndDate!.add(const Duration(days: 1))))
+            purchase.date.isAfter(
+                _selectedStartDate!.subtract(const Duration(days: 1))) &&
+            purchase.date
+                .isBefore(_selectedEndDate!.add(const Duration(days: 1))))
         .toList()
-        ..sort((a, b) => a.date.compareTo(b.date));
+      ..sort((a, b) => a.date.compareTo(b.date));
 
     final lineItems = filteredPurchases
         .map((purchase) => FlockPurchasesReportLineItem(
@@ -190,7 +215,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       endDate: _selectedEndDate!,
       lineItems: lineItems,
       title: title,
-      totalCost: filteredPurchases.fold(0.0, (sum, purchase) => sum + purchase.cost),
+      totalCost:
+          filteredPurchases.fold(0.0, (sum, purchase) => sum + purchase.cost),
       totalChicksPurchased: filteredPurchases
           .where((purchase) => purchase.type == 'live_chicks')
           .fold(0, (sum, purchase) => sum + purchase.quantity),
@@ -207,10 +233,11 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
     final filteredLosses = losses
         .where((loss) =>
-            loss.date.isAfter(_selectedStartDate!.subtract(const Duration(days: 1))) &&
+            loss.date.isAfter(
+                _selectedStartDate!.subtract(const Duration(days: 1))) &&
             loss.date.isBefore(_selectedEndDate!.add(const Duration(days: 1))))
         .toList()
-        ..sort((a, b) => a.date.compareTo(b.date));
+      ..sort((a, b) => a.date.compareTo(b.date));
 
     final lineItems = filteredLosses
         .map((loss) => FlockLossesReportLineItem(
@@ -268,7 +295,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           reportTitle = 'Expenses Report';
           break;
         case 'purchases':
-          report = await _generateFlockPurchasesReport('Flock Purchases Report');
+          report =
+              await _generateFlockPurchasesReport('Flock Purchases Report');
           reportTitle = 'Flock Purchases Report';
           break;
         case 'losses':
@@ -287,7 +315,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
       await Share.shareXFiles(
         [XFile(file.path)],
-        subject: '$reportTitle - ${DateFormat('MMM d, yyyy').format(_selectedStartDate!)}',
+        subject:
+            '$reportTitle - ${DateFormat('MMM d, yyyy').format(_selectedStartDate!)}',
       );
 
       setState(() => _exportStatus = 'PDF exported successfully!');
@@ -336,7 +365,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           reportTitle = 'Expenses Report';
           break;
         case 'purchases':
-          report = await _generateFlockPurchasesReport('Flock Purchases Report');
+          report =
+              await _generateFlockPurchasesReport('Flock Purchases Report');
           reportTitle = 'Flock Purchases Report';
           break;
         case 'losses':
@@ -355,7 +385,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
       await Share.shareXFiles(
         [XFile(file.path)],
-        subject: '$reportTitle - ${DateFormat('MMM d, yyyy').format(_selectedStartDate!)}',
+        subject:
+            '$reportTitle - ${DateFormat('MMM d, yyyy').format(_selectedStartDate!)}',
       );
 
       setState(() => _exportStatus = 'CSV exported successfully!');
@@ -376,243 +407,438 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final logsAsync = ref.watch(allDailyLogsProvider);
+    final salesAsync = ref.watch(allSalesProvider);
+    final expensesAsync = ref.watch(allExpensesProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('📋 Reports & Exports'),
+        title: const Text('Reports & Exports'),
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Date Range Section
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Select Report Period',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: isDark
+                ? const [Color(0xFF1A1823), Color(0xFF111015)]
+                : const [Color(0xFFF4F0FF), Color(0xFFFCFAFF)],
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _ReportsHero(
+                  reportType: _selectedReportType,
+                  startDate: _selectedStartDate,
+                  endDate: _selectedEndDate,
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Insights View',
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: _isExporting ? null : _selectDateRange,
-                              icon: const Icon(Icons.calendar_today),
-                              label: const Text('Choose Dates'),
+                        const SizedBox(height: 10),
+                        SegmentedButton<String>(
+                          segments: const [
+                            ButtonSegment(
+                              value: 'daily',
+                              icon: Icon(Icons.today),
+                              label: Text('Daily'),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      if (_selectedStartDate != null && _selectedEndDate != null) ...[
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: isDark ? Colors.grey[800] : Colors.grey[100],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Selected Period:',
-                                style: Theme.of(context).textTheme.labelSmall,
+                            ButtonSegment(
+                              value: 'weekly',
+                              icon: Icon(Icons.view_week),
+                              label: Text('Weekly'),
+                            ),
+                            ButtonSegment(
+                              value: 'monthly',
+                              icon: Icon(Icons.calendar_month),
+                              label: Text('Monthly'),
+                            ),
+                          ],
+                          selected: {_periodView},
+                          onSelectionChanged: (selection) {
+                            setState(() {
+                              _periodView = selection.first;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Performance Charts',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 8),
+                logsAsync.when(
+                  data: (logs) => _EggTrendChartCard(
+                    logs: logs,
+                    periodView: _periodView,
+                    startDate: _selectedStartDate,
+                    endDate: _selectedEndDate,
+                  ),
+                  loading: () => const AppSkeletonCard(lines: 5),
+                  error: (_, __) => const SizedBox.shrink(),
+                ),
+                const SizedBox(height: 12),
+                if (salesAsync.hasValue && expensesAsync.hasValue)
+                  _SalesVsExpensesChartCard(
+                    sales: salesAsync.value!,
+                    expenses: expensesAsync.value!,
+                    startDate: _selectedStartDate,
+                    endDate: _selectedEndDate,
+                  )
+                else
+                  const AppSkeletonCard(lines: 5),
+                const SizedBox(height: 16),
+                const Text(
+                  'Quick Range',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ActionChip(
+                      avatar: const Icon(Icons.today, size: 18),
+                      label: const Text('7 Days'),
+                      onPressed: _isExporting ? null : () => _setQuickRange(7),
+                    ),
+                    ActionChip(
+                      avatar: const Icon(Icons.date_range, size: 18),
+                      label: const Text('30 Days'),
+                      onPressed: _isExporting ? null : () => _setQuickRange(30),
+                    ),
+                    ActionChip(
+                      avatar: const Icon(Icons.calendar_month, size: 18),
+                      label: const Text('90 Days'),
+                      onPressed: _isExporting ? null : () => _setQuickRange(90),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // Date Range Section
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Select Report Period',
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed:
+                                    _isExporting ? null : _selectDateRange,
+                                icon: const Icon(Icons.calendar_today),
+                                label: const Text('Choose Dates'),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${DateFormat('MMM d, yyyy').format(_selectedStartDate!)} - ${DateFormat('MMM d, yyyy').format(_selectedEndDate!)}',
-                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  fontWeight: FontWeight.w500,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        if (_selectedStartDate != null &&
+                            _selectedEndDate != null) ...[
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              color:
+                                  isDark ? Colors.grey[800] : Colors.grey[100],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Selected Period:',
+                                  style: Theme.of(context).textTheme.labelSmall,
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Report Type Section
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Report Type',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        initialValue: _selectedReportType,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        ),
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'production',
-                            child: Text('📊 Production Report'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'sales',
-                            child: Text('💰 Sales Report'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'expenses',
-                            child: Text('💸 Expenses Report'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'purchases',
-                            child: Text('🛒 Flock Purchases Report'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'losses',
-                            child: Text('⚠️ Flock Losses Report'),
-                          ),
-                        ],
-                        onChanged: (value) {
-                          if (value != null) {
-                            setState(() => _selectedReportType = value);
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Export Options Section
-              Text(
-                'Export Options',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // PDF Export
-              _ExportCard(
-                title: 'Export to PDF',
-                description: 'Professional report with tables and summary',
-                icon: Icons.picture_as_pdf,
-                color: Colors.red,
-                onPressed: _isExporting ? null : _exportPdf,
-                isLoading: _isExporting && _exportStatus?.contains('PDF') == true,
-              ),
-              const SizedBox(height: 12),
-
-              // CSV Export
-              _ExportCard(
-                title: 'Export to CSV',
-                description: 'Spreadsheet format for data analysis',
-                icon: Icons.table_chart,
-                color: Colors.green,
-                onPressed: _isExporting ? null : _exportCsv,
-                isLoading: _isExporting && _exportStatus?.contains('CSV') == true,
-              ),
-              const SizedBox(height: 20),
-
-              // Status Message
-              if (_exportStatus != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: _exportStatus!.contains('Error')
-                        ? Colors.red[100]
-                        : Colors.green[100],
-                  ),
-                  child: Row(
-                    children: [
-                      if (_isExporting) ...[
-                        SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation(
-                              _exportStatus!.contains('Error')
-                                  ? Colors.red
-                                  : Colors.green,
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${DateFormat('MMM d, yyyy').format(_selectedStartDate!)} - ${DateFormat('MMM d, yyyy').format(_selectedEndDate!)}',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
+                        ],
                       ],
-                      Expanded(
-                        child: Text(
-                          _exportStatus!,
-                          style: TextStyle(
-                            color: _exportStatus!.contains('Error')
-                                ? Colors.red[800]
-                                : Colors.green[800],
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
-              ],
 
-              // Info Section
-              Card(
-                color: isDark ? Colors.blue[900] : Colors.blue[50],
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.info,
-                            color: Colors.blue[600],
-                            size: 20,
+                // Report Type Section
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Report Type',
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                        const SizedBox(height: 12),
+                        DropdownButtonFormField<String>(
+                          initialValue: _selectedReportType,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'About Reports',
-                            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue[600],
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'production',
+                              child: Text('📊 Production Report'),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '• PDF: Professional formatted report with summary statistics and daily details\n'
-                        '• CSV: Spreadsheet format for use in Excel, Sheets, or data analysis tools\n'
-                        '• Reports include egg counts by color, production percentages, and daily averages\n'
-                        '• Use a custom date range to analyze specific time periods',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
+                            DropdownMenuItem(
+                              value: 'sales',
+                              child: Text('💰 Sales Report'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'expenses',
+                              child: Text('💸 Expenses Report'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'purchases',
+                              child: Text('🛒 Flock Purchases Report'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'losses',
+                              child: Text('⚠️ Flock Losses Report'),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() => _selectedReportType = value);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 20),
+
+                // Export Options Section
+                Text(
+                  'Export Options',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 12),
+
+                // PDF Export
+                _ExportCard(
+                  title: 'Export to PDF',
+                  description: 'Professional report with tables and summary',
+                  icon: Icons.picture_as_pdf,
+                  color: Colors.red,
+                  onPressed: _isExporting ? null : _exportPdf,
+                  isLoading:
+                      _isExporting && _exportStatus?.contains('PDF') == true,
+                ),
+                const SizedBox(height: 12),
+
+                // CSV Export
+                _ExportCard(
+                  title: 'Export to CSV',
+                  description: 'Spreadsheet format for data analysis',
+                  icon: Icons.table_chart,
+                  color: Colors.green,
+                  onPressed: _isExporting ? null : _exportCsv,
+                  isLoading:
+                      _isExporting && _exportStatus?.contains('CSV') == true,
+                ),
+                const SizedBox(height: 20),
+
+                // Status Message
+                if (_exportStatus != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: _exportStatus!.contains('Error')
+                          ? Colors.red[100]
+                          : Colors.green[100],
+                    ),
+                    child: Row(
+                      children: [
+                        if (_isExporting) ...[
+                          SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation(
+                                _exportStatus!.contains('Error')
+                                    ? Colors.red
+                                    : Colors.green,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                        ],
+                        Expanded(
+                          child: Text(
+                            _exportStatus!,
+                            style: TextStyle(
+                              color: _exportStatus!.contains('Error')
+                                  ? Colors.red[800]
+                                  : Colors.green[800],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+
+                // Info Section
+                Card(
+                  color: isDark ? Colors.blue[900] : Colors.blue[50],
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.info,
+                              color: Colors.blue[600],
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'About Reports',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue[600],
+                                  ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '• PDF: Professional formatted report with summary statistics and daily details\n'
+                          '• CSV: Spreadsheet format for use in Excel, Sheets, or data analysis tools\n'
+                          '• Reports include egg counts by color, production percentages, and daily averages\n'
+                          '• Use a custom date range to analyze specific time periods',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ReportsHero extends StatelessWidget {
+  final String reportType;
+  final DateTime? startDate;
+  final DateTime? endDate;
+
+  const _ReportsHero({
+    required this.reportType,
+    required this.startDate,
+    required this.endDate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final readableType = switch (reportType) {
+      'production' => 'Production',
+      'sales' => 'Sales',
+      'expenses' => 'Expenses',
+      'purchases' => 'Flock Purchases',
+      'losses' => 'Flock Losses',
+      _ => 'Report',
+    };
+
+    final periodText = (startDate != null && endDate != null)
+        ? '${DateFormat('MMM d').format(startDate!)} - ${DateFormat('MMM d, yyyy').format(endDate!)}'
+        : 'Select a period';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF5B3DB8), Color(0xFF432B8A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Current Export Plan',
+            style:
+                TextStyle(color: Colors.white70, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            readableType,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            periodText,
+            style: const TextStyle(color: Colors.white70),
+          ),
+        ],
       ),
     );
   }
@@ -660,15 +886,15 @@ class _ExportCard extends StatelessWidget {
                     Text(
                       title,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       description,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                            color: Colors.grey[600],
+                          ),
                     ),
                   ],
                 ),
@@ -684,6 +910,236 @@ class _ExportCard extends StatelessWidget {
                 Icon(Icons.arrow_forward, color: color),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EggTrendChartCard extends StatelessWidget {
+  final List<dynamic> logs;
+  final String periodView;
+  final DateTime? startDate;
+  final DateTime? endDate;
+
+  const _EggTrendChartCard({
+    required this.logs,
+    required this.periodView,
+    required this.startDate,
+    required this.endDate,
+  });
+
+  List<MapEntry<String, int>> _aggregate() {
+    final filtered = logs.where((log) {
+      if (startDate == null || endDate == null) return true;
+      return !log.date.isBefore(startDate!) && !log.date.isAfter(endDate!);
+    }).toList();
+
+    final grouped = <String, int>{};
+    for (final log in filtered) {
+      late String key;
+      if (periodView == 'monthly') {
+        key = DateFormat('MMM yy').format(log.date);
+      } else if (periodView == 'weekly') {
+        final start = log.date.subtract(Duration(days: log.date.weekday - 1));
+        key = 'Wk ${DateFormat('M/d').format(start)}';
+      } else {
+        key = DateFormat('M/d').format(log.date);
+      }
+      grouped[key] = (grouped[key] ?? 0) + (log.totalEggs as int);
+    }
+
+    final entries = grouped.entries.toList();
+    if (entries.length > 8) {
+      return entries.sublist(entries.length - 8);
+    }
+    return entries;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final data = _aggregate();
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Egg Trend',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            SizedBox(
+              height: 180,
+              child: data.isEmpty
+                  ? const Center(child: Text('No production data in range'))
+                  : LineChart(
+                      LineChartData(
+                        minY: 0,
+                        gridData: const FlGridData(show: true),
+                        titlesData: FlTitlesData(
+                          topTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          rightTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 28,
+                              getTitlesWidget: (value, meta) {
+                                final i = value.toInt();
+                                if (i < 0 || i >= data.length) {
+                                  return const SizedBox.shrink();
+                                }
+                                return Text(
+                                  data[i].key,
+                                  style: Theme.of(context).textTheme.labelSmall,
+                                );
+                              },
+                            ),
+                          ),
+                          leftTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: true),
+                          ),
+                        ),
+                        borderData: FlBorderData(show: false),
+                        lineBarsData: [
+                          LineChartBarData(
+                            spots: data
+                                .asMap()
+                                .entries
+                                .map((e) => FlSpot(
+                                      e.key.toDouble(),
+                                      e.value.value.toDouble(),
+                                    ))
+                                .toList(),
+                            isCurved: true,
+                            color: const Color(0xFFDAA520),
+                            barWidth: 3,
+                            dotData: const FlDotData(show: true),
+                          ),
+                        ],
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SalesVsExpensesChartCard extends StatelessWidget {
+  final List<dynamic> sales;
+  final List<dynamic> expenses;
+  final DateTime? startDate;
+  final DateTime? endDate;
+
+  const _SalesVsExpensesChartCard({
+    required this.sales,
+    required this.expenses,
+    required this.startDate,
+    required this.endDate,
+  });
+
+  bool _inRange(DateTime date) {
+    if (startDate == null || endDate == null) return true;
+    return !date.isBefore(startDate!) && !date.isAfter(endDate!);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filteredSales = sales.where((item) => _inRange(item.date)).toList();
+    final filteredExpenses =
+        expenses.where((item) => _inRange(item.date)).toList();
+
+    final salesTotal =
+        filteredSales.fold<double>(0.0, (sum, item) => sum + item.amount);
+    final expensesTotal =
+        filteredExpenses.fold<double>(0.0, (sum, item) => sum + item.amount);
+    final maxY =
+        (salesTotal > expensesTotal ? salesTotal : expensesTotal) * 1.2;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Expense vs Sales',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            SizedBox(
+              height: 180,
+              child: BarChart(
+                BarChartData(
+                  maxY: maxY <= 0 ? 1 : maxY,
+                  gridData: const FlGridData(show: true),
+                  titlesData: FlTitlesData(
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    leftTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: true),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          if (value.toInt() == 0) {
+                            return const Text('Sales');
+                          }
+                          if (value.toInt() == 1) {
+                            return const Text('Expenses');
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  barGroups: [
+                    BarChartGroupData(
+                      x: 0,
+                      barRods: [
+                        BarChartRodData(
+                          toY: salesTotal,
+                          color: const Color(0xFF0E7A4F),
+                          width: 24,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ],
+                    ),
+                    BarChartGroupData(
+                      x: 1,
+                      barRods: [
+                        BarChartRodData(
+                          toY: expensesTotal,
+                          color: const Color(0xFFC5392A),
+                          width: 24,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

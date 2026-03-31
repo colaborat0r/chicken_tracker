@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/providers/database_providers.dart';
+import '../../../core/services/form_memory_service.dart';
+import '../../../core/widgets/app_ui_components.dart';
 
 class AddFlockPurchaseScreen extends ConsumerStatefulWidget {
   const AddFlockPurchaseScreen({super.key});
@@ -13,7 +15,8 @@ class AddFlockPurchaseScreen extends ConsumerStatefulWidget {
       _AddFlockPurchaseScreenState();
 }
 
-class _AddFlockPurchaseScreenState extends ConsumerState<AddFlockPurchaseScreen> {
+class _AddFlockPurchaseScreenState
+    extends ConsumerState<AddFlockPurchaseScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _quantityController;
   late TextEditingController _costController;
@@ -28,8 +31,11 @@ class _AddFlockPurchaseScreenState extends ConsumerState<AddFlockPurchaseScreen>
     super.initState();
     _quantityController = TextEditingController();
     _costController = TextEditingController();
-    _supplierController = TextEditingController();
+    _supplierController = TextEditingController(
+      text: FormMemoryService.lastPurchaseSupplier,
+    );
     _hatchedCountController = TextEditingController();
+    _selectedType = FormMemoryService.lastPurchaseType;
   }
 
   @override
@@ -60,6 +66,9 @@ class _AddFlockPurchaseScreenState extends ConsumerState<AddFlockPurchaseScreen>
     setState(() => _isLoading = true);
 
     try {
+      FormMemoryService.lastPurchaseType = _selectedType;
+      FormMemoryService.lastPurchaseSupplier = _supplierController.text.trim();
+
       final db = ref.read(databaseProvider);
       await db.into(db.flockPurchases).insert(
             FlockPurchasesCompanion(
@@ -97,107 +106,118 @@ class _AddFlockPurchaseScreenState extends ConsumerState<AddFlockPurchaseScreen>
       appBar: AppBar(
         title: const Text('Add Flock Purchase'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      body: AppFormShell(
+        title: 'Record A Flock Purchase',
+        subtitle: 'Track acquisitions, supplier, and hatch performance',
+        icon: Icons.shopping_bag,
+        gradient: const [Color(0xFF0D6E77), Color(0xFF09545B)],
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              DropdownButtonFormField<String>(
-                initialValue: _selectedType,
-                decoration: const InputDecoration(
-                  labelText: 'Purchase Type',
-                  border: OutlineInputBorder(),
-                ),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'live_chicks',
-                    child: Text('Live Chicks'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'hatching_eggs',
-                    child: Text('Hatching Eggs'),
-                  ),
-                ],
-                onChanged: (value) {
-                  setState(() => _selectedType = value ?? 'live_chicks');
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _quantityController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Quantity',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  final parsed = int.tryParse(value?.trim() ?? '');
-                  if (parsed == null || parsed <= 0) {
-                    return 'Enter a quantity greater than 0';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _costController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Total Cost',
-                  prefixText: '\$',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  final parsed = double.tryParse(value?.trim() ?? '');
-                  if (parsed == null || parsed <= 0) {
-                    return 'Enter a cost greater than 0';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _supplierController,
-                decoration: const InputDecoration(
-                  labelText: 'Supplier (optional)',
-                  border: OutlineInputBorder(),
+              AppFormSection(
+                title: 'Basic Info',
+                subtitle: 'Date: Today',
+                child: Column(
+                  children: [
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedType,
+                      decoration: const InputDecoration(
+                        labelText: 'Purchase Type',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'live_chicks',
+                          child: Text('Live Chicks'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'hatching_eggs',
+                          child: Text('Hatching Eggs'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        setState(() => _selectedType = value ?? 'live_chicks');
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _supplierController,
+                      decoration: const InputDecoration(
+                        labelText: 'Supplier (optional)',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              const SizedBox(height: 18),
+              AppFormSection(
+                title: 'Quantity & Amount',
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _quantityController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Quantity',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        final parsed = int.tryParse(value?.trim() ?? '');
+                        if (parsed == null || parsed <= 0) {
+                          return 'Quantity must be greater than 0';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _costController,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(
+                        labelText: 'Total Cost',
+                        prefixText: '\$',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        final parsed = double.tryParse(value?.trim() ?? '');
+                        if (parsed == null || parsed <= 0) {
+                          return 'Amount must be greater than 0';
+                        }
+                        return null;
+                      },
+                    ),
+                    if (_selectedType == 'hatching_eggs') ...[
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _hatchedCountController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Hatched Count (optional)',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if ((value ?? '').trim().isEmpty) return null;
+                          final parsed = int.tryParse(value!.trim());
+                          if (parsed == null || parsed < 0) {
+                            return 'Enter a valid non-negative number';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ],
+                ),
+              ),
               const SizedBox(height: 16),
-              if (_selectedType == 'hatching_eggs') ...[
-                TextFormField(
-                  controller: _hatchedCountController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Hatched Count (optional)',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if ((value ?? '').trim().isEmpty) return null;
-                    final parsed = int.tryParse(value!.trim());
-                    if (parsed == null || parsed < 0) {
-                      return 'Enter a valid non-negative number';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-              ],
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _submit,
-                  icon: _isLoading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.save),
-                  label: Text(_isLoading ? 'Saving...' : 'Save Purchase'),
-                ),
+              AppSubmitButton(
+                isLoading: _isLoading,
+                onPressed: _submit,
+                label: 'Save Purchase',
+                loadingLabel: 'Saving...',
               ),
             ],
           ),

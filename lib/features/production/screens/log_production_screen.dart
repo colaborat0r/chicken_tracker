@@ -5,12 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/providers/repository_providers.dart';
 import '../../../core/providers/database_providers.dart';
+import '../../../core/widgets/app_ui_components.dart';
 
 class LogProductionScreen extends ConsumerStatefulWidget {
   const LogProductionScreen({super.key});
 
   @override
-  ConsumerState<LogProductionScreen> createState() => _LogProductionScreenState();
+  ConsumerState<LogProductionScreen> createState() =>
+      _LogProductionScreenState();
 }
 
 class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
@@ -74,12 +76,12 @@ class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('📊 Production logged successfully!')),
       );
-      
+
       // Invalidate the providers to refresh dashboard
       unawaited(ref.refresh(todayProductionProvider.future));
       unawaited(ref.refresh(allDailyLogsProvider.future));
       unawaited(ref.refresh(weeklyEggTotalProvider.future));
-      
+
       // Delay to show the snackbar before popping
       await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) context.pop();
@@ -99,16 +101,20 @@ class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
       appBar: AppBar(
         title: const Text('Log Egg Production'),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Laying Hens field
-                TextFormField(
+      body: AppFormShell(
+        title: 'Log Daily Production',
+        subtitle: 'Capture eggs by color and monitor per-hen output',
+        icon: Icons.egg,
+        gradient: const [Color(0xFF2E7D32), Color(0xFF1E5C24)],
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppFormSection(
+                title: 'Basic Info',
+                subtitle: 'Date: Today',
+                child: TextFormField(
                   controller: _layingHensController,
                   decoration: InputDecoration(
                     label: const Text('Laying Hens *'),
@@ -129,140 +135,148 @@ class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 24),
-
-                // Eggs by color section
-                Text(
-                  'Eggs Collected',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Brown eggs
-                TextFormField(
-                  controller: _brownController,
-                  decoration: InputDecoration(
-                    label: const Text('Brown Eggs'),
-                    prefixIcon: const Icon(Icons.egg, color: Colors.brown),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value != null && int.tryParse(value) == null) {
-                      return 'Please enter a valid number';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-
-                // Colored eggs
-                TextFormField(
-                  controller: _coloredController,
-                  decoration: InputDecoration(
-                    label: const Text('Colored Eggs'),
-                    prefixIcon: const Icon(Icons.egg, color: Colors.orange),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value != null && int.tryParse(value) == null) {
-                      return 'Please enter a valid number';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-
-                // White eggs
-                TextFormField(
-                  controller: _whiteController,
-                  decoration: InputDecoration(
-                    label: const Text('White Eggs'),
-                    prefixIcon: const Icon(Icons.egg, color: Colors.grey),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value != null && int.tryParse(value) == null) {
-                      return 'Please enter a valid number';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-
-                // Stats card
-                Card(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Column(
-                          children: [
-                            Text(
-                              'Total Eggs',
-                              style: Theme.of(context).textTheme.labelSmall,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '$_totalEggs',
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+              ),
+              const SizedBox(height: 18),
+              AppFormSection(
+                title: 'Quantity & Amount',
+                subtitle: 'Egg counts by shell color',
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _brownController,
+                      decoration: InputDecoration(
+                        label: const Text('Brown Eggs'),
+                        prefixIcon: const Icon(Icons.egg, color: Colors.brown),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        Column(
-                          children: [
-                            Text(
-                              'Eggs/Hen',
-                              style: Theme.of(context).textTheme.labelSmall,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _eggsPerHen.toStringAsFixed(2),
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: _eggsPerHen >= 0.8 ? Colors.green : Colors.orange,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            Text(
-                              'Production %',
-                              style: Theme.of(context).textTheme.labelSmall,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${(_eggsPerHen * 100).toStringAsFixed(0)}%',
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: _eggsPerHen >= 0.8 ? Colors.green : Colors.orange,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value != null && int.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        return null;
+                      },
                     ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _coloredController,
+                      decoration: InputDecoration(
+                        label: const Text('Colored Eggs'),
+                        prefixIcon: const Icon(Icons.egg, color: Colors.orange),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value != null && int.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _whiteController,
+                      decoration: InputDecoration(
+                        label: const Text('White Eggs'),
+                        prefixIcon: const Icon(Icons.egg, color: Colors.grey),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value != null && int.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Stats card
+              Card(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Column(
+                        children: [
+                          Text(
+                            'Total Eggs',
+                            style: Theme.of(context).textTheme.labelSmall,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '$_totalEggs',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Text(
+                            'Eggs/Hen',
+                            style: Theme.of(context).textTheme.labelSmall,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _eggsPerHen.toStringAsFixed(2),
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: _eggsPerHen >= 0.8
+                                      ? Colors.green
+                                      : Colors.orange,
+                                ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Text(
+                            'Production %',
+                            style: Theme.of(context).textTheme.labelSmall,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${(_eggsPerHen * 100).toStringAsFixed(0)}%',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: _eggsPerHen >= 0.8
+                                      ? Colors.green
+                                      : Colors.orange,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 24),
+              ),
+              const SizedBox(height: 24),
 
-                // Notes field
-                TextFormField(
+              AppFormSection(
+                title: 'Notes',
+                child: TextFormField(
                   controller: _notesController,
                   decoration: InputDecoration(
                     label: const Text('Notes'),
@@ -273,23 +287,18 @@ class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
                   ),
                   maxLines: 3,
                 ),
-                const SizedBox(height: 24),
+              ),
+              const SizedBox(height: 24),
 
-                // Submit button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _isLoading ? null : _submitForm,
-                    icon: _isLoading ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ) : const Icon(Icons.check),
-                    label: Text(_isLoading ? 'Logging...' : 'Log Production'),
-                  ),
-                ),
-              ],
-            ),
+              // Submit button
+              AppSubmitButton(
+                isLoading: _isLoading,
+                onPressed: _submitForm,
+                label: 'Log Production',
+                loadingLabel: 'Logging...',
+                icon: Icons.check,
+              ),
+            ],
           ),
         ),
       ),
