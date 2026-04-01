@@ -33,7 +33,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            DrawerHeader(
+            Container(
+              height: 88,
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary,
               ),
@@ -41,11 +44,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const Icon(Icons.agriculture, size: 48, color: Colors.white),
-                  const SizedBox(height: 8),
+                  const Icon(Icons.agriculture, size: 32, color: Colors.white),
+                  const SizedBox(height: 4),
                   Text(
                     '🐔 Chicken Tracker',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),

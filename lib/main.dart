@@ -13,6 +13,17 @@ class ChickenTrackerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
+      builder: (context, child) {
+        if (child == null) return const SizedBox.shrink();
+
+        return SafeArea(
+          top: false,
+          left: false,
+          right: false,
+          minimum: const EdgeInsets.only(bottom: 16),
+          child: child,
+        );
+      },
       title: 'Chicken & Egg Tracker',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
