@@ -169,7 +169,12 @@ class _FlockPurchasesScreenState extends ConsumerState<FlockPurchasesScreen> {
             }
 
             return ListView(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.fromLTRB(
+                16,
+                16,
+                16,
+                appFabSafeBottomSpacing(context),
+              ),
               children: [
                 _TopBanner(
                   totalCost: totalCost,

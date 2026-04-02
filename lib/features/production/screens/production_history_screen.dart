@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/providers/database_providers.dart';
+import '../../../core/widgets/app_ui_components.dart';
 import '../../../config/router.dart';
 
 class ProductionHistoryScreen extends ConsumerStatefulWidget {
@@ -354,7 +355,11 @@ class _ProductionHistoryScreenState
                     childCount: filteredLogs.length,
                   ),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: appFabSafeBottomSpacing(context),
+                  ),
+                ),
               ],
             );
           },

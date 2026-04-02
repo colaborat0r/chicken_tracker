@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../database/app_database.dart';
 import '../models/chicken_model.dart';
+import '../models/reminder_model.dart';
+import '../repositories/reminder_repository.dart';
 
 /// Provider for the AppDatabase instance (singleton)
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -225,5 +227,24 @@ final chickenByIdProvider =
     hatchDate: bird.hatchDate,
     status: bird.status,
     notes: bird.notes,
+  );
+});
+
+/// Provider for all reminders as a stream
+final allRemindersProvider =
+    StreamProvider<List<ReminderModel>>((ref) async* {
+  final db = ref.watch(databaseProvider);
+
+  yield* db
+      .watchAllReminders()
+      .map((list) => list.map(reminderFromDb).toList());
+});
+
+/// Provider for the count of active reminders that are due or overdue today
+final dueRemindersCountProvider = Provider<int>((ref) {
+  return ref.watch(allRemindersProvider).maybeWhen(
+    data: (list) =>
+        list.where((r) => r.isActive && r.isDueOrOverdue).length,
+    orElse: () => 0,
   );
 });

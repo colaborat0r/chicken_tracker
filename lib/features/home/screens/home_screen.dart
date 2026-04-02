@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/providers/database_providers.dart';
+import '../../../core/providers/repository_providers.dart';
 import '../../../config/router.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -37,21 +38,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               height: 88,
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
+              decoration: const BoxDecoration(
+                color: Color(0xFF0E2141),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const Icon(Icons.agriculture, size: 32, color: Colors.white),
-                  const SizedBox(height: 4),
-                  Text(
-                    '🐔 Chicken Tracker',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                  Row(
+                    children: [
+                      InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {
+                          Navigator.pop(context);
+                          context.push(Routes.about);
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.asset(
+                            'assets/icons/app_icon.png',
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
+                          ),
                         ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Chicken Tracker',
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -165,6 +188,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onTap: () {
                 Navigator.pop(context);
                 context.push(Routes.reports);
+              },
+            ),
+            const Divider(),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Text('Care',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.alarm, color: Color(0xFF2E7D32)),
+              title: const Text('Reminders'),
+              subtitle: const Text('Feeding, cleaning, health checks'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(Routes.reminders);
               },
             ),
             const Divider(),
@@ -326,8 +367,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       color: const Color(0xFFB71C1C),
                       onPressed: () => context.push(Routes.flockLosses),
                     ),
+                    _ActionChip(
+                      label: 'Reminders',
+                      icon: Icons.alarm,
+                      color: const Color(0xFF2E7D32),
+                      onPressed: () => context.push(Routes.reminders),
+                    ),
                   ],
                 ),
+                const SizedBox(height: 24),
+                const _SectionTitle(
+                  title: "Today's Reminders",
+                  subtitle: 'Tasks due or overdue',
+                ),
+                const SizedBox(height: 12),
+                const _DueRemindersCard(),
                 const SizedBox(height: 24),
                 const _SectionTitle(
                   title: 'Recent Activity',
@@ -526,6 +580,154 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Due Reminders Card shown on the home screen
+// ---------------------------------------------------------------------------
+class _DueRemindersCard extends ConsumerWidget {
+  const _DueRemindersCard();
+
+  Color _typeColor(String type) {
+    switch (type) {
+      case 'cleaning':
+        return const Color(0xFF1565C0);
+      case 'health_check':
+        return const Color(0xFFE08A24);
+      default:
+        return const Color(0xFF2E7D32);
+    }
+  }
+
+  IconData _typeIcon(String type) {
+    switch (type) {
+      case 'cleaning':
+        return Icons.cleaning_services;
+      case 'health_check':
+        return Icons.health_and_safety;
+      default:
+        return Icons.grass;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final remindersAsync = ref.watch(allRemindersProvider);
+
+    return remindersAsync.when(
+      data: (all) {
+        final due = all
+            .where((r) => r.isActive && r.isDueOrOverdue)
+            .toList();
+
+        if (due.isEmpty) {
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: isDark
+                  ? const Color(0xFF1A2A1A)
+                  : const Color(0xFFE8F5E9),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.task_alt,
+                    color: Color(0xFF2E7D32), size: 28),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'All caught up!',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF2E7D32),
+                            ),
+                      ),
+                      Text(
+                        'No reminders due today.',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => context.push(Routes.reminders),
+                  child: const Text('View All'),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return Column(
+          children: [
+            for (final reminder in due.take(3))
+              Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                child: ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: _typeColor(reminder.type)
+                          .withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(_typeIcon(reminder.type),
+                        color: _typeColor(reminder.type), size: 20),
+                  ),
+                  title: Text(
+                    reminder.title,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Text(
+                    reminder.isOverdue ? 'Overdue' : 'Due Today',
+                    style: TextStyle(
+                      color: reminder.isOverdue
+                          ? Colors.red[700]
+                          : Colors.orange[700],
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                  ),
+                  trailing: TextButton(
+                    onPressed: () async {
+                      await ref
+                          .read(reminderRepositoryProvider)
+                          .markDone(reminder);
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('"${reminder.title}" marked done!'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                    child: const Text('Done'),
+                  ),
+                ),
+              ),
+            if (due.length > 3)
+              TextButton(
+                onPressed: () => context.push(Routes.reminders),
+                child: Text(
+                    '+ ${due.length - 3} more due — View all reminders'),
+              ),
+          ],
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }

@@ -79,12 +79,33 @@ class Settings extends Table {
   BoolColumn get darkMode => boolean().withDefault(const Constant(true))();
 }
 
-@DriftDatabase(tables: [Birds, DailyLogs, Sales, Expenses, FlockPurchases, FlockLosses, Settings])
+// 8. Reminders
+class Reminders extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get type => text()(); // feeding, cleaning, health_check
+  TextColumn get title => text()();
+  IntColumn get frequencyDays => integer().withDefault(const Constant(1))();
+  DateTimeColumn get nextDueDate => dateTime()();
+  DateTimeColumn get lastCompletedDate => dateTime().nullable()();
+  TextColumn get notes => text().nullable()();
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+}
+
+@DriftDatabase(tables: [Birds, DailyLogs, Sales, Expenses, FlockPurchases, FlockLosses, Settings, Reminders])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.createTable(reminders);
+      }
+    },
+  );
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'chicken_tracker');
@@ -137,4 +158,44 @@ class AppDatabase extends _$AppDatabase {
   Future<List<Expense>> getAllExpenses() => 
     (select(expenses)..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc)]))
       .get();
+
+  // ====================== REMINDERS DAO ======================
+  Stream<List<Reminder>> watchAllReminders() =>
+      (select(reminders)
+            ..orderBy([(r) => OrderingTerm(expression: r.nextDueDate)]))
+          .watch();
+
+  Future<int> addReminder(RemindersCompanion reminder) =>
+      into(reminders).insert(reminder);
+
+  Future<void> markReminderDone(int id, DateTime nextDueDate) =>
+      (update(reminders)..where((r) => r.id.equals(id))).write(
+        RemindersCompanion(
+          lastCompletedDate: Value(DateTime.now()),
+          nextDueDate: Value(nextDueDate),
+        ),
+      );
+
+  Future<void> updateReminderDetails(
+    int id, {
+    required String type,
+    required String title,
+    required int frequencyDays,
+    required DateTime nextDueDate,
+    String? notes,
+    required bool isActive,
+  }) =>
+      (update(reminders)..where((r) => r.id.equals(id))).write(
+        RemindersCompanion(
+          type: Value(type),
+          title: Value(title),
+          frequencyDays: Value(frequencyDays),
+          nextDueDate: Value(nextDueDate),
+          notes: Value(notes),
+          isActive: Value(isActive),
+        ),
+      );
+
+  Future<void> deleteReminder(int id) =>
+      (delete(reminders)..where((r) => r.id.equals(id))).go();
 }

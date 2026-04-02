@@ -2336,6 +2336,437 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
   }
 }
 
+class $RemindersTable extends Reminders
+    with TableInfo<$RemindersTable, Reminder> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RemindersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+      'type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _frequencyDaysMeta =
+      const VerificationMeta('frequencyDays');
+  @override
+  late final GeneratedColumn<int> frequencyDays = GeneratedColumn<int>(
+      'frequency_days', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(1));
+  static const VerificationMeta _nextDueDateMeta =
+      const VerificationMeta('nextDueDate');
+  @override
+  late final GeneratedColumn<DateTime> nextDueDate = GeneratedColumn<DateTime>(
+      'next_due_date', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _lastCompletedDateMeta =
+      const VerificationMeta('lastCompletedDate');
+  @override
+  late final GeneratedColumn<DateTime> lastCompletedDate =
+      GeneratedColumn<DateTime>('last_completed_date', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+      'notes', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _isActiveMeta =
+      const VerificationMeta('isActive');
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+      'is_active', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_active" IN (0, 1))'),
+      defaultValue: const Constant(true));
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        type,
+        title,
+        frequencyDays,
+        nextDueDate,
+        lastCompletedDate,
+        notes,
+        isActive
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'reminders';
+  @override
+  VerificationContext validateIntegrity(Insertable<Reminder> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+          _typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('frequency_days')) {
+      context.handle(
+          _frequencyDaysMeta,
+          frequencyDays.isAcceptableOrUnknown(
+              data['frequency_days']!, _frequencyDaysMeta));
+    }
+    if (data.containsKey('next_due_date')) {
+      context.handle(
+          _nextDueDateMeta,
+          nextDueDate.isAcceptableOrUnknown(
+              data['next_due_date']!, _nextDueDateMeta));
+    } else if (isInserting) {
+      context.missing(_nextDueDateMeta);
+    }
+    if (data.containsKey('last_completed_date')) {
+      context.handle(
+          _lastCompletedDateMeta,
+          lastCompletedDate.isAcceptableOrUnknown(
+              data['last_completed_date']!, _lastCompletedDateMeta));
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(_isActiveMeta,
+          isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Reminder map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Reminder(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      type: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}type'])!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      frequencyDays: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}frequency_days'])!,
+      nextDueDate: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}next_due_date'])!,
+      lastCompletedDate: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}last_completed_date']),
+      notes: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}notes']),
+      isActive: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_active'])!,
+    );
+  }
+
+  @override
+  $RemindersTable createAlias(String alias) {
+    return $RemindersTable(attachedDatabase, alias);
+  }
+}
+
+class Reminder extends DataClass implements Insertable<Reminder> {
+  final int id;
+  final String type;
+  final String title;
+  final int frequencyDays;
+  final DateTime nextDueDate;
+  final DateTime? lastCompletedDate;
+  final String? notes;
+  final bool isActive;
+  const Reminder(
+      {required this.id,
+      required this.type,
+      required this.title,
+      required this.frequencyDays,
+      required this.nextDueDate,
+      this.lastCompletedDate,
+      this.notes,
+      required this.isActive});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['type'] = Variable<String>(type);
+    map['title'] = Variable<String>(title);
+    map['frequency_days'] = Variable<int>(frequencyDays);
+    map['next_due_date'] = Variable<DateTime>(nextDueDate);
+    if (!nullToAbsent || lastCompletedDate != null) {
+      map['last_completed_date'] = Variable<DateTime>(lastCompletedDate);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['is_active'] = Variable<bool>(isActive);
+    return map;
+  }
+
+  RemindersCompanion toCompanion(bool nullToAbsent) {
+    return RemindersCompanion(
+      id: Value(id),
+      type: Value(type),
+      title: Value(title),
+      frequencyDays: Value(frequencyDays),
+      nextDueDate: Value(nextDueDate),
+      lastCompletedDate: lastCompletedDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastCompletedDate),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      isActive: Value(isActive),
+    );
+  }
+
+  factory Reminder.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Reminder(
+      id: serializer.fromJson<int>(json['id']),
+      type: serializer.fromJson<String>(json['type']),
+      title: serializer.fromJson<String>(json['title']),
+      frequencyDays: serializer.fromJson<int>(json['frequencyDays']),
+      nextDueDate: serializer.fromJson<DateTime>(json['nextDueDate']),
+      lastCompletedDate:
+          serializer.fromJson<DateTime?>(json['lastCompletedDate']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'type': serializer.toJson<String>(type),
+      'title': serializer.toJson<String>(title),
+      'frequencyDays': serializer.toJson<int>(frequencyDays),
+      'nextDueDate': serializer.toJson<DateTime>(nextDueDate),
+      'lastCompletedDate': serializer.toJson<DateTime?>(lastCompletedDate),
+      'notes': serializer.toJson<String?>(notes),
+      'isActive': serializer.toJson<bool>(isActive),
+    };
+  }
+
+  Reminder copyWith(
+          {int? id,
+          String? type,
+          String? title,
+          int? frequencyDays,
+          DateTime? nextDueDate,
+          Value<DateTime?> lastCompletedDate = const Value.absent(),
+          Value<String?> notes = const Value.absent(),
+          bool? isActive}) =>
+      Reminder(
+        id: id ?? this.id,
+        type: type ?? this.type,
+        title: title ?? this.title,
+        frequencyDays: frequencyDays ?? this.frequencyDays,
+        nextDueDate: nextDueDate ?? this.nextDueDate,
+        lastCompletedDate: lastCompletedDate.present
+            ? lastCompletedDate.value
+            : this.lastCompletedDate,
+        notes: notes.present ? notes.value : this.notes,
+        isActive: isActive ?? this.isActive,
+      );
+  Reminder copyWithCompanion(RemindersCompanion data) {
+    return Reminder(
+      id: data.id.present ? data.id.value : this.id,
+      type: data.type.present ? data.type.value : this.type,
+      title: data.title.present ? data.title.value : this.title,
+      frequencyDays: data.frequencyDays.present
+          ? data.frequencyDays.value
+          : this.frequencyDays,
+      nextDueDate:
+          data.nextDueDate.present ? data.nextDueDate.value : this.nextDueDate,
+      lastCompletedDate: data.lastCompletedDate.present
+          ? data.lastCompletedDate.value
+          : this.lastCompletedDate,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Reminder(')
+          ..write('id: $id, ')
+          ..write('type: $type, ')
+          ..write('title: $title, ')
+          ..write('frequencyDays: $frequencyDays, ')
+          ..write('nextDueDate: $nextDueDate, ')
+          ..write('lastCompletedDate: $lastCompletedDate, ')
+          ..write('notes: $notes, ')
+          ..write('isActive: $isActive')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, type, title, frequencyDays, nextDueDate,
+      lastCompletedDate, notes, isActive);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Reminder &&
+          other.id == this.id &&
+          other.type == this.type &&
+          other.title == this.title &&
+          other.frequencyDays == this.frequencyDays &&
+          other.nextDueDate == this.nextDueDate &&
+          other.lastCompletedDate == this.lastCompletedDate &&
+          other.notes == this.notes &&
+          other.isActive == this.isActive);
+}
+
+class RemindersCompanion extends UpdateCompanion<Reminder> {
+  final Value<int> id;
+  final Value<String> type;
+  final Value<String> title;
+  final Value<int> frequencyDays;
+  final Value<DateTime> nextDueDate;
+  final Value<DateTime?> lastCompletedDate;
+  final Value<String?> notes;
+  final Value<bool> isActive;
+  const RemindersCompanion({
+    this.id = const Value.absent(),
+    this.type = const Value.absent(),
+    this.title = const Value.absent(),
+    this.frequencyDays = const Value.absent(),
+    this.nextDueDate = const Value.absent(),
+    this.lastCompletedDate = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.isActive = const Value.absent(),
+  });
+  RemindersCompanion.insert({
+    this.id = const Value.absent(),
+    required String type,
+    required String title,
+    this.frequencyDays = const Value.absent(),
+    required DateTime nextDueDate,
+    this.lastCompletedDate = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.isActive = const Value.absent(),
+  })  : type = Value(type),
+        title = Value(title),
+        nextDueDate = Value(nextDueDate);
+  static Insertable<Reminder> custom({
+    Expression<int>? id,
+    Expression<String>? type,
+    Expression<String>? title,
+    Expression<int>? frequencyDays,
+    Expression<DateTime>? nextDueDate,
+    Expression<DateTime>? lastCompletedDate,
+    Expression<String>? notes,
+    Expression<bool>? isActive,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (type != null) 'type': type,
+      if (title != null) 'title': title,
+      if (frequencyDays != null) 'frequency_days': frequencyDays,
+      if (nextDueDate != null) 'next_due_date': nextDueDate,
+      if (lastCompletedDate != null) 'last_completed_date': lastCompletedDate,
+      if (notes != null) 'notes': notes,
+      if (isActive != null) 'is_active': isActive,
+    });
+  }
+
+  RemindersCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? type,
+      Value<String>? title,
+      Value<int>? frequencyDays,
+      Value<DateTime>? nextDueDate,
+      Value<DateTime?>? lastCompletedDate,
+      Value<String?>? notes,
+      Value<bool>? isActive}) {
+    return RemindersCompanion(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      title: title ?? this.title,
+      frequencyDays: frequencyDays ?? this.frequencyDays,
+      nextDueDate: nextDueDate ?? this.nextDueDate,
+      lastCompletedDate: lastCompletedDate ?? this.lastCompletedDate,
+      notes: notes ?? this.notes,
+      isActive: isActive ?? this.isActive,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (frequencyDays.present) {
+      map['frequency_days'] = Variable<int>(frequencyDays.value);
+    }
+    if (nextDueDate.present) {
+      map['next_due_date'] = Variable<DateTime>(nextDueDate.value);
+    }
+    if (lastCompletedDate.present) {
+      map['last_completed_date'] = Variable<DateTime>(lastCompletedDate.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RemindersCompanion(')
+          ..write('id: $id, ')
+          ..write('type: $type, ')
+          ..write('title: $title, ')
+          ..write('frequencyDays: $frequencyDays, ')
+          ..write('nextDueDate: $nextDueDate, ')
+          ..write('lastCompletedDate: $lastCompletedDate, ')
+          ..write('notes: $notes, ')
+          ..write('isActive: $isActive')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2346,6 +2777,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $FlockPurchasesTable flockPurchases = $FlockPurchasesTable(this);
   late final $FlockLossesTable flockLosses = $FlockLossesTable(this);
   late final $SettingsTable settings = $SettingsTable(this);
+  late final $RemindersTable reminders = $RemindersTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2357,7 +2789,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         expenses,
         flockPurchases,
         flockLosses,
-        settings
+        settings,
+        reminders
       ];
 }
 
@@ -3589,6 +4022,213 @@ typedef $$SettingsTableProcessedTableManager = ProcessedTableManager<
     (Setting, BaseReferences<_$AppDatabase, $SettingsTable, Setting>),
     Setting,
     PrefetchHooks Function()>;
+typedef $$RemindersTableCreateCompanionBuilder = RemindersCompanion Function({
+  Value<int> id,
+  required String type,
+  required String title,
+  Value<int> frequencyDays,
+  required DateTime nextDueDate,
+  Value<DateTime?> lastCompletedDate,
+  Value<String?> notes,
+  Value<bool> isActive,
+});
+typedef $$RemindersTableUpdateCompanionBuilder = RemindersCompanion Function({
+  Value<int> id,
+  Value<String> type,
+  Value<String> title,
+  Value<int> frequencyDays,
+  Value<DateTime> nextDueDate,
+  Value<DateTime?> lastCompletedDate,
+  Value<String?> notes,
+  Value<bool> isActive,
+});
+
+class $$RemindersTableFilterComposer
+    extends Composer<_$AppDatabase, $RemindersTable> {
+  $$RemindersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get frequencyDays => $composableBuilder(
+      column: $table.frequencyDays, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get nextDueDate => $composableBuilder(
+      column: $table.nextDueDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get lastCompletedDate => $composableBuilder(
+      column: $table.lastCompletedDate,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnFilters(column));
+}
+
+class $$RemindersTableOrderingComposer
+    extends Composer<_$AppDatabase, $RemindersTable> {
+  $$RemindersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get frequencyDays => $composableBuilder(
+      column: $table.frequencyDays,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get nextDueDate => $composableBuilder(
+      column: $table.nextDueDate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastCompletedDate => $composableBuilder(
+      column: $table.lastCompletedDate,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnOrderings(column));
+}
+
+class $$RemindersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RemindersTable> {
+  $$RemindersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<int> get frequencyDays => $composableBuilder(
+      column: $table.frequencyDays, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get nextDueDate => $composableBuilder(
+      column: $table.nextDueDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastCompletedDate => $composableBuilder(
+      column: $table.lastCompletedDate, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+}
+
+class $$RemindersTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $RemindersTable,
+    Reminder,
+    $$RemindersTableFilterComposer,
+    $$RemindersTableOrderingComposer,
+    $$RemindersTableAnnotationComposer,
+    $$RemindersTableCreateCompanionBuilder,
+    $$RemindersTableUpdateCompanionBuilder,
+    (Reminder, BaseReferences<_$AppDatabase, $RemindersTable, Reminder>),
+    Reminder,
+    PrefetchHooks Function()> {
+  $$RemindersTableTableManager(_$AppDatabase db, $RemindersTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RemindersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RemindersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RemindersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> type = const Value.absent(),
+            Value<String> title = const Value.absent(),
+            Value<int> frequencyDays = const Value.absent(),
+            Value<DateTime> nextDueDate = const Value.absent(),
+            Value<DateTime?> lastCompletedDate = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<bool> isActive = const Value.absent(),
+          }) =>
+              RemindersCompanion(
+            id: id,
+            type: type,
+            title: title,
+            frequencyDays: frequencyDays,
+            nextDueDate: nextDueDate,
+            lastCompletedDate: lastCompletedDate,
+            notes: notes,
+            isActive: isActive,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String type,
+            required String title,
+            Value<int> frequencyDays = const Value.absent(),
+            required DateTime nextDueDate,
+            Value<DateTime?> lastCompletedDate = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<bool> isActive = const Value.absent(),
+          }) =>
+              RemindersCompanion.insert(
+            id: id,
+            type: type,
+            title: title,
+            frequencyDays: frequencyDays,
+            nextDueDate: nextDueDate,
+            lastCompletedDate: lastCompletedDate,
+            notes: notes,
+            isActive: isActive,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$RemindersTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $RemindersTable,
+    Reminder,
+    $$RemindersTableFilterComposer,
+    $$RemindersTableOrderingComposer,
+    $$RemindersTableAnnotationComposer,
+    $$RemindersTableCreateCompanionBuilder,
+    $$RemindersTableUpdateCompanionBuilder,
+    (Reminder, BaseReferences<_$AppDatabase, $RemindersTable, Reminder>),
+    Reminder,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3607,4 +4247,6 @@ class $AppDatabaseManager {
       $$FlockLossesTableTableManager(_db, _db.flockLosses);
   $$SettingsTableTableManager get settings =>
       $$SettingsTableTableManager(_db, _db.settings);
+  $$RemindersTableTableManager get reminders =>
+      $$RemindersTableTableManager(_db, _db.reminders);
 }

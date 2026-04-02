@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'database_providers.dart';
 import '../repositories/chicken_repository.dart';
+import '../repositories/reminder_repository.dart';
 
 /// Repository provider for chickens
 final chickenRepositoryProvider = Provider<ChickenRepository>((ref) {
@@ -24,4 +25,10 @@ final salesRepositoryProvider = Provider<SalesRepository>((ref) {
 final expenseRepositoryProvider = Provider<ExpenseRepository>((ref) {
   final db = ref.watch(databaseProvider);
   return ExpenseRepository(db);
+});
+
+/// Repository provider for reminders
+final reminderRepositoryProvider = Provider<ReminderRepository>((ref) {
+  final db = ref.watch(databaseProvider);
+  return ReminderRepository(db);
 });

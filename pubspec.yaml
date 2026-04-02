@@ -32,6 +32,7 @@ dependencies:
   path: ^1.9.0
   share_plus: ^10.0.0
   file_picker: ^8.1.2
+  url_launcher: ^6.3.1
   permission_handler: ^11.3.1
   csv: ^6.0.0
   pdf: ^3.11.1
@@ -69,4 +70,5 @@ flutter_launcher_icons:
 
 flutter:
   uses-material-design: true
-  # Assets will be added later for icons, etc.
+  assets:
+    - assets/icons/

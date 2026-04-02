@@ -17,7 +17,11 @@ import 'package:chicken_tracker/features/flock_purchases/screens/add_flock_purch
 import 'package:chicken_tracker/features/flock_losses/screens/flock_losses_screen.dart';
 import 'package:chicken_tracker/features/flock_losses/screens/add_flock_loss_screen.dart';
 import 'package:chicken_tracker/features/settings/screens/data_management_screen.dart';
+import 'package:chicken_tracker/features/settings/screens/about_screen.dart';
+import 'package:chicken_tracker/features/reminders/screens/reminders_screen.dart';
+import 'package:chicken_tracker/features/reminders/screens/add_reminder_screen.dart';
 import 'package:chicken_tracker/core/models/chicken_model.dart';
+import 'package:chicken_tracker/core/models/reminder_model.dart';
 
 /// Route names for named navigation
 class Routes {
@@ -38,6 +42,9 @@ class Routes {
   static const String flockLosses = '/flock-losses';
   static const String addFlockLoss = '/add-flock-loss';
   static const String dataManagement = '/data-management';
+  static const String about = '/about';
+  static const String reminders = '/reminders';
+  static const String addReminder = '/add-reminder';
 }
 
 /// GoRouter configuration for the app
@@ -147,6 +154,29 @@ final goRouter = GoRouter(
     GoRoute(
       path: Routes.dataManagement,
       builder: (context, state) => const DataManagementScreen(),
+    ),
+
+    // About screen
+    GoRoute(
+      path: Routes.about,
+      builder: (context, state) => const AboutScreen(),
+    ),
+
+    // Reminders screen
+    GoRoute(
+      path: Routes.reminders,
+      builder: (context, state) => const RemindersScreen(),
+    ),
+
+    // Add / edit reminder screen
+    GoRoute(
+      path: Routes.addReminder,
+      builder: (context, state) {
+        final extra = state.extra;
+        return AddReminderScreen(
+          reminderToEdit: extra is ReminderModel ? extra : null,
+        );
+      },
     ),
   ],
 

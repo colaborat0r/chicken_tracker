@@ -217,7 +217,7 @@ class _ChickenListScreenState extends ConsumerState<ChickenListScreen> {
                       },
                     ),
                   ],
-                  const SizedBox(height: 24),
+                  SizedBox(height: appFabSafeBottomSpacing(context)),
                 ],
               ),
             );

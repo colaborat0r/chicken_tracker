@@ -158,7 +158,12 @@ class _SalesScreenState extends ConsumerState<SalesScreen> {
             }
 
             return ListView(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.fromLTRB(
+                16,
+                16,
+                16,
+                appFabSafeBottomSpacing(context),
+              ),
               children: [
                 _HeroSummary(
                   totalRevenue: totalRevenue,

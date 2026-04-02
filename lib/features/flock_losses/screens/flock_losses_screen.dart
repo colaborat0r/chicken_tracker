@@ -155,7 +155,12 @@ class _FlockLossesScreenState extends ConsumerState<FlockLossesScreen> {
                 filteredLosses.fold<int>(0, (sum, loss) => sum + loss.quantity);
 
             return ListView(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.fromLTRB(
+                16,
+                16,
+                16,
+                appFabSafeBottomSpacing(context),
+              ),
               children: [
                 _LossBanner(
                     totalLosses: totalLosses,

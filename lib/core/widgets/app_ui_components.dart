@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+double appFabSafeBottomSpacing(BuildContext context, {double extra = 20}) {
+  // Keep the last content row clear of a floating action button + system inset.
+  return 86 + MediaQuery.paddingOf(context).bottom + extra;
+}
+
 class AppSectionHeader extends StatelessWidget {
   final String title;
   final String subtitle;
