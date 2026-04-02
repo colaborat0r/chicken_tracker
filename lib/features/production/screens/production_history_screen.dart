@@ -76,8 +76,9 @@ class _ProductionHistoryScreenState
             final query = _searchController.text.trim().toLowerCase();
             // Filter logs by date range
             final filteredLogs = allLogs.where((log) {
-              if (_selectedStartDate == null || _selectedEndDate == null)
+              if (_selectedStartDate == null || _selectedEndDate == null) {
                 return true;
+              }
               final inRange = log.date.isAfter(
                       _selectedStartDate!.subtract(const Duration(days: 1))) &&
                   log.date

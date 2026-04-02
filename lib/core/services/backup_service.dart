@@ -233,10 +233,10 @@ class BackupService {
 
       await db.into(db.settings).insert(
         SettingsCompanion.insert(
-              id: Value(1),
-              currency: Value('USD'),
-              weightUnit: Value('lbs'),
-              darkMode: Value(true),
+              id: const Value(1),
+              currency: const Value('USD'),
+              weightUnit: const Value('lbs'),
+              darkMode: const Value(true),
             ),
           );
     });
