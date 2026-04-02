@@ -69,6 +69,19 @@ class BackupService {
     return files;
   }
 
+  static Future<int> deleteBackups(List<File> files) async {
+    var deletedCount = 0;
+
+    for (final file in files) {
+      if (await file.exists()) {
+        await file.delete();
+        deletedCount++;
+      }
+    }
+
+    return deletedCount;
+  }
+
   static Future<void> exportBackup(File file) async {
     await Share.shareXFiles(
       [XFile(file.path)],

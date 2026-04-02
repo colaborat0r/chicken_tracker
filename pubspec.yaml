@@ -31,6 +31,7 @@ dependencies:
   path_provider: ^2.1.4
   path: ^1.9.0
   share_plus: ^10.0.0
+  file_picker: ^8.1.2
   permission_handler: ^11.3.1
   csv: ^6.0.0
   pdf: ^3.11.1
@@ -52,6 +53,8 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: assets/icons/app_icon.png
+  adaptive_icon_foreground: assets/icons/app_icon.png
+  adaptive_icon_background: "#0E2141"
   min_sdk_android: 21
   remove_alpha_ios: true
   web:
