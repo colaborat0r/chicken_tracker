@@ -1,12 +1,14 @@
 import 'package:drift/drift.dart';
 import '../database/app_database.dart';
 import '../models/reminder_model.dart';
+import '../services/reminder_notification_service.dart';
 
 /// Repository for managing reminders
 class ReminderRepository {
   final AppDatabase database;
+  final ReminderNotificationService notificationService;
 
-  ReminderRepository(this.database);
+  ReminderRepository(this.database, this.notificationService);
 
   /// Add a new reminder
   Future<int> addReminder({
@@ -15,19 +17,36 @@ class ReminderRepository {
     required int frequencyDays,
     required DateTime nextDueDate,
     String? notes,
-  }) {
-    return database.addReminder(RemindersCompanion(
+    required bool notifyOnAndroid,
+  }) async {
+    final id = await database.addReminder(RemindersCompanion(
       type: Value(type),
       title: Value(title),
       frequencyDays: Value(frequencyDays),
       nextDueDate: Value(nextDueDate),
       notes: Value(notes),
       isActive: const Value(true),
+      notifyOnAndroid: Value(notifyOnAndroid),
     ));
+
+    await notificationService.scheduleReminder(
+      ReminderModel(
+        id: id,
+        type: type,
+        title: title,
+        frequencyDays: frequencyDays,
+        nextDueDate: nextDueDate,
+        notes: notes,
+        isActive: true,
+        notifyOnAndroid: notifyOnAndroid,
+      ),
+    );
+
+    return id;
   }
 
   /// Mark a reminder as done and advance to the next due date
-  Future<void> markDone(ReminderModel reminder) {
+  Future<void> markDone(ReminderModel reminder) async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final due = DateTime(
@@ -40,12 +59,16 @@ class ReminderRepository {
         ? today.add(Duration(days: reminder.frequencyDays))
         : due.add(Duration(days: reminder.frequencyDays));
 
-    return database.markReminderDone(reminder.id, nextDueDate);
+    await database.markReminderDone(reminder.id, nextDueDate);
+
+    await notificationService.scheduleReminder(
+      reminder.copyWith(nextDueDate: nextDueDate),
+    );
   }
 
   /// Update an existing reminder's details
-  Future<void> updateReminder(ReminderModel model) {
-    return database.updateReminderDetails(
+  Future<void> updateReminder(ReminderModel model) async {
+    await database.updateReminderDetails(
       model.id,
       type: model.type,
       title: model.title,
@@ -53,11 +76,17 @@ class ReminderRepository {
       nextDueDate: model.nextDueDate,
       notes: model.notes,
       isActive: model.isActive,
+      notifyOnAndroid: model.notifyOnAndroid,
     );
+
+    await notificationService.scheduleReminder(model);
   }
 
   /// Delete a reminder permanently
-  Future<void> deleteReminder(int id) => database.deleteReminder(id);
+  Future<void> deleteReminder(int id) async {
+    await database.deleteReminder(id);
+    await notificationService.cancelReminder(id);
+  }
 }
 
 /// Helper to map a DB Reminder row to a ReminderModel
@@ -70,4 +99,5 @@ ReminderModel reminderFromDb(Reminder r) => ReminderModel(
       lastCompletedDate: r.lastCompletedDate,
       notes: r.notes,
       isActive: r.isActive,
+  notifyOnAndroid: r.notifyOnAndroid,
     );

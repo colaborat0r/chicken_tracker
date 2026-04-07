@@ -89,6 +89,8 @@ class Reminders extends Table {
   DateTimeColumn get lastCompletedDate => dateTime().nullable()();
   TextColumn get notes => text().nullable()();
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+  BoolColumn get notifyOnAndroid =>
+      boolean().withDefault(const Constant(false))();
 }
 
 @DriftDatabase(tables: [Birds, DailyLogs, Sales, Expenses, FlockPurchases, FlockLosses, Settings, Reminders])
@@ -96,13 +98,16 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (m, from, to) async {
       if (from < 2) {
         await m.createTable(reminders);
+      }
+      if (from >= 2 && from < 3) {
+        await m.addColumn(reminders, reminders.notifyOnAndroid);
       }
     },
   );
@@ -184,6 +189,7 @@ class AppDatabase extends _$AppDatabase {
     required DateTime nextDueDate,
     String? notes,
     required bool isActive,
+    required bool notifyOnAndroid,
   }) =>
       (update(reminders)..where((r) => r.id.equals(id))).write(
         RemindersCompanion(
@@ -193,6 +199,7 @@ class AppDatabase extends _$AppDatabase {
           nextDueDate: Value(nextDueDate),
           notes: Value(notes),
           isActive: Value(isActive),
+          notifyOnAndroid: Value(notifyOnAndroid),
         ),
       );
 

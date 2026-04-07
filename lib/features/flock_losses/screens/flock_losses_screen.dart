@@ -348,8 +348,12 @@ class _FlockLossesScreenState extends ConsumerState<FlockLossesScreen> {
     switch (type) {
       case 'human_consumption':
         return 'Human Consumption';
+      case 'illness':
+        return 'Illness';
       case 'natural_causes':
         return 'Natural Causes';
+      case 'other':
+        return 'Other';
       case 'predator':
         return 'Predator Attack';
       case 'sold':
@@ -363,8 +367,12 @@ class _FlockLossesScreenState extends ConsumerState<FlockLossesScreen> {
     switch (type) {
       case 'human_consumption':
         return Icons.restaurant;
+      case 'illness':
+        return Icons.medical_services;
       case 'natural_causes':
         return Icons.heart_broken;
+      case 'other':
+        return Icons.category;
       case 'predator':
         return Icons.pets;
       case 'sold':
@@ -378,8 +386,12 @@ class _FlockLossesScreenState extends ConsumerState<FlockLossesScreen> {
     switch (type) {
       case 'human_consumption':
         return Colors.blue;
+      case 'illness':
+        return Colors.purple;
       case 'natural_causes':
         return Colors.grey;
+      case 'other':
+        return Colors.brown;
       case 'predator':
         return Colors.red;
       case 'sold':

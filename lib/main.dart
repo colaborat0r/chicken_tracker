@@ -2,13 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'config/router.dart';
+import 'core/providers/notification_providers.dart';
 
 void main() {
   runApp(const ProviderScope(child: ChickenTrackerApp()));
 }
 
-class ChickenTrackerApp extends StatelessWidget {
+class ChickenTrackerApp extends ConsumerStatefulWidget {
   const ChickenTrackerApp({super.key});
+
+  @override
+  ConsumerState<ChickenTrackerApp> createState() => _ChickenTrackerAppState();
+}
+
+class _ChickenTrackerAppState extends ConsumerState<ChickenTrackerApp> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(reminderNotificationServiceProvider).initialize();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

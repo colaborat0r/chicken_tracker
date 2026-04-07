@@ -2396,6 +2396,16 @@ class $RemindersTable extends Reminders
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("is_active" IN (0, 1))'),
       defaultValue: const Constant(true));
+  static const VerificationMeta _notifyOnAndroidMeta =
+      const VerificationMeta('notifyOnAndroid');
+  @override
+  late final GeneratedColumn<bool> notifyOnAndroid = GeneratedColumn<bool>(
+      'notify_on_android', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("notify_on_android" IN (0, 1))'),
+      defaultValue: const Constant(false));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -2405,7 +2415,8 @@ class $RemindersTable extends Reminders
         nextDueDate,
         lastCompletedDate,
         notes,
-        isActive
+        isActive,
+        notifyOnAndroid
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2460,6 +2471,12 @@ class $RemindersTable extends Reminders
       context.handle(_isActiveMeta,
           isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta));
     }
+    if (data.containsKey('notify_on_android')) {
+      context.handle(
+          _notifyOnAndroidMeta,
+          notifyOnAndroid.isAcceptableOrUnknown(
+              data['notify_on_android']!, _notifyOnAndroidMeta));
+    }
     return context;
   }
 
@@ -2485,6 +2502,8 @@ class $RemindersTable extends Reminders
           .read(DriftSqlType.string, data['${effectivePrefix}notes']),
       isActive: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_active'])!,
+      notifyOnAndroid: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool, data['${effectivePrefix}notify_on_android'])!,
     );
   }
 
@@ -2503,6 +2522,7 @@ class Reminder extends DataClass implements Insertable<Reminder> {
   final DateTime? lastCompletedDate;
   final String? notes;
   final bool isActive;
+  final bool notifyOnAndroid;
   const Reminder(
       {required this.id,
       required this.type,
@@ -2511,7 +2531,8 @@ class Reminder extends DataClass implements Insertable<Reminder> {
       required this.nextDueDate,
       this.lastCompletedDate,
       this.notes,
-      required this.isActive});
+      required this.isActive,
+      required this.notifyOnAndroid});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2527,6 +2548,7 @@ class Reminder extends DataClass implements Insertable<Reminder> {
       map['notes'] = Variable<String>(notes);
     }
     map['is_active'] = Variable<bool>(isActive);
+    map['notify_on_android'] = Variable<bool>(notifyOnAndroid);
     return map;
   }
 
@@ -2543,6 +2565,7 @@ class Reminder extends DataClass implements Insertable<Reminder> {
       notes:
           notes == null && nullToAbsent ? const Value.absent() : Value(notes),
       isActive: Value(isActive),
+      notifyOnAndroid: Value(notifyOnAndroid),
     );
   }
 
@@ -2559,6 +2582,7 @@ class Reminder extends DataClass implements Insertable<Reminder> {
           serializer.fromJson<DateTime?>(json['lastCompletedDate']),
       notes: serializer.fromJson<String?>(json['notes']),
       isActive: serializer.fromJson<bool>(json['isActive']),
+      notifyOnAndroid: serializer.fromJson<bool>(json['notifyOnAndroid']),
     );
   }
   @override
@@ -2573,6 +2597,7 @@ class Reminder extends DataClass implements Insertable<Reminder> {
       'lastCompletedDate': serializer.toJson<DateTime?>(lastCompletedDate),
       'notes': serializer.toJson<String?>(notes),
       'isActive': serializer.toJson<bool>(isActive),
+      'notifyOnAndroid': serializer.toJson<bool>(notifyOnAndroid),
     };
   }
 
@@ -2584,7 +2609,8 @@ class Reminder extends DataClass implements Insertable<Reminder> {
           DateTime? nextDueDate,
           Value<DateTime?> lastCompletedDate = const Value.absent(),
           Value<String?> notes = const Value.absent(),
-          bool? isActive}) =>
+          bool? isActive,
+          bool? notifyOnAndroid}) =>
       Reminder(
         id: id ?? this.id,
         type: type ?? this.type,
@@ -2596,6 +2622,7 @@ class Reminder extends DataClass implements Insertable<Reminder> {
             : this.lastCompletedDate,
         notes: notes.present ? notes.value : this.notes,
         isActive: isActive ?? this.isActive,
+        notifyOnAndroid: notifyOnAndroid ?? this.notifyOnAndroid,
       );
   Reminder copyWithCompanion(RemindersCompanion data) {
     return Reminder(
@@ -2612,6 +2639,9 @@ class Reminder extends DataClass implements Insertable<Reminder> {
           : this.lastCompletedDate,
       notes: data.notes.present ? data.notes.value : this.notes,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      notifyOnAndroid: data.notifyOnAndroid.present
+          ? data.notifyOnAndroid.value
+          : this.notifyOnAndroid,
     );
   }
 
@@ -2625,14 +2655,15 @@ class Reminder extends DataClass implements Insertable<Reminder> {
           ..write('nextDueDate: $nextDueDate, ')
           ..write('lastCompletedDate: $lastCompletedDate, ')
           ..write('notes: $notes, ')
-          ..write('isActive: $isActive')
+          ..write('isActive: $isActive, ')
+          ..write('notifyOnAndroid: $notifyOnAndroid')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(id, type, title, frequencyDays, nextDueDate,
-      lastCompletedDate, notes, isActive);
+      lastCompletedDate, notes, isActive, notifyOnAndroid);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2644,7 +2675,8 @@ class Reminder extends DataClass implements Insertable<Reminder> {
           other.nextDueDate == this.nextDueDate &&
           other.lastCompletedDate == this.lastCompletedDate &&
           other.notes == this.notes &&
-          other.isActive == this.isActive);
+          other.isActive == this.isActive &&
+          other.notifyOnAndroid == this.notifyOnAndroid);
 }
 
 class RemindersCompanion extends UpdateCompanion<Reminder> {
@@ -2656,6 +2688,7 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
   final Value<DateTime?> lastCompletedDate;
   final Value<String?> notes;
   final Value<bool> isActive;
+  final Value<bool> notifyOnAndroid;
   const RemindersCompanion({
     this.id = const Value.absent(),
     this.type = const Value.absent(),
@@ -2665,6 +2698,7 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
     this.lastCompletedDate = const Value.absent(),
     this.notes = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.notifyOnAndroid = const Value.absent(),
   });
   RemindersCompanion.insert({
     this.id = const Value.absent(),
@@ -2675,6 +2709,7 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
     this.lastCompletedDate = const Value.absent(),
     this.notes = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.notifyOnAndroid = const Value.absent(),
   })  : type = Value(type),
         title = Value(title),
         nextDueDate = Value(nextDueDate);
@@ -2687,6 +2722,7 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
     Expression<DateTime>? lastCompletedDate,
     Expression<String>? notes,
     Expression<bool>? isActive,
+    Expression<bool>? notifyOnAndroid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2697,6 +2733,7 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
       if (lastCompletedDate != null) 'last_completed_date': lastCompletedDate,
       if (notes != null) 'notes': notes,
       if (isActive != null) 'is_active': isActive,
+      if (notifyOnAndroid != null) 'notify_on_android': notifyOnAndroid,
     });
   }
 
@@ -2708,7 +2745,8 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
       Value<DateTime>? nextDueDate,
       Value<DateTime?>? lastCompletedDate,
       Value<String?>? notes,
-      Value<bool>? isActive}) {
+      Value<bool>? isActive,
+      Value<bool>? notifyOnAndroid}) {
     return RemindersCompanion(
       id: id ?? this.id,
       type: type ?? this.type,
@@ -2718,6 +2756,7 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
       lastCompletedDate: lastCompletedDate ?? this.lastCompletedDate,
       notes: notes ?? this.notes,
       isActive: isActive ?? this.isActive,
+      notifyOnAndroid: notifyOnAndroid ?? this.notifyOnAndroid,
     );
   }
 
@@ -2748,6 +2787,9 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
     if (isActive.present) {
       map['is_active'] = Variable<bool>(isActive.value);
     }
+    if (notifyOnAndroid.present) {
+      map['notify_on_android'] = Variable<bool>(notifyOnAndroid.value);
+    }
     return map;
   }
 
@@ -2761,7 +2803,8 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
           ..write('nextDueDate: $nextDueDate, ')
           ..write('lastCompletedDate: $lastCompletedDate, ')
           ..write('notes: $notes, ')
-          ..write('isActive: $isActive')
+          ..write('isActive: $isActive, ')
+          ..write('notifyOnAndroid: $notifyOnAndroid')
           ..write(')'))
         .toString();
   }
@@ -4031,6 +4074,7 @@ typedef $$RemindersTableCreateCompanionBuilder = RemindersCompanion Function({
   Value<DateTime?> lastCompletedDate,
   Value<String?> notes,
   Value<bool> isActive,
+  Value<bool> notifyOnAndroid,
 });
 typedef $$RemindersTableUpdateCompanionBuilder = RemindersCompanion Function({
   Value<int> id,
@@ -4041,6 +4085,7 @@ typedef $$RemindersTableUpdateCompanionBuilder = RemindersCompanion Function({
   Value<DateTime?> lastCompletedDate,
   Value<String?> notes,
   Value<bool> isActive,
+  Value<bool> notifyOnAndroid,
 });
 
 class $$RemindersTableFilterComposer
@@ -4076,6 +4121,10 @@ class $$RemindersTableFilterComposer
 
   ColumnFilters<bool> get isActive => $composableBuilder(
       column: $table.isActive, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get notifyOnAndroid => $composableBuilder(
+      column: $table.notifyOnAndroid,
+      builder: (column) => ColumnFilters(column));
 }
 
 class $$RemindersTableOrderingComposer
@@ -4112,6 +4161,10 @@ class $$RemindersTableOrderingComposer
 
   ColumnOrderings<bool> get isActive => $composableBuilder(
       column: $table.isActive, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get notifyOnAndroid => $composableBuilder(
+      column: $table.notifyOnAndroid,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$RemindersTableAnnotationComposer
@@ -4146,6 +4199,9 @@ class $$RemindersTableAnnotationComposer
 
   GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<bool> get notifyOnAndroid => $composableBuilder(
+      column: $table.notifyOnAndroid, builder: (column) => column);
 }
 
 class $$RemindersTableTableManager extends RootTableManager<
@@ -4179,6 +4235,7 @@ class $$RemindersTableTableManager extends RootTableManager<
             Value<DateTime?> lastCompletedDate = const Value.absent(),
             Value<String?> notes = const Value.absent(),
             Value<bool> isActive = const Value.absent(),
+            Value<bool> notifyOnAndroid = const Value.absent(),
           }) =>
               RemindersCompanion(
             id: id,
@@ -4189,6 +4246,7 @@ class $$RemindersTableTableManager extends RootTableManager<
             lastCompletedDate: lastCompletedDate,
             notes: notes,
             isActive: isActive,
+            notifyOnAndroid: notifyOnAndroid,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -4199,6 +4257,7 @@ class $$RemindersTableTableManager extends RootTableManager<
             Value<DateTime?> lastCompletedDate = const Value.absent(),
             Value<String?> notes = const Value.absent(),
             Value<bool> isActive = const Value.absent(),
+            Value<bool> notifyOnAndroid = const Value.absent(),
           }) =>
               RemindersCompanion.insert(
             id: id,
@@ -4209,6 +4268,7 @@ class $$RemindersTableTableManager extends RootTableManager<
             lastCompletedDate: lastCompletedDate,
             notes: notes,
             isActive: isActive,
+            notifyOnAndroid: notifyOnAndroid,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

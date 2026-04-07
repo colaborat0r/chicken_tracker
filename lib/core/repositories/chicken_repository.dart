@@ -25,6 +25,114 @@ class ChickenRepository {
     ));
   }
 
+  /// Record a flock purchase and optionally create one bird record per unit.
+  ///
+  /// For `hatching_eggs`, keep current behavior and do not create birds.
+  Future<void> recordFlockPurchase({
+    required DateTime date,
+    required String type,
+    required int quantity,
+    required double cost,
+    String? supplier,
+    int? hatchedCount,
+    String? breed,
+    String? status,
+    DateTime? hatchDate,
+    String? notes,
+  }) async {
+    final normalizedSupplier = _nullIfEmpty(supplier);
+
+    await database.transaction(() async {
+      await database.into(database.flockPurchases).insert(
+            FlockPurchasesCompanion(
+              date: Value(date),
+              type: Value(type),
+              quantity: Value(quantity),
+              cost: Value(cost),
+              supplier: Value(normalizedSupplier),
+              hatchedCount: Value(hatchedCount),
+            ),
+          );
+
+      if (type != 'live_chicks') {
+        return;
+      }
+
+      final normalizedBreed = (breed ?? '').trim();
+      if (normalizedBreed.isEmpty) {
+        throw ArgumentError('Breed is required for live chick purchases.');
+      }
+
+      final birdStatus = (status ?? 'growing').trim();
+      final birdHatchDate = hatchDate ?? date;
+      final birdNotes = _nullIfEmpty(notes);
+
+      for (var i = 0; i < quantity; i++) {
+        await database.addBird(BirdsCompanion(
+          breed: Value(normalizedBreed),
+          eggColor: const Value(null),
+          hatchDate: Value(birdHatchDate),
+          status: Value(birdStatus),
+          notes: Value(birdNotes),
+        ));
+      }
+    });
+  }
+
+  /// Add multiple chickens in one flow, and optionally create a matching
+  /// purchase record when `costPerBird` is provided.
+  Future<void> addMultipleChickens({
+    required int quantity,
+    required String breed,
+    required String status,
+    required DateTime hatchDate,
+    String? notes,
+    double? costPerBird,
+    String? supplier,
+  }) async {
+    if (quantity <= 0) {
+      throw ArgumentError('Quantity must be greater than 0.');
+    }
+
+    final normalizedBreed = breed.trim();
+    if (normalizedBreed.isEmpty) {
+      throw ArgumentError('Breed is required.');
+    }
+
+    final normalizedNotes = _nullIfEmpty(notes);
+    final normalizedSupplier = _nullIfEmpty(supplier);
+
+    await database.transaction(() async {
+      for (var i = 0; i < quantity; i++) {
+        await database.addBird(BirdsCompanion(
+          breed: Value(normalizedBreed),
+          eggColor: const Value(null),
+          hatchDate: Value(hatchDate),
+          status: Value(status),
+          notes: Value(normalizedNotes),
+        ));
+      }
+
+      if (costPerBird != null) {
+        await database.into(database.flockPurchases).insert(
+              FlockPurchasesCompanion(
+                date: Value(DateTime.now()),
+                type: const Value('live_chicks'),
+                quantity: Value(quantity),
+                cost: Value(costPerBird * quantity),
+                supplier: Value(normalizedSupplier),
+                hatchedCount: const Value(null),
+              ),
+            );
+      }
+    });
+  }
+
+  String? _nullIfEmpty(String? value) {
+    final trimmed = value?.trim() ?? '';
+    return trimmed.isEmpty ? null : trimmed;
+  }
+
   /// Get all chickens in the flock
   Future<List<ChickenModel>> getAllChickens() async {
     final birds = await database.getAllBirds();
@@ -193,8 +301,8 @@ class ProductionRepository {
   ) async {
     final allLogs = await getAllLogs();
     return allLogs
-        .where((log) =>
-            log.date.isAfter(startDate) && log.date.isBefore(endDate))
+        .where(
+            (log) => log.date.isAfter(startDate) && log.date.isBefore(endDate))
         .toList();
   }
 
@@ -393,8 +501,7 @@ class ExpenseRepository {
   ) async {
     final expenses = await getAllExpenses();
     final filtered = expenses
-        .where((e) =>
-            e.date.isAfter(startDate) && e.date.isBefore(endDate))
+        .where((e) => e.date.isAfter(startDate) && e.date.isBefore(endDate))
         .toList();
 
     final categories = <String, double>{};
@@ -423,7 +530,8 @@ class ExpenseRepository {
     if (feedExpenses.isEmpty) return 0;
 
     final totalCost = feedExpenses.fold(0.0, (sum, e) => sum + e.amount);
-    final totalPounds = feedExpenses.fold(0.0, (sum, e) => sum + (e.pounds ?? 0));
+    final totalPounds =
+        feedExpenses.fold(0.0, (sum, e) => sum + (e.pounds ?? 0));
 
     if (totalPounds == 0) return 0;
     return totalCost / totalPounds;

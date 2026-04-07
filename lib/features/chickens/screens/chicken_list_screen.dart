@@ -90,10 +90,23 @@ class _ChickenListScreenState extends ConsumerState<ChickenListScreen> {
                           ),
                     ),
                     const SizedBox(height: 24),
-                    ElevatedButton.icon(
-                      onPressed: () => context.push(Routes.addChicken),
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add Chicken'),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () => context.push(Routes.addChicken),
+                          icon: const Icon(Icons.add),
+                          label: const Text('Add One Chicken'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () =>
+                              context.push(Routes.addMultipleChickens),
+                          icon: const Icon(Icons.groups),
+                          label: const Text('Add Multiple Chickens'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -252,10 +265,24 @@ class _ChickenListScreenState extends ConsumerState<ChickenListScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push(Routes.addChicken),
-        icon: const Icon(Icons.add),
-        label: const Text('Add Chicken'),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: 'add-one-chicken',
+            onPressed: () => context.push(Routes.addChicken),
+            icon: const Icon(Icons.add),
+            label: const Text('Add One Chicken'),
+          ),
+          const SizedBox(height: 10),
+          FloatingActionButton.extended(
+            heroTag: 'add-multiple-chickens',
+            onPressed: () => context.push(Routes.addMultipleChickens),
+            icon: const Icon(Icons.groups),
+            label: const Text('Add Multiple Chickens'),
+          ),
+        ],
       ),
     );
   }

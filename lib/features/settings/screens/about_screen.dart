@@ -89,11 +89,11 @@ class AboutScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  _AboutSection(
+                  const _AboutSection(
                     title: 'Key Features',
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         _FeatureBullet('Quick daily egg logging (by total or per hen)'),
                         _FeatureBullet('Complete flock management (breeds, ages, notes, and status)'),
                         _FeatureBullet('Feed, expense, and cost tracking'),

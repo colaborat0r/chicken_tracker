@@ -9,6 +9,7 @@ class ReminderModel {
   final DateTime? lastCompletedDate;
   final String? notes;
   final bool isActive;
+  final bool notifyOnAndroid;
 
   const ReminderModel({
     required this.id,
@@ -19,6 +20,7 @@ class ReminderModel {
     this.lastCompletedDate,
     this.notes,
     required this.isActive,
+    required this.notifyOnAndroid,
   });
 
   bool get isOverdue {
@@ -65,6 +67,7 @@ class ReminderModel {
     DateTime? lastCompletedDate,
     String? notes,
     bool? isActive,
+    bool? notifyOnAndroid,
   }) {
     return ReminderModel(
       id: id ?? this.id,
@@ -75,6 +78,7 @@ class ReminderModel {
       lastCompletedDate: lastCompletedDate ?? this.lastCompletedDate,
       notes: notes ?? this.notes,
       isActive: isActive ?? this.isActive,
+      notifyOnAndroid: notifyOnAndroid ?? this.notifyOnAndroid,
     );
   }
 

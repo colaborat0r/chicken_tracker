@@ -1053,6 +1053,16 @@ class _SalesVsExpensesChartCard extends StatelessWidget {
     return !date.isBefore(startDate!) && !date.isAfter(endDate!);
   }
 
+  String _formatAmount(double value) {
+    if (value >= 1000000) {
+      return '\$${(value / 1000000).toStringAsFixed(1)}M';
+    }
+    if (value >= 1000) {
+      return '\$${(value / 1000).toStringAsFixed(1)}k';
+    }
+    return '\$${value.toStringAsFixed(0)}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final filteredSales = sales.where((item) => _inRange(item.date)).toList();
@@ -1063,8 +1073,9 @@ class _SalesVsExpensesChartCard extends StatelessWidget {
         filteredSales.fold<double>(0.0, (sum, item) => sum + item.amount);
     final expensesTotal =
         filteredExpenses.fold<double>(0.0, (sum, item) => sum + item.amount);
-    final maxY =
-        (salesTotal > expensesTotal ? salesTotal : expensesTotal) * 1.2;
+    final rawMax = salesTotal > expensesTotal ? salesTotal : expensesTotal;
+    final maxY = rawMax <= 0 ? 10.0 : rawMax * 1.25;
+    final interval = maxY / 4;
 
     return Card(
       child: Padding(
@@ -1079,13 +1090,21 @@ class _SalesVsExpensesChartCard extends StatelessWidget {
                   .titleMedium
                   ?.copyWith(fontWeight: FontWeight.w700),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 12),
             SizedBox(
-              height: 180,
+              height: 200,
               child: BarChart(
                 BarChartData(
-                  maxY: maxY <= 0 ? 1 : maxY,
-                  gridData: const FlGridData(show: true),
+                  maxY: maxY,
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: interval,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: Colors.grey.withValues(alpha: 0.2),
+                      strokeWidth: 1,
+                    ),
+                  ),
                   titlesData: FlTitlesData(
                     topTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
@@ -1093,25 +1112,69 @@ class _SalesVsExpensesChartCard extends StatelessWidget {
                     rightTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
                     ),
-                    leftTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: true),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 60,
+                        interval: interval,
+                        getTitlesWidget: (value, meta) {
+                          if (value == meta.max) return const SizedBox.shrink();
+                          return SideTitleWidget(
+                            meta: meta,
+                            child: Text(
+                              _formatAmount(value),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
+                        reservedSize: 32,
                         getTitlesWidget: (value, meta) {
+                          String label;
                           if (value.toInt() == 0) {
-                            return const Text('Sales');
+                            label = 'Sales';
+                          } else if (value.toInt() == 1) {
+                            label = 'Expenses';
+                          } else {
+                            return const SizedBox.shrink();
                           }
-                          if (value.toInt() == 1) {
-                            return const Text('Expenses');
-                          }
-                          return const SizedBox.shrink();
+                          return SideTitleWidget(
+                            meta: meta,
+                            child: Text(
+                              label,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          );
                         },
                       ),
                     ),
                   ),
                   borderData: FlBorderData(show: false),
+                  barTouchData: BarTouchData(
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        final label = group.x == 0 ? 'Sales' : 'Expenses';
+                        return BarTooltipItem(
+                          '$label\n${_formatAmount(rod.toY)}',
+                          const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                   barGroups: [
                     BarChartGroupData(
                       x: 0,
@@ -1119,7 +1182,7 @@ class _SalesVsExpensesChartCard extends StatelessWidget {
                         BarChartRodData(
                           toY: salesTotal,
                           color: const Color(0xFF0E7A4F),
-                          width: 24,
+                          width: 36,
                           borderRadius: BorderRadius.circular(6),
                         ),
                       ],
@@ -1130,7 +1193,7 @@ class _SalesVsExpensesChartCard extends StatelessWidget {
                         BarChartRodData(
                           toY: expensesTotal,
                           color: const Color(0xFFC5392A),
-                          width: 24,
+                          width: 36,
                           borderRadius: BorderRadius.circular(6),
                         ),
                       ],
@@ -1139,9 +1202,37 @@ class _SalesVsExpensesChartCard extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                _ChartLegendDot(color: const Color(0xFF0E7A4F)),
+                const SizedBox(width: 6),
+                Text('Sales: ${_formatAmount(salesTotal)}',
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                const SizedBox(width: 20),
+                _ChartLegendDot(color: const Color(0xFFC5392A)),
+                const SizedBox(width: 6),
+                Text('Expenses: ${_formatAmount(expensesTotal)}',
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+              ],
+            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ChartLegendDot extends StatelessWidget {
+  final Color color;
+  const _ChartLegendDot({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 12,
+      height: 12,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
     );
   }
 }

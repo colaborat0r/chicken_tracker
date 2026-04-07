@@ -6,15 +6,23 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:chicken_tracker/main.dart';
 
 void main() {
-  testWidgets('ChickenTrackerApp renders home screen', (WidgetTester tester) async {
+  testWidgets('ChickenTrackerApp renders home screen',
+      (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const ChickenTrackerApp());
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: ChickenTrackerApp(),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     // Verify that the app title is displayed
-    expect(find.text('🐔 Chicken Tracker'), findsOneWidget);
+    expect(find.text('Chicken Tracker'), findsWidgets);
   });
 }

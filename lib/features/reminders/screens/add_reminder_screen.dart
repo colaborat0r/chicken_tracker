@@ -26,6 +26,7 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
   int _frequencyPreset = 1;
   int _customDays = 3;
   DateTime _nextDueDate = DateTime.now();
+  bool _notifyOnAndroid = false;
   bool _isLoading = false;
 
   bool get _isEdit => widget.reminderToEdit != null;
@@ -43,6 +44,7 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
     _customDays = (r != null && !knownPresets.contains(r.frequencyDays))
         ? r.frequencyDays
         : 3;
+    _notifyOnAndroid = r?.notifyOnAndroid ?? false;
 
     _titleController =
         TextEditingController(text: r?.title ?? _defaultTitle('feeding'));
@@ -65,6 +67,8 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
         return 'Clean coop';
       case 'health_check':
         return 'Health check';
+      case 'todo':
+        return 'New to-do';
       default:
         return 'Feed chickens';
     }
@@ -98,6 +102,7 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
           notes: _notesController.text.trim().isEmpty
               ? null
               : _notesController.text.trim(),
+          notifyOnAndroid: _notifyOnAndroid,
         );
         await repo.updateReminder(updated);
       } else {
@@ -109,6 +114,7 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
           notes: _notesController.text.trim().isEmpty
               ? null
               : _notesController.text.trim(),
+          notifyOnAndroid: _notifyOnAndroid,
         );
       }
       if (!mounted) return;
@@ -212,27 +218,25 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
                 // ── Type selector ────────────────────────────────────────
                 const _SectionLabel(label: 'Reminder Type'),
                 const SizedBox(height: 8),
-                Row(
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
                   children: [
-                    for (final type in ['feeding', 'cleaning', 'health_check'])
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: _TypeChip(
-                            type: type,
-                            selected: _selectedType == type,
-                            onTap: () => setState(() {
-                              _selectedType = type;
-                              // Update title placeholder if user hasn't typed
-                              final defaultOld =
-                                  _defaultTitle(_selectedType);
-                              if (_titleController.text == defaultOld ||
-                                  _titleController.text.isEmpty) {
-                                _titleController.text = _defaultTitle(type);
-                              }
-                              _selectedType = type;
-                            }),
-                          ),
+                    for (final type in ['feeding', 'cleaning', 'health_check', 'todo'])
+                      SizedBox(
+                        width: (MediaQuery.sizeOf(context).width - 32 - 24) / 4,
+                        child: _TypeChip(
+                          type: type,
+                          selected: _selectedType == type,
+                          onTap: () => setState(() {
+                            // Update title placeholder if user hasn't typed
+                            final defaultOld = _defaultTitle(_selectedType);
+                            if (_titleController.text == defaultOld ||
+                                _titleController.text.isEmpty) {
+                              _titleController.text = _defaultTitle(type);
+                            }
+                            _selectedType = type;
+                          }),
                         ),
                       ),
                   ],
@@ -338,6 +342,17 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
                   maxLines: 4,
                   textCapitalization: TextCapitalization.sentences,
                 ),
+                const SizedBox(height: 12),
+
+                SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Android notification'),
+                  subtitle: const Text(
+                    'Notify on due date at 8:00 AM',
+                  ),
+                  value: _notifyOnAndroid,
+                  onChanged: (value) => setState(() => _notifyOnAndroid = value),
+                ),
                 const SizedBox(height: 32),
 
                 // ── Save button ──────────────────────────────────────────
@@ -406,6 +421,8 @@ class _TypeChip extends StatelessWidget {
         return Icons.cleaning_services;
       case 'health_check':
         return Icons.health_and_safety;
+      case 'todo':
+        return Icons.check_circle_outline;
       default:
         return Icons.grass;
     }
@@ -417,6 +434,8 @@ class _TypeChip extends StatelessWidget {
         return 'Cleaning';
       case 'health_check':
         return 'Health';
+      case 'todo':
+        return 'To-Do';
       default:
         return 'Feeding';
     }
@@ -428,6 +447,8 @@ class _TypeChip extends StatelessWidget {
         return const Color(0xFF1565C0);
       case 'health_check':
         return const Color(0xFFE08A24);
+      case 'todo':
+        return const Color(0xFF6A1B9A);
       default:
         return const Color(0xFF2E7D32);
     }

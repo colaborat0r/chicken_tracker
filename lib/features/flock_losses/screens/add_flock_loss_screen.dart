@@ -111,6 +111,10 @@ class _AddFlockLossScreenState extends ConsumerState<AddFlockLossScreen> {
                           child: Text('Natural Causes'),
                         ),
                         DropdownMenuItem(
+                          value: 'illness',
+                          child: Text('Illness'),
+                        ),
+                        DropdownMenuItem(
                           value: 'predator',
                           child: Text('Predator Attack'),
                         ),
@@ -121,6 +125,10 @@ class _AddFlockLossScreenState extends ConsumerState<AddFlockLossScreen> {
                         DropdownMenuItem(
                           value: 'sold',
                           child: Text('Sold'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'other',
+                          child: Text('Other'),
                         ),
                       ],
                       onChanged: (value) {
@@ -148,9 +156,21 @@ class _AddFlockLossScreenState extends ConsumerState<AddFlockLossScreen> {
                             },
                           ),
                           ActionChip(
+                            label: const Text('Illness'),
+                            onPressed: () {
+                              setState(() => _selectedType = 'illness');
+                            },
+                          ),
+                          ActionChip(
                             label: const Text('Sold'),
                             onPressed: () {
                               setState(() => _selectedType = 'sold');
+                            },
+                          ),
+                          ActionChip(
+                            label: const Text('Other'),
+                            onPressed: () {
+                              setState(() => _selectedType = 'other');
                             },
                           ),
                         ],

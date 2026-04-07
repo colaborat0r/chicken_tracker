@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'database_providers.dart';
+import 'notification_providers.dart';
 import '../repositories/chicken_repository.dart';
 import '../repositories/reminder_repository.dart';
 
@@ -30,5 +31,6 @@ final expenseRepositoryProvider = Provider<ExpenseRepository>((ref) {
 /// Repository provider for reminders
 final reminderRepositoryProvider = Provider<ReminderRepository>((ref) {
   final db = ref.watch(databaseProvider);
-  return ReminderRepository(db);
+  final notificationService = ref.watch(reminderNotificationServiceProvider);
+  return ReminderRepository(db, notificationService);
 });

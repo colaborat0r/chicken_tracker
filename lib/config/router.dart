@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:chicken_tracker/features/home/screens/home_screen.dart';
 import 'package:chicken_tracker/features/chickens/screens/add_chicken_screen.dart';
+import 'package:chicken_tracker/features/chickens/screens/add_multiple_chickens_screen.dart';
 import 'package:chicken_tracker/features/chickens/screens/chicken_list_screen.dart';
 import 'package:chicken_tracker/features/chickens/screens/chicken_detail_screen.dart';
 import 'package:chicken_tracker/features/production/screens/log_production_screen.dart';
@@ -27,6 +28,7 @@ import 'package:chicken_tracker/core/models/reminder_model.dart';
 class Routes {
   static const String home = '/';
   static const String addChicken = '/add-chicken';
+  static const String addMultipleChickens = '/add-multiple-chickens';
   static const String chickenList = '/chickens';
   static const String chickenDetail = '/chickens/:id';
   static const String logProduction = '/log-production';
@@ -61,6 +63,12 @@ final goRouter = GoRouter(
     GoRoute(
       path: Routes.addChicken,
       builder: (context, state) => const AddChickenScreen(),
+    ),
+
+    // Add multiple chickens screen
+    GoRoute(
+      path: Routes.addMultipleChickens,
+      builder: (context, state) => const AddMultipleChickensScreen(),
     ),
 
     // Chicken list screen
