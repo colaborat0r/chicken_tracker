@@ -2810,6 +2810,481 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
   }
 }
 
+class $SavedGuidesTable extends SavedGuides
+    with TableInfo<$SavedGuidesTable, SavedGuide> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SavedGuidesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _guideIdMeta =
+      const VerificationMeta('guideId');
+  @override
+  late final GeneratedColumn<String> guideId = GeneratedColumn<String>(
+      'guide_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _savedAtMeta =
+      const VerificationMeta('savedAt');
+  @override
+  late final GeneratedColumn<DateTime> savedAt = GeneratedColumn<DateTime>(
+      'saved_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [guideId, savedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'saved_guides';
+  @override
+  VerificationContext validateIntegrity(Insertable<SavedGuide> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('guide_id')) {
+      context.handle(_guideIdMeta,
+          guideId.isAcceptableOrUnknown(data['guide_id']!, _guideIdMeta));
+    } else if (isInserting) {
+      context.missing(_guideIdMeta);
+    }
+    if (data.containsKey('saved_at')) {
+      context.handle(_savedAtMeta,
+          savedAt.isAcceptableOrUnknown(data['saved_at']!, _savedAtMeta));
+    } else if (isInserting) {
+      context.missing(_savedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {guideId};
+  @override
+  SavedGuide map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SavedGuide(
+      guideId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}guide_id'])!,
+      savedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}saved_at'])!,
+    );
+  }
+
+  @override
+  $SavedGuidesTable createAlias(String alias) {
+    return $SavedGuidesTable(attachedDatabase, alias);
+  }
+}
+
+class SavedGuide extends DataClass implements Insertable<SavedGuide> {
+  final String guideId;
+  final DateTime savedAt;
+  const SavedGuide({required this.guideId, required this.savedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['guide_id'] = Variable<String>(guideId);
+    map['saved_at'] = Variable<DateTime>(savedAt);
+    return map;
+  }
+
+  SavedGuidesCompanion toCompanion(bool nullToAbsent) {
+    return SavedGuidesCompanion(
+      guideId: Value(guideId),
+      savedAt: Value(savedAt),
+    );
+  }
+
+  factory SavedGuide.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SavedGuide(
+      guideId: serializer.fromJson<String>(json['guideId']),
+      savedAt: serializer.fromJson<DateTime>(json['savedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'guideId': serializer.toJson<String>(guideId),
+      'savedAt': serializer.toJson<DateTime>(savedAt),
+    };
+  }
+
+  SavedGuide copyWith({String? guideId, DateTime? savedAt}) => SavedGuide(
+        guideId: guideId ?? this.guideId,
+        savedAt: savedAt ?? this.savedAt,
+      );
+  SavedGuide copyWithCompanion(SavedGuidesCompanion data) {
+    return SavedGuide(
+      guideId: data.guideId.present ? data.guideId.value : this.guideId,
+      savedAt: data.savedAt.present ? data.savedAt.value : this.savedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SavedGuide(')
+          ..write('guideId: $guideId, ')
+          ..write('savedAt: $savedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(guideId, savedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SavedGuide &&
+          other.guideId == this.guideId &&
+          other.savedAt == this.savedAt);
+}
+
+class SavedGuidesCompanion extends UpdateCompanion<SavedGuide> {
+  final Value<String> guideId;
+  final Value<DateTime> savedAt;
+  final Value<int> rowid;
+  const SavedGuidesCompanion({
+    this.guideId = const Value.absent(),
+    this.savedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SavedGuidesCompanion.insert({
+    required String guideId,
+    required DateTime savedAt,
+    this.rowid = const Value.absent(),
+  })  : guideId = Value(guideId),
+        savedAt = Value(savedAt);
+  static Insertable<SavedGuide> custom({
+    Expression<String>? guideId,
+    Expression<DateTime>? savedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (guideId != null) 'guide_id': guideId,
+      if (savedAt != null) 'saved_at': savedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SavedGuidesCompanion copyWith(
+      {Value<String>? guideId, Value<DateTime>? savedAt, Value<int>? rowid}) {
+    return SavedGuidesCompanion(
+      guideId: guideId ?? this.guideId,
+      savedAt: savedAt ?? this.savedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (guideId.present) {
+      map['guide_id'] = Variable<String>(guideId.value);
+    }
+    if (savedAt.present) {
+      map['saved_at'] = Variable<DateTime>(savedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SavedGuidesCompanion(')
+          ..write('guideId: $guideId, ')
+          ..write('savedAt: $savedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ReadGuidesTable extends ReadGuides
+    with TableInfo<$ReadGuidesTable, ReadGuide> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ReadGuidesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _guideIdMeta =
+      const VerificationMeta('guideId');
+  @override
+  late final GeneratedColumn<String> guideId = GeneratedColumn<String>(
+      'guide_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _progressPercentMeta =
+      const VerificationMeta('progressPercent');
+  @override
+  late final GeneratedColumn<int> progressPercent = GeneratedColumn<int>(
+      'progress_percent', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _completedMeta =
+      const VerificationMeta('completed');
+  @override
+  late final GeneratedColumn<bool> completed = GeneratedColumn<bool>(
+      'completed', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("completed" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _lastReadAtMeta =
+      const VerificationMeta('lastReadAt');
+  @override
+  late final GeneratedColumn<DateTime> lastReadAt = GeneratedColumn<DateTime>(
+      'last_read_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [guideId, progressPercent, completed, lastReadAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'read_guides';
+  @override
+  VerificationContext validateIntegrity(Insertable<ReadGuide> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('guide_id')) {
+      context.handle(_guideIdMeta,
+          guideId.isAcceptableOrUnknown(data['guide_id']!, _guideIdMeta));
+    } else if (isInserting) {
+      context.missing(_guideIdMeta);
+    }
+    if (data.containsKey('progress_percent')) {
+      context.handle(
+          _progressPercentMeta,
+          progressPercent.isAcceptableOrUnknown(
+              data['progress_percent']!, _progressPercentMeta));
+    }
+    if (data.containsKey('completed')) {
+      context.handle(_completedMeta,
+          completed.isAcceptableOrUnknown(data['completed']!, _completedMeta));
+    }
+    if (data.containsKey('last_read_at')) {
+      context.handle(
+          _lastReadAtMeta,
+          lastReadAt.isAcceptableOrUnknown(
+              data['last_read_at']!, _lastReadAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {guideId};
+  @override
+  ReadGuide map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ReadGuide(
+      guideId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}guide_id'])!,
+      progressPercent: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}progress_percent'])!,
+      completed: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}completed'])!,
+      lastReadAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_read_at']),
+    );
+  }
+
+  @override
+  $ReadGuidesTable createAlias(String alias) {
+    return $ReadGuidesTable(attachedDatabase, alias);
+  }
+}
+
+class ReadGuide extends DataClass implements Insertable<ReadGuide> {
+  final String guideId;
+  final int progressPercent;
+  final bool completed;
+  final DateTime? lastReadAt;
+  const ReadGuide(
+      {required this.guideId,
+      required this.progressPercent,
+      required this.completed,
+      this.lastReadAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['guide_id'] = Variable<String>(guideId);
+    map['progress_percent'] = Variable<int>(progressPercent);
+    map['completed'] = Variable<bool>(completed);
+    if (!nullToAbsent || lastReadAt != null) {
+      map['last_read_at'] = Variable<DateTime>(lastReadAt);
+    }
+    return map;
+  }
+
+  ReadGuidesCompanion toCompanion(bool nullToAbsent) {
+    return ReadGuidesCompanion(
+      guideId: Value(guideId),
+      progressPercent: Value(progressPercent),
+      completed: Value(completed),
+      lastReadAt: lastReadAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastReadAt),
+    );
+  }
+
+  factory ReadGuide.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ReadGuide(
+      guideId: serializer.fromJson<String>(json['guideId']),
+      progressPercent: serializer.fromJson<int>(json['progressPercent']),
+      completed: serializer.fromJson<bool>(json['completed']),
+      lastReadAt: serializer.fromJson<DateTime?>(json['lastReadAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'guideId': serializer.toJson<String>(guideId),
+      'progressPercent': serializer.toJson<int>(progressPercent),
+      'completed': serializer.toJson<bool>(completed),
+      'lastReadAt': serializer.toJson<DateTime?>(lastReadAt),
+    };
+  }
+
+  ReadGuide copyWith(
+          {String? guideId,
+          int? progressPercent,
+          bool? completed,
+          Value<DateTime?> lastReadAt = const Value.absent()}) =>
+      ReadGuide(
+        guideId: guideId ?? this.guideId,
+        progressPercent: progressPercent ?? this.progressPercent,
+        completed: completed ?? this.completed,
+        lastReadAt: lastReadAt.present ? lastReadAt.value : this.lastReadAt,
+      );
+  ReadGuide copyWithCompanion(ReadGuidesCompanion data) {
+    return ReadGuide(
+      guideId: data.guideId.present ? data.guideId.value : this.guideId,
+      progressPercent: data.progressPercent.present
+          ? data.progressPercent.value
+          : this.progressPercent,
+      completed: data.completed.present ? data.completed.value : this.completed,
+      lastReadAt:
+          data.lastReadAt.present ? data.lastReadAt.value : this.lastReadAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReadGuide(')
+          ..write('guideId: $guideId, ')
+          ..write('progressPercent: $progressPercent, ')
+          ..write('completed: $completed, ')
+          ..write('lastReadAt: $lastReadAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(guideId, progressPercent, completed, lastReadAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ReadGuide &&
+          other.guideId == this.guideId &&
+          other.progressPercent == this.progressPercent &&
+          other.completed == this.completed &&
+          other.lastReadAt == this.lastReadAt);
+}
+
+class ReadGuidesCompanion extends UpdateCompanion<ReadGuide> {
+  final Value<String> guideId;
+  final Value<int> progressPercent;
+  final Value<bool> completed;
+  final Value<DateTime?> lastReadAt;
+  final Value<int> rowid;
+  const ReadGuidesCompanion({
+    this.guideId = const Value.absent(),
+    this.progressPercent = const Value.absent(),
+    this.completed = const Value.absent(),
+    this.lastReadAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ReadGuidesCompanion.insert({
+    required String guideId,
+    this.progressPercent = const Value.absent(),
+    this.completed = const Value.absent(),
+    this.lastReadAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : guideId = Value(guideId);
+  static Insertable<ReadGuide> custom({
+    Expression<String>? guideId,
+    Expression<int>? progressPercent,
+    Expression<bool>? completed,
+    Expression<DateTime>? lastReadAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (guideId != null) 'guide_id': guideId,
+      if (progressPercent != null) 'progress_percent': progressPercent,
+      if (completed != null) 'completed': completed,
+      if (lastReadAt != null) 'last_read_at': lastReadAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ReadGuidesCompanion copyWith(
+      {Value<String>? guideId,
+      Value<int>? progressPercent,
+      Value<bool>? completed,
+      Value<DateTime?>? lastReadAt,
+      Value<int>? rowid}) {
+    return ReadGuidesCompanion(
+      guideId: guideId ?? this.guideId,
+      progressPercent: progressPercent ?? this.progressPercent,
+      completed: completed ?? this.completed,
+      lastReadAt: lastReadAt ?? this.lastReadAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (guideId.present) {
+      map['guide_id'] = Variable<String>(guideId.value);
+    }
+    if (progressPercent.present) {
+      map['progress_percent'] = Variable<int>(progressPercent.value);
+    }
+    if (completed.present) {
+      map['completed'] = Variable<bool>(completed.value);
+    }
+    if (lastReadAt.present) {
+      map['last_read_at'] = Variable<DateTime>(lastReadAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReadGuidesCompanion(')
+          ..write('guideId: $guideId, ')
+          ..write('progressPercent: $progressPercent, ')
+          ..write('completed: $completed, ')
+          ..write('lastReadAt: $lastReadAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2821,6 +3296,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $FlockLossesTable flockLosses = $FlockLossesTable(this);
   late final $SettingsTable settings = $SettingsTable(this);
   late final $RemindersTable reminders = $RemindersTable(this);
+  late final $SavedGuidesTable savedGuides = $SavedGuidesTable(this);
+  late final $ReadGuidesTable readGuides = $ReadGuidesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2833,7 +3310,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         flockPurchases,
         flockLosses,
         settings,
-        reminders
+        reminders,
+        savedGuides,
+        readGuides
       ];
 }
 
@@ -4289,6 +4768,280 @@ typedef $$RemindersTableProcessedTableManager = ProcessedTableManager<
     (Reminder, BaseReferences<_$AppDatabase, $RemindersTable, Reminder>),
     Reminder,
     PrefetchHooks Function()>;
+typedef $$SavedGuidesTableCreateCompanionBuilder = SavedGuidesCompanion
+    Function({
+  required String guideId,
+  required DateTime savedAt,
+  Value<int> rowid,
+});
+typedef $$SavedGuidesTableUpdateCompanionBuilder = SavedGuidesCompanion
+    Function({
+  Value<String> guideId,
+  Value<DateTime> savedAt,
+  Value<int> rowid,
+});
+
+class $$SavedGuidesTableFilterComposer
+    extends Composer<_$AppDatabase, $SavedGuidesTable> {
+  $$SavedGuidesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get guideId => $composableBuilder(
+      column: $table.guideId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get savedAt => $composableBuilder(
+      column: $table.savedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$SavedGuidesTableOrderingComposer
+    extends Composer<_$AppDatabase, $SavedGuidesTable> {
+  $$SavedGuidesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get guideId => $composableBuilder(
+      column: $table.guideId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get savedAt => $composableBuilder(
+      column: $table.savedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$SavedGuidesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SavedGuidesTable> {
+  $$SavedGuidesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get guideId =>
+      $composableBuilder(column: $table.guideId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get savedAt =>
+      $composableBuilder(column: $table.savedAt, builder: (column) => column);
+}
+
+class $$SavedGuidesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $SavedGuidesTable,
+    SavedGuide,
+    $$SavedGuidesTableFilterComposer,
+    $$SavedGuidesTableOrderingComposer,
+    $$SavedGuidesTableAnnotationComposer,
+    $$SavedGuidesTableCreateCompanionBuilder,
+    $$SavedGuidesTableUpdateCompanionBuilder,
+    (SavedGuide, BaseReferences<_$AppDatabase, $SavedGuidesTable, SavedGuide>),
+    SavedGuide,
+    PrefetchHooks Function()> {
+  $$SavedGuidesTableTableManager(_$AppDatabase db, $SavedGuidesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SavedGuidesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SavedGuidesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SavedGuidesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> guideId = const Value.absent(),
+            Value<DateTime> savedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              SavedGuidesCompanion(
+            guideId: guideId,
+            savedAt: savedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String guideId,
+            required DateTime savedAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              SavedGuidesCompanion.insert(
+            guideId: guideId,
+            savedAt: savedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$SavedGuidesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $SavedGuidesTable,
+    SavedGuide,
+    $$SavedGuidesTableFilterComposer,
+    $$SavedGuidesTableOrderingComposer,
+    $$SavedGuidesTableAnnotationComposer,
+    $$SavedGuidesTableCreateCompanionBuilder,
+    $$SavedGuidesTableUpdateCompanionBuilder,
+    (SavedGuide, BaseReferences<_$AppDatabase, $SavedGuidesTable, SavedGuide>),
+    SavedGuide,
+    PrefetchHooks Function()>;
+typedef $$ReadGuidesTableCreateCompanionBuilder = ReadGuidesCompanion Function({
+  required String guideId,
+  Value<int> progressPercent,
+  Value<bool> completed,
+  Value<DateTime?> lastReadAt,
+  Value<int> rowid,
+});
+typedef $$ReadGuidesTableUpdateCompanionBuilder = ReadGuidesCompanion Function({
+  Value<String> guideId,
+  Value<int> progressPercent,
+  Value<bool> completed,
+  Value<DateTime?> lastReadAt,
+  Value<int> rowid,
+});
+
+class $$ReadGuidesTableFilterComposer
+    extends Composer<_$AppDatabase, $ReadGuidesTable> {
+  $$ReadGuidesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get guideId => $composableBuilder(
+      column: $table.guideId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get progressPercent => $composableBuilder(
+      column: $table.progressPercent,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get completed => $composableBuilder(
+      column: $table.completed, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get lastReadAt => $composableBuilder(
+      column: $table.lastReadAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$ReadGuidesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ReadGuidesTable> {
+  $$ReadGuidesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get guideId => $composableBuilder(
+      column: $table.guideId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get progressPercent => $composableBuilder(
+      column: $table.progressPercent,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get completed => $composableBuilder(
+      column: $table.completed, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastReadAt => $composableBuilder(
+      column: $table.lastReadAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$ReadGuidesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ReadGuidesTable> {
+  $$ReadGuidesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get guideId =>
+      $composableBuilder(column: $table.guideId, builder: (column) => column);
+
+  GeneratedColumn<int> get progressPercent => $composableBuilder(
+      column: $table.progressPercent, builder: (column) => column);
+
+  GeneratedColumn<bool> get completed =>
+      $composableBuilder(column: $table.completed, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastReadAt => $composableBuilder(
+      column: $table.lastReadAt, builder: (column) => column);
+}
+
+class $$ReadGuidesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ReadGuidesTable,
+    ReadGuide,
+    $$ReadGuidesTableFilterComposer,
+    $$ReadGuidesTableOrderingComposer,
+    $$ReadGuidesTableAnnotationComposer,
+    $$ReadGuidesTableCreateCompanionBuilder,
+    $$ReadGuidesTableUpdateCompanionBuilder,
+    (ReadGuide, BaseReferences<_$AppDatabase, $ReadGuidesTable, ReadGuide>),
+    ReadGuide,
+    PrefetchHooks Function()> {
+  $$ReadGuidesTableTableManager(_$AppDatabase db, $ReadGuidesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ReadGuidesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ReadGuidesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ReadGuidesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> guideId = const Value.absent(),
+            Value<int> progressPercent = const Value.absent(),
+            Value<bool> completed = const Value.absent(),
+            Value<DateTime?> lastReadAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ReadGuidesCompanion(
+            guideId: guideId,
+            progressPercent: progressPercent,
+            completed: completed,
+            lastReadAt: lastReadAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String guideId,
+            Value<int> progressPercent = const Value.absent(),
+            Value<bool> completed = const Value.absent(),
+            Value<DateTime?> lastReadAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ReadGuidesCompanion.insert(
+            guideId: guideId,
+            progressPercent: progressPercent,
+            completed: completed,
+            lastReadAt: lastReadAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ReadGuidesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $ReadGuidesTable,
+    ReadGuide,
+    $$ReadGuidesTableFilterComposer,
+    $$ReadGuidesTableOrderingComposer,
+    $$ReadGuidesTableAnnotationComposer,
+    $$ReadGuidesTableCreateCompanionBuilder,
+    $$ReadGuidesTableUpdateCompanionBuilder,
+    (ReadGuide, BaseReferences<_$AppDatabase, $ReadGuidesTable, ReadGuide>),
+    ReadGuide,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4309,4 +5062,8 @@ class $AppDatabaseManager {
       $$SettingsTableTableManager(_db, _db.settings);
   $$RemindersTableTableManager get reminders =>
       $$RemindersTableTableManager(_db, _db.reminders);
+  $$SavedGuidesTableTableManager get savedGuides =>
+      $$SavedGuidesTableTableManager(_db, _db.savedGuides);
+  $$ReadGuidesTableTableManager get readGuides =>
+      $$ReadGuidesTableTableManager(_db, _db.readGuides);
 }

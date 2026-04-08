@@ -93,12 +93,45 @@ class Reminders extends Table {
       boolean().withDefault(const Constant(false))();
 }
 
-@DriftDatabase(tables: [Birds, DailyLogs, Sales, Expenses, FlockPurchases, FlockLosses, Settings, Reminders])
+// 9. Saved Guides
+class SavedGuides extends Table {
+  TextColumn get guideId => text()();
+  DateTimeColumn get savedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {guideId};
+}
+
+// 10. Read Guides
+class ReadGuides extends Table {
+  TextColumn get guideId => text()();
+  IntColumn get progressPercent => integer().withDefault(const Constant(0))();
+  BoolColumn get completed => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get lastReadAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {guideId};
+}
+
+@DriftDatabase(
+  tables: [
+    Birds,
+    DailyLogs,
+    Sales,
+    Expenses,
+    FlockPurchases,
+    FlockLosses,
+    Settings,
+    Reminders,
+    SavedGuides,
+    ReadGuides,
+  ],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -108,6 +141,10 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from >= 2 && from < 3) {
         await m.addColumn(reminders, reminders.notifyOnAndroid);
+      }
+      if (from < 4) {
+        await m.createTable(savedGuides);
+        await m.createTable(readGuides);
       }
     },
   );
@@ -205,4 +242,41 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> deleteReminder(int id) =>
       (delete(reminders)..where((r) => r.id.equals(id))).go();
+
+  // ====================== GUIDES DAO ======================
+  Stream<List<SavedGuide>> watchSavedGuides() => select(savedGuides).watch();
+
+  Stream<List<ReadGuide>> watchReadGuides() => select(readGuides).watch();
+
+  Future<void> saveGuide(String guideId) =>
+      into(savedGuides).insertOnConflictUpdate(
+        SavedGuidesCompanion(
+          guideId: Value(guideId),
+          savedAt: Value(DateTime.now()),
+        ),
+      );
+
+  Future<void> unsaveGuide(String guideId) =>
+      (delete(savedGuides)..where((g) => g.guideId.equals(guideId))).go();
+
+  Future<bool> isGuideSaved(String guideId) async {
+    final row = await (select(savedGuides)
+          ..where((g) => g.guideId.equals(guideId)))
+        .getSingleOrNull();
+    return row != null;
+  }
+
+  Future<void> upsertReadGuide(
+    String guideId, {
+    required int progressPercent,
+    required bool completed,
+  }) =>
+      into(readGuides).insertOnConflictUpdate(
+        ReadGuidesCompanion(
+          guideId: Value(guideId),
+          progressPercent: Value(progressPercent),
+          completed: Value(completed),
+          lastReadAt: Value(DateTime.now()),
+        ),
+      );
 }

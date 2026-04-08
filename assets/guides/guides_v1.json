@@ -1,0 +1,162 @@
+[
+  {
+    "id": "brooding-week-one",
+    "title": "Brooding Chicks: Week One Essentials",
+    "category": "Brooding chicks",
+    "difficulty": "Beginner",
+    "season": "All seasons",
+    "readMinutes": 6,
+    "tags": ["brooding", "temperature", "water", "starter feed"],
+    "updatedAt": "2026-04-01T00:00:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "The first week sets the pace for healthy growth. Keep chicks warm, dry, and eating within the first 24 hours after arrival."
+      },
+      {
+        "type": "warning",
+        "title": "Critical temperature range",
+        "text": "Start at 95°F (35°C) directly under the heat source, then reduce by 5°F each week. Watch chick behavior instead of relying only on a thermometer."
+      },
+      {
+        "type": "checklist",
+        "title": "Daily checklist",
+        "items": [
+          "Refresh water twice daily and clean drinkers",
+          "Provide chick starter feed at all times",
+          "Inspect vents for pasting and clean gently if needed",
+          "Replace damp bedding immediately"
+        ]
+      },
+      {
+        "type": "tip",
+        "title": "Pro tip",
+        "text": "Scatter a small amount of feed on paper towels on day one so weak eaters learn quickly."
+      }
+    ]
+  },
+  {
+    "id": "feed-efficiency-layers",
+    "title": "Feeding Layers for Better Egg Output",
+    "category": "Feeding and nutrition",
+    "difficulty": "Intermediate",
+    "season": "All seasons",
+    "readMinutes": 7,
+    "tags": ["layers", "calcium", "protein", "grit"],
+    "updatedAt": "2026-03-28T00:00:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Consistent feed quality and timing improve shell strength and production. Sudden feed changes can reduce laying for several days."
+      },
+      {
+        "type": "checklist",
+        "title": "Nutrition routine",
+        "items": [
+          "Use 16% to 18% layer ration as baseline",
+          "Offer oyster shell free-choice for calcium",
+          "Provide insoluble grit if birds range less",
+          "Avoid feeding scratch as more than 10% of diet"
+        ]
+      },
+      {
+        "type": "warning",
+        "title": "Mycotoxin risk",
+        "text": "Store feed dry and elevated off concrete. Moldy feed can cause severe drops in egg production and bird health issues."
+      }
+    ]
+  },
+  {
+    "id": "biosecurity-basics",
+    "title": "Biosecurity Basics for Small Flocks",
+    "category": "Disease prevention and biosecurity",
+    "difficulty": "Beginner",
+    "season": "All seasons",
+    "readMinutes": 8,
+    "tags": ["biosecurity", "quarantine", "disinfection"],
+    "updatedAt": "2026-03-20T00:00:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Simple barriers and routines reduce disease introduction. Keep outside traffic low and isolate new birds before mixing."
+      },
+      {
+        "type": "checklist",
+        "title": "Core controls",
+        "items": [
+          "Quarantine new birds for at least 14 days",
+          "Use dedicated boots for coop area",
+          "Disinfect crates and tools after shared use",
+          "Limit visitors near birds and feeders"
+        ]
+      },
+      {
+        "type": "tip",
+        "title": "Pro tip",
+        "text": "Create a handwashing point near the coop entrance to improve compliance."
+      }
+    ]
+  },
+  {
+    "id": "summer-heat-stress",
+    "title": "Summer Heat Stress Prevention",
+    "category": "Seasonal care (heat/cold)",
+    "difficulty": "Intermediate",
+    "season": "Hot season",
+    "readMinutes": 5,
+    "tags": ["summer", "heat", "hydration", "ventilation"],
+    "updatedAt": "2026-03-15T00:00:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Egg production often declines in high heat. Focus on airflow, cool water, and shade during the hottest hours."
+      },
+      {
+        "type": "warning",
+        "title": "Emergency signs",
+        "text": "Panting with wings spread and lethargy can indicate heat stress. Immediate cooling action is required."
+      },
+      {
+        "type": "checklist",
+        "title": "Heat plan",
+        "items": [
+          "Refill cool water several times per day",
+          "Add shade cloth over exposed runs",
+          "Increase coop airflow with safe fans",
+          "Offer wet mash or water-rich treats in evening"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "egg-handling-storage",
+    "title": "Egg Handling and Safe Storage",
+    "category": "Egg handling and storage",
+    "difficulty": "Beginner",
+    "season": "All seasons",
+    "readMinutes": 6,
+    "tags": ["eggs", "cleaning", "storage", "safety"],
+    "updatedAt": "2026-03-10T00:00:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Handle eggs gently and cool them quickly for best quality. Collection timing affects cleanliness and crack rates."
+      },
+      {
+        "type": "checklist",
+        "title": "Collection standards",
+        "items": [
+          "Collect at least twice daily",
+          "Discard heavily cracked eggs",
+          "Dry clean first; wet wash only when needed",
+          "Store point-down in cartons"
+        ]
+      },
+      {
+        "type": "link",
+        "label": "Review local egg sale regulations",
+        "url": "https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/eggs"
+      }
+    ]
+  }
+]

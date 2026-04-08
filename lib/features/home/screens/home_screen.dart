@@ -208,6 +208,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 context.push(Routes.reminders);
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.menu_book, color: Color(0xFF1565C0)),
+              title: const Text('Tips / Guides'),
+              subtitle: const Text('Offline farming guides and checklists'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(Routes.guidesHome);
+              },
+            ),
             const Divider(),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -372,6 +381,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       icon: Icons.alarm,
                       color: const Color(0xFF2E7D32),
                       onPressed: () => context.push(Routes.reminders),
+                    ),
+                    _ActionChip(
+                      label: 'Tips / Guides',
+                      icon: Icons.menu_book,
+                      color: const Color(0xFF1565C0),
+                      onPressed: () => context.push(Routes.guidesHome),
                     ),
                   ],
                 ),
