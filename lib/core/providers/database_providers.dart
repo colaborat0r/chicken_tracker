@@ -148,19 +148,20 @@ final allExpensesProvider = StreamProvider<List<ExpenseModel>>((ref) async* {
 });
 
 /// Provider for this week's expenses total (7-day window including today)
-final thisWeekExpensesTotalProvider = FutureProvider<double>((ref) async {
-  final expenses = await ref.watch(allExpensesProvider.future);
-  final now = DateTime.now();
-  final start = now.subtract(const Duration(days: 6));
+final thisWeekExpensesTotalProvider = StreamProvider<double>((ref) {
+  return ref.watch(allExpensesProvider.stream).map((expenses) {
+    final now = DateTime.now();
+    final start = now.subtract(const Duration(days: 6));
 
-  return expenses.where((expense) {
-    final date =
-        DateTime(expense.date.year, expense.date.month, expense.date.day);
-    final startDate = DateTime(start.year, start.month, start.day);
-    final nowDate = DateTime(now.year, now.month, now.day);
-    return date.isAtSameMomentAs(nowDate) ||
-        (date.isAfter(startDate) && date.isBefore(nowDate));
-  }).fold<double>(0.0, (sum, item) => sum + item.amount);
+    return expenses.where((expense) {
+      final date =
+          DateTime(expense.date.year, expense.date.month, expense.date.day);
+      final startDate = DateTime(start.year, start.month, start.day);
+      final nowDate = DateTime(now.year, now.month, now.day);
+      return date.isAtSameMomentAs(nowDate) ||
+          (date.isAfter(startDate) && date.isBefore(nowDate));
+    }).fold<double>(0.0, (sum, item) => sum + item.amount);
+  });
 });
 
 /// Provider for this month's sales total
