@@ -164,6 +164,17 @@ final thisWeekExpensesTotalProvider = StreamProvider<double>((ref) {
   });
 });
 
+/// Provider for this month's expenses total
+final thisMonthExpensesTotalProvider = FutureProvider<double>((ref) async {
+  final expenses = await ref.watch(allExpensesProvider.future);
+  final now = DateTime.now();
+
+  return expenses
+      .where((expense) =>
+          expense.date.year == now.year && expense.date.month == now.month)
+      .fold<double>(0.0, (sum, item) => sum + item.amount);
+});
+
 /// Provider for this month's sales total
 final thisMonthSalesTotalProvider = FutureProvider<double>((ref) async {
   final sales = await ref.watch(allSalesProvider.future);

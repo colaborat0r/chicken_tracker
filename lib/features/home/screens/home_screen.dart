@@ -280,10 +280,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       provider: todayEggCountProvider,
                     ),
                     _StatCardAsync(
-                      label: 'This Week Expenses',
+                      label: 'This Month Expenses',
                       icon: Icons.account_balance_wallet,
                       color: const Color(0xFFC5392A),
-                      provider: thisWeekExpensesTotalProvider,
+                      provider: thisMonthExpensesTotalProvider,
                       formatter: (value) => NumberFormat.currency(symbol: '\$')
                           .format((value as num?) ?? 0),
                     ),
