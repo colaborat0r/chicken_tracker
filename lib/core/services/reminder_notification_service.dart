@@ -37,9 +37,8 @@ class ReminderNotificationService {
       importance: Importance.high,
     );
 
-    final androidPlugin =
-        _plugin.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
     await androidPlugin?.createNotificationChannel(channel);
 
     _isInitialized = true;
@@ -112,9 +111,27 @@ class ReminderNotificationService {
   Future<void> _setLocalTimezone() async {
     try {
       final timezone = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(timezone.identifier));
+      final timezoneId = _extractTimezoneIdentifier(timezone);
+      tz.setLocalLocation(tz.getLocation(timezoneId));
     } catch (_) {
       tz.setLocalLocation(tz.getLocation('UTC'));
     }
+  }
+
+  String _extractTimezoneIdentifier(dynamic timezone) {
+    if (timezone is String && timezone.isNotEmpty) {
+      return timezone;
+    }
+
+    try {
+      final identifier = timezone.identifier as String?;
+      if (identifier != null && identifier.isNotEmpty) {
+        return identifier;
+      }
+    } catch (_) {
+      // Fall through to UTC fallback.
+    }
+
+    return 'UTC';
   }
 }
