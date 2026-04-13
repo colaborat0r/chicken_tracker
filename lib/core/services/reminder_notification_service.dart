@@ -37,9 +37,8 @@ class ReminderNotificationService {
       importance: Importance.high,
     );
 
-    final androidPlugin =
-        _plugin.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
     await androidPlugin?.createNotificationChannel(channel);
 
     _isInitialized = true;
@@ -101,6 +100,35 @@ class ReminderNotificationService {
     await _plugin.cancel(reminderId);
   }
 
+  Future<bool> sendTestNotification() async {
+    if (!Platform.isAndroid) return false;
+
+    await initialize();
+
+    final granted = await _ensurePermissionGranted();
+    if (!granted) return false;
+
+    const notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        _channelId,
+        _channelName,
+        channelDescription: _channelDescription,
+        importance: Importance.high,
+        priority: Priority.high,
+      ),
+    );
+
+    await _plugin.show(
+      999001,
+      'Chicken Tracker test',
+      'Notifications are working for reminders.',
+      notificationDetails,
+      payload: 'test-notification',
+    );
+
+    return true;
+  }
+
   Future<bool> _ensurePermissionGranted() async {
     final status = await Permission.notification.status;
     if (status.isGranted) return true;
@@ -112,9 +140,27 @@ class ReminderNotificationService {
   Future<void> _setLocalTimezone() async {
     try {
       final timezone = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(timezone.identifier));
+      final timezoneId = _extractTimezoneIdentifier(timezone);
+      tz.setLocalLocation(tz.getLocation(timezoneId));
     } catch (_) {
       tz.setLocalLocation(tz.getLocation('UTC'));
     }
+  }
+
+  String _extractTimezoneIdentifier(dynamic timezone) {
+    if (timezone is String && timezone.isNotEmpty) {
+      return timezone;
+    }
+
+    try {
+      final identifier = timezone.identifier as String?;
+      if (identifier != null && identifier.isNotEmpty) {
+        return identifier;
+      }
+    } catch (_) {
+      // Fall through to UTC fallback.
+    }
+
+    return 'UTC';
   }
 }

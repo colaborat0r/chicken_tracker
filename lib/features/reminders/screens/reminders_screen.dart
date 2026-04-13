@@ -15,7 +15,7 @@ IconData _typeIcon(String type) {
     case 'health_check':
       return Icons.health_and_safety;
     case 'todo':
-      return Icons.check_circle_outline;
+      return Icons.task_alt;
     case 'feeding':
     default:
       return Icons.grass;
@@ -29,7 +29,7 @@ Color _typeColor(String type) {
     case 'health_check':
       return const Color(0xFFE08A24);
     case 'todo':
-      return const Color(0xFF6A1B9A);
+      return const Color(0xFFB84DFF);
     case 'feeding':
     default:
       return const Color(0xFF2E7D32);

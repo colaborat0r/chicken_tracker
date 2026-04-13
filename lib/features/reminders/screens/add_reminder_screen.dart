@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../core/models/reminder_model.dart';
+import '../../../core/providers/notification_providers.dart';
 import '../../../core/providers/repository_providers.dart';
 
 class AddReminderScreen extends ConsumerStatefulWidget {
@@ -26,8 +28,9 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
   int _frequencyPreset = 1;
   int _customDays = 3;
   DateTime _nextDueDate = DateTime.now();
-  bool _notifyOnAndroid = false;
+  bool _notifyOnAndroid = true;
   bool _isLoading = false;
+  bool _isSendingTestNotification = false;
 
   bool get _isEdit => widget.reminderToEdit != null;
 
@@ -39,17 +42,17 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
     _nextDueDate = r?.nextDueDate ?? DateTime.now();
 
     final knownPresets = [1, 7, 14, 30];
-    _frequencyPreset =
-        (r != null && !knownPresets.contains(r.frequencyDays)) ? -1 : (r?.frequencyDays ?? 1);
+    _frequencyPreset = (r != null && !knownPresets.contains(r.frequencyDays))
+        ? -1
+        : (r?.frequencyDays ?? 1);
     _customDays = (r != null && !knownPresets.contains(r.frequencyDays))
         ? r.frequencyDays
         : 3;
-    _notifyOnAndroid = r?.notifyOnAndroid ?? false;
+    _notifyOnAndroid = r?.notifyOnAndroid ?? true;
 
     _titleController =
         TextEditingController(text: r?.title ?? _defaultTitle('feeding'));
-    _customDaysController =
-        TextEditingController(text: _customDays.toString());
+    _customDaysController = TextEditingController(text: _customDays.toString());
     _notesController = TextEditingController(text: r?.notes ?? '');
   }
 
@@ -120,12 +123,26 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_isEdit
-              ? 'Reminder updated!'
-              : 'Reminder created!'),
+          content: Text(_isEdit ? 'Reminder updated!' : 'Reminder created!'),
           behavior: SnackBarBehavior.floating,
         ),
       );
+
+      if (_notifyOnAndroid) {
+        final permissionStatus = await Permission.notification.status;
+        if (!permissionStatus.isGranted && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Reminder saved, but notifications are blocked. Enable app notifications in Android settings.',
+              ),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+
+      if (!mounted) return;
       context.pop();
     } catch (e) {
       if (!mounted) return;
@@ -134,6 +151,37 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _sendTestNotification() async {
+    setState(() => _isSendingTestNotification = true);
+
+    try {
+      final sent = await ref
+          .read(reminderNotificationServiceProvider)
+          .sendTestNotification();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(sent
+              ? 'Test notification sent. Check your notification tray.'
+              : 'Notifications are blocked or unavailable on this device.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to send test notification: $e'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSendingTestNotification = false);
     }
   }
 
@@ -222,7 +270,12 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    for (final type in ['feeding', 'cleaning', 'health_check', 'todo'])
+                    for (final type in [
+                      'feeding',
+                      'cleaning',
+                      'health_check',
+                      'todo'
+                    ])
                       SizedBox(
                         width: (MediaQuery.sizeOf(context).width - 32 - 24) / 4,
                         child: _TypeChip(
@@ -253,8 +306,9 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.title),
                   ),
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Title is required' : null,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Title is required'
+                      : null,
                   textCapitalization: TextCapitalization.sentences,
                 ),
                 const SizedBox(height: 20),
@@ -310,7 +364,8 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
                 const SizedBox(height: 20),
 
                 // ── First due date ───────────────────────────────────────
-                _SectionLabel(label: _isEdit ? 'Next Due Date' : 'First Due Date'),
+                _SectionLabel(
+                    label: _isEdit ? 'Next Due Date' : 'First Due Date'),
                 const SizedBox(height: 8),
                 InkWell(
                   onTap: _pickDate,
@@ -351,7 +406,24 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
                     'Notify on due date at 8:00 AM',
                   ),
                   value: _notifyOnAndroid,
-                  onChanged: (value) => setState(() => _notifyOnAndroid = value),
+                  onChanged: (value) =>
+                      setState(() => _notifyOnAndroid = value),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: _isSendingTestNotification
+                        ? null
+                        : _sendTestNotification,
+                    icon: _isSendingTestNotification
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.notifications_active_outlined),
+                    label: const Text('Send Test Notification'),
+                  ),
                 ),
                 const SizedBox(height: 32),
 
@@ -422,7 +494,7 @@ class _TypeChip extends StatelessWidget {
       case 'health_check':
         return Icons.health_and_safety;
       case 'todo':
-        return Icons.check_circle_outline;
+        return Icons.task_alt;
       default:
         return Icons.grass;
     }
@@ -448,7 +520,7 @@ class _TypeChip extends StatelessWidget {
       case 'health_check':
         return const Color(0xFFE08A24);
       case 'todo':
-        return const Color(0xFF6A1B9A);
+        return const Color(0xFFB84DFF);
       default:
         return const Color(0xFF2E7D32);
     }
@@ -471,8 +543,7 @@ class _TypeChip extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(_icon,
-                color: selected ? Colors.white : _color, size: 22),
+            Icon(_icon, color: selected ? Colors.white : _color, size: 22),
             const SizedBox(height: 4),
             Text(
               _label,

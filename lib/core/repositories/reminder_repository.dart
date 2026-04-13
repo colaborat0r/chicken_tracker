@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import '../database/app_database.dart';
 import '../models/reminder_model.dart';
 import '../services/reminder_notification_service.dart';
@@ -29,7 +30,7 @@ class ReminderRepository {
       notifyOnAndroid: Value(notifyOnAndroid),
     ));
 
-    await notificationService.scheduleReminder(
+    await _scheduleReminderSafely(
       ReminderModel(
         id: id,
         type: type,
@@ -49,9 +50,7 @@ class ReminderRepository {
   Future<void> markDone(ReminderModel reminder) async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final due = DateTime(
-        reminder.nextDueDate.year,
-        reminder.nextDueDate.month,
+    final due = DateTime(reminder.nextDueDate.year, reminder.nextDueDate.month,
         reminder.nextDueDate.day);
 
     // If overdue, advance from today; otherwise advance from the scheduled date
@@ -61,7 +60,7 @@ class ReminderRepository {
 
     await database.markReminderDone(reminder.id, nextDueDate);
 
-    await notificationService.scheduleReminder(
+    await _scheduleReminderSafely(
       reminder.copyWith(nextDueDate: nextDueDate),
     );
   }
@@ -79,13 +78,31 @@ class ReminderRepository {
       notifyOnAndroid: model.notifyOnAndroid,
     );
 
-    await notificationService.scheduleReminder(model);
+    await _scheduleReminderSafely(model);
   }
 
   /// Delete a reminder permanently
   Future<void> deleteReminder(int id) async {
     await database.deleteReminder(id);
-    await notificationService.cancelReminder(id);
+    await _cancelReminderSafely(id);
+  }
+
+  Future<void> _scheduleReminderSafely(ReminderModel model) async {
+    try {
+      await notificationService.scheduleReminder(model);
+    } catch (e, st) {
+      debugPrint('Failed to schedule reminder notification: $e');
+      debugPrint('$st');
+    }
+  }
+
+  Future<void> _cancelReminderSafely(int id) async {
+    try {
+      await notificationService.cancelReminder(id);
+    } catch (e, st) {
+      debugPrint('Failed to cancel reminder notification: $e');
+      debugPrint('$st');
+    }
   }
 }
 
@@ -99,5 +116,5 @@ ReminderModel reminderFromDb(Reminder r) => ReminderModel(
       lastCompletedDate: r.lastCompletedDate,
       notes: r.notes,
       isActive: r.isActive,
-  notifyOnAndroid: r.notifyOnAndroid,
+      notifyOnAndroid: r.notifyOnAndroid,
     );
