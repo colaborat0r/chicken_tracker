@@ -100,6 +100,35 @@ class ReminderNotificationService {
     await _plugin.cancel(reminderId);
   }
 
+  Future<bool> sendTestNotification() async {
+    if (!Platform.isAndroid) return false;
+
+    await initialize();
+
+    final granted = await _ensurePermissionGranted();
+    if (!granted) return false;
+
+    const notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        _channelId,
+        _channelName,
+        channelDescription: _channelDescription,
+        importance: Importance.high,
+        priority: Priority.high,
+      ),
+    );
+
+    await _plugin.show(
+      999001,
+      'Chicken Tracker test',
+      'Notifications are working for reminders.',
+      notificationDetails,
+      payload: 'test-notification',
+    );
+
+    return true;
+  }
+
   Future<bool> _ensurePermissionGranted() async {
     final status = await Permission.notification.status;
     if (status.isGranted) return true;
