@@ -65,7 +65,7 @@ class AboutScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Version 1.0.0',
+                              'Version 1.1.0',
                               style: textTheme.bodyMedium?.copyWith(
                                 color: Colors.grey[600],
                               ),
