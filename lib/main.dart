@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'config/router.dart';
 import 'core/providers/notification_providers.dart';
+import 'core/providers/repository_providers.dart';
 
 void main() {
   runApp(const ProviderScope(child: ChickenTrackerApp()));
@@ -19,8 +20,9 @@ class _ChickenTrackerAppState extends ConsumerState<ChickenTrackerApp> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      ref.read(reminderNotificationServiceProvider).initialize();
+    Future.microtask(() async {
+      await ref.read(reminderNotificationServiceProvider).initialize();
+      await ref.read(reminderRepositoryProvider).resyncNotificationsFromDatabase();
     });
   }
 

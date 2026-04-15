@@ -207,6 +207,11 @@ class AppDatabase extends _$AppDatabase {
             ..orderBy([(r) => OrderingTerm(expression: r.nextDueDate)]))
           .watch();
 
+  Future<List<Reminder>> getAllRemindersSnapshot() =>
+      (select(reminders)
+            ..orderBy([(r) => OrderingTerm(expression: r.nextDueDate)]))
+          .get();
+
   Future<int> addReminder(RemindersCompanion reminder) =>
       into(reminders).insert(reminder);
 
