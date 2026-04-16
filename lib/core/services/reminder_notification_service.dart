@@ -13,6 +13,8 @@ class ReminderNotificationService {
   static const String _channelName = 'Reminders';
   static const String _channelDescription = 'Chicken care reminders';
   static const int _summaryNotificationBaseId = 900000;
+  static const int _summaryNotificationFloor = 10000000;
+  static const int _testNotificationId = 1001;
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
@@ -72,7 +74,7 @@ class ReminderNotificationService {
       ),
     );
 
-    await _plugin.cancelAll();
+    await _clearScheduledReminderNotifications();
 
     final grouped = <DateTime, List<ReminderModel>>{};
     for (final reminder in reminders) {
@@ -126,8 +128,7 @@ class ReminderNotificationService {
   Future<void> cancelReminder(int reminderId) async {
     if (!Platform.isAndroid) return;
     await initialize();
-    // Notification IDs are date-based summaries; perform a full cancel.
-    await _plugin.cancelAll();
+    await _clearScheduledReminderNotifications();
   }
 
   Future<bool> sendTestNotification() async {
@@ -149,7 +150,7 @@ class ReminderNotificationService {
     );
 
     await _plugin.show(
-      999001,
+      _testNotificationId,
       'Chicken Tracker test',
       'Notifications are working for reminders.',
       notificationDetails,
@@ -182,6 +183,15 @@ class ReminderNotificationService {
       return requested ?? false;
     } catch (_) {
       return false;
+    }
+  }
+
+  Future<void> _clearScheduledReminderNotifications() async {
+    final pending = await _plugin.pendingNotificationRequests();
+    for (final notification in pending) {
+      if (notification.id >= _summaryNotificationFloor) {
+        await _plugin.cancel(notification.id);
+      }
     }
   }
 

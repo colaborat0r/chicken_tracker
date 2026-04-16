@@ -162,6 +162,13 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
           .read(reminderNotificationServiceProvider)
           .sendTestNotification();
 
+      // If the permission prompt was previously blocked/unknown, the test
+      // notification can succeed only after the user approves it. In that
+      // case, we must also rebuild the scheduled reminder alarms.
+      if (sent) {
+        await ref.read(reminderRepositoryProvider).resyncNotificationsFromDatabase();
+      }
+
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
