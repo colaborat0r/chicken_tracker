@@ -1,5 +1,73 @@
 [
   {
+    "id": "beak-trimming-debeaking-backyard",
+    "title": "Beak Trimming (Debeaking) for Backyard Chickens: When It’s Needed & Better Alternatives",
+    "category": "Pecking prevention",
+    "difficulty": "Intermediate",
+    "season": "All seasons",
+    "readMinutes": 9,
+    "tags": ["beak-trimming", "debeaking", "pecking", "cannibalism", "enrichment", "flock-welfare"],
+    "updatedAt": "2026-04-17T18:12:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Beak trimming (also called debeaking) is the partial removal of the sharp tip of a chicken’s upper beak—sometimes the lower beak too. It’s done to reduce feather pecking, cannibalism, and egg eating, especially when birds are kept in close quarters."
+      },
+      {
+        "type": "paragraph",
+        "text": "On a homestead with good space and management, most keepers never need to trim beaks. Many small-flock owners successfully avoid it entirely by focusing on prevention instead of correction."
+      },
+      {
+        "type": "warning",
+        "title": "Welfare first",
+        "text": "Beak trimming causes acute pain and can lead to long-term sensitivity or neuromas. It also interferes with natural foraging and preening. Many countries are phasing it out in favor of better housing and enrichment."
+      },
+      {
+        "type": "checklist",
+        "title": "Prevention checklist – stop pecking before it starts",
+        "items": [
+          "Give each bird at least 4 sq ft in the coop and 10 sq ft in the run",
+          "Add enrichment: pecking blocks, hanging cabbage, mirrors, or dust-bath areas",
+          "Use dim or red lighting in the coop to reduce stress and aggression",
+          "Feed a balanced layer ration plus free-choice oyster shell and grit",
+          "Provide plenty of fresh water and scatter treats to keep birds busy",
+          "Separate any overly aggressive birds immediately"
+        ]
+      },
+      {
+        "type": "tip",
+        "title": "Pro tip from homesteaders",
+        "text": "A bored flock pecks. Ten minutes of free-range time or a fresh pile of garden greens each day often calms the whole group faster than any other fix."
+      },
+      {
+        "type": "paragraph",
+        "text": "If serious pecking or cannibalism continues despite prevention, some experienced keepers choose to trim beaks as a last resort. Only do this if you’re confident in the technique or have help from a vet or seasoned poultry friend."
+      },
+      {
+        "type": "checklist",
+        "title": "Safe trimming checklist (experienced keepers only)",
+        "items": [
+          "Best age: 1–10 days old (fastest healing) or 8–12 weeks",
+          "Use a sharp, sanitized hot-blade trimmer or professional tool",
+          "Remove no more than ⅓ of the upper beak tip",
+          "Cauterize immediately to stop bleeding",
+          "Offer soft mash feed and extra vitamins K & C for 3–5 days afterward",
+          "Provide easy-access water and monitor eating for 48 hours"
+        ]
+      },
+      {
+        "type": "warning",
+        "title": "Risks of improper trimming",
+        "text": "Cutting too deep can cause bleeding, infection, refusal to eat, or death. If you’re unsure, consult a veterinarian or skip it and improve housing instead."
+      },
+      {
+        "type": "tip",
+        "title": "Long-term flock health tip",
+        "text": "Healthy, enriched birds with room to roam rarely need beak trimming. Focus on management and you’ll keep both your conscience and your flock happy."
+      }
+    ]
+  },
+  {
     "id": "supplemental-lighting-egg-production",
     "title": "Supplemental Lighting for Egg Production: Bulbs, Timers & Red Lights",
     "category": "Lighting and egg production",
@@ -38,7 +106,7 @@
         "title": "Why red light works so well",
         "text": "Chickens see red poorly, so a red bulb feels like “dim daylight” to them. It stimulates laying while reducing stress and cannibalism at the same time."
       }
-      
+
     ]
   },
   {
@@ -311,7 +379,7 @@
       {
         "type": "link",
         "label": "Review local egg sale regulations"
-        
+
       }
     ]
   }
