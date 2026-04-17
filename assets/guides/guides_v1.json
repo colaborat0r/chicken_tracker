@@ -1,5 +1,228 @@
 [
   {
+    "id": "deep-litter-method-coop",
+    "title": "Deep Litter Method: Easy, Low-Odor Coop Bedding for Homestead Flocks",
+    "category": "Coop management",
+    "difficulty": "Beginner",
+    "season": "All seasons",
+    "readMinutes": 8,
+    "tags": ["deep-litter", "coop-bedding", "compost", "low-maintenance", "odor-control"],
+    "updatedAt": "2026-04-17T19:00:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "The deep litter method turns your coop floor into a living compost pile. Add fresh bedding on top of the old stuff and let natural microbes break it down. It stays dry, controls odor, and gives you free garden fertilizer."
+      },
+      {
+        "type": "paragraph",
+        "text": "Most homesteaders only clean out the coop 1–2 times a year instead of every week. Perfect for busy keepers with 10–50 birds."
+      },
+      {
+        "type": "checklist",
+        "title": "How to start deep litter",
+        "items": [
+          "Cover the floor with 4–6 inches of pine shavings or hemp bedding",
+          "Add a thin layer of leaves, straw, or garden waste for carbon balance",
+          "Sprinkle a handful of DE or wood ash every few weeks to control moisture",
+          "Scatter a little scratch grain daily so the birds turn the pile for you"
+        ]
+      },
+      {
+        "type": "tip",
+        "title": "Pro tip",
+        "text": "The secret is keeping the litter dry. If it feels damp, add another 2 inches of fresh bedding and stir."
+      },
+      {
+        "type": "warning",
+        "title": "Watch for moisture",
+        "text": "Wet litter breeds ammonia and harmful bacteria. In humid climates, add extra ventilation or switch to sand in the run area."
+      },
+      {
+        "type": "checklist",
+        "title": "Monthly maintenance checklist",
+        "items": [
+          "Stir the top 4 inches with a garden rake",
+          "Add 2–3 inches of fresh bedding when it compacts",
+          "Remove any very wet or caked spots immediately",
+          "Harvest finished compost from the bottom layer in spring and fall"
+        ]
+      },
+      {
+        "type": "tip",
+        "title": "Bonus benefit",
+        "text": "Your birds get natural grit and bugs from the working litter while you get rich compost for the garden — win-win!"
+      }
+    ]
+  },
+  {
+    "id": "chicken-mites-lice-control",
+    "title": "Chicken Mites & Lice: Detection, Treatment & Prevention",
+    "category": "Disease prevention and biosecurity",
+    "difficulty": "Intermediate",
+    "season": "All seasons",
+    "readMinutes": 9,
+    "tags": ["mites", "lice", "parasites", "dust-bath", "treatment"],
+    "updatedAt": "2026-04-17T19:15:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Mites and lice are tiny but can stress your flock fast. Early detection keeps problems small and prevents egg production drops or anemia."
+      },
+      {
+        "type": "checklist",
+        "title": "Quick detection checklist",
+        "items": [
+          "Check vents and under wings weekly for tiny moving specks or white nits",
+          "Look for pale combs, restlessness at night, or excessive preening",
+          "Shake a white sheet under a roost at night — red mites show up as red dots"
+        ]
+      },
+      {
+        "type": "warning",
+        "title": "Don’t wait",
+        "text": "Heavy infestations can kill young birds or stop laying entirely. Treat the whole flock at the same time."
+      },
+      {
+        "type": "checklist",
+        "title": "Safe treatment steps",
+        "items": [
+          "Give every bird a thorough dust bath with food-grade diatomaceous earth or wood ash mix",
+          "Spray coop cracks and roosts with neem oil or diluted permethrin (follow label exactly)",
+          "Replace all nesting material and wash perches with hot soapy water",
+          "Repeat treatment in 7–10 days to catch newly hatched eggs"
+        ]
+      },
+      {
+        "type": "tip",
+        "title": "Prevention is easier",
+        "text": "A deep dust-bath area with play sand + DE + sulfur keeps most parasites away naturally. Add fresh herbs like lavender and mint to nesting boxes as a bonus repellent."
+      }
+    ]
+  },
+  {
+    "id": "introducing-new-chickens-flock",
+    "title": "How to Introduce New Chickens to Your Existing Flock (Without Bloodshed)",
+    "category": "Flock management",
+    "difficulty": "Intermediate",
+    "season": "All seasons",
+    "readMinutes": 8,
+    "tags": ["new-birds", "flock-integration", "pecking-order", "quarantine"],
+    "updatedAt": "2026-04-17T19:30:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Chickens take their pecking order seriously. A proper introduction prevents injuries and keeps everyone calm."
+      },
+      {
+        "type": "warning",
+        "title": "Quarantine first",
+        "text": "Always isolate new birds for at least 14–30 days and watch for illness. This step alone prevents most flock disasters."
+      },
+      {
+        "type": "checklist",
+        "title": "Safe introduction checklist",
+        "items": [
+          "Place the new birds in a separate pen inside the run so they can see each other",
+          "Swap bedding and feeders for a few days so smells mix",
+          "Introduce them in the evening when everyone is roosting",
+          "Provide 2–3 extra feeding stations and waterers to reduce competition",
+          "Watch for 48 hours and separate any bird that’s being bullied"
+        ]
+      },
+      {
+        "type": "tip",
+        "title": "Pro tip",
+        "text": "Add a few extra perches and hiding spots (old boards or crates) so lower-ranking birds can get away. The flock usually settles in 3–7 days."
+      }
+    ]
+  },
+  {
+    "id": "managing-broody-hens",
+    "title": "Broody Hens: How to Break a Broody or Let Her Hatch Eggs Safely",
+    "category": "Brooding & hatching",
+    "difficulty": "Beginner",
+    "season": "Spring, Summer",
+    "readMinutes": 7,
+    "tags": ["broody-hen", "hatching", "nest-box", "egg-sitting"],
+    "updatedAt": "2026-04-17T19:45:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "A broody hen stops laying and sits on eggs 24/7. You can break the broodiness quickly or turn her into a natural incubator."
+      },
+      {
+        "type": "checklist",
+        "title": "Spot a broody hen",
+        "items": [
+          "She stays in the nest box all day and night",
+          "She puffs up, growls, or pecks when you reach in",
+          "She plucks her own breast feathers to line the nest"
+        ]
+      },
+      {
+        "type": "checklist",
+        "title": "How to break a broody (3–5 days)",
+        "items": [
+          "Move her to a wire-bottom cage with food and water but no nesting material",
+          "Keep her in bright light and cool air for 3–5 days",
+          "Return her to the main coop once she starts laying again"
+        ]
+      },
+      {
+        "type": "tip",
+        "title": "Let her hatch instead",
+        "text": "Give her 8–12 fertile eggs, mark the calendar, and leave her alone. She’ll handle turning, humidity, and chick care better than any incubator."
+      },
+      {
+        "type": "warning",
+        "title": "Health check",
+        "text": "Broody hens lose weight fast. Make sure she’s eating and drinking daily. If she stays broody longer than 3 weeks without eggs, consult a vet."
+      }
+    ]
+  },
+  {
+    "id": "predator-proof-coop-run",
+    "title": "Predator-Proof Your Coop & Run: Simple Steps That Actually Work",
+    "category": "Safety & predator protection",
+    "difficulty": "Intermediate",
+    "season": "All seasons",
+    "readMinutes": 9,
+    "tags": ["predators", "raccoon", "fox", "hawk", "coop-security"],
+    "updatedAt": "2026-04-17T20:00:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Raccoons, foxes, hawks, and dogs are smart. A few cheap upgrades can stop almost every nighttime raid."
+      },
+      {
+        "type": "checklist",
+        "title": "Must-have predator-proof upgrades",
+        "items": [
+          "Bury hardware cloth 12–18 inches deep around the entire run",
+          "Use ½-inch hardware cloth on all windows and vents (not chicken wire)",
+          "Install automatic coop doors that close at dusk",
+          "Lock all doors with carabiner clips — raccoons can open latches",
+          "Cover the top of runs with bird netting or welded wire if hawks are a problem"
+        ]
+      },
+      {
+        "type": "warning",
+        "title": "Never rely on lights alone",
+        "text": "Motion lights and radios help, but determined predators ignore them. Combine with solid barriers."
+      },
+      {
+        "type": "tip",
+        "title": "Pro tip",
+        "text": "Walk around your coop at night with a flashlight once a month. Any gap big enough for two fingers is big enough for a weasel."
+      },
+      {
+        "type": "tip",
+        "title": "Free-range bonus",
+        "text": "Bring birds in before dusk and use guardian animals (dogs, geese, or guineas) for daytime protection."
+      }
+    ]
+  },
+  {
     "id": "beak-trimming-debeaking-backyard",
     "title": "Beak Trimming (Debeaking) for Backyard Chickens: When It’s Needed & Better Alternatives",
     "category": "Pecking prevention",
@@ -190,7 +413,7 @@
   {
     "id": "red-heat-lamps-brooding",
     "title": "Red Heat Lamps for Brooding Chicks",
-    "category": "Brooding chicks",
+    "category": "Brooding & hatching",
     "difficulty": "Beginner",
     "season": "All seasons",
     "readMinutes": 6,
@@ -226,7 +449,7 @@
   {
     "id": "brooding-week-one",
     "title": "Brooding Chicks: Week One Essentials",
-    "category": "Brooding chicks",
+    "category": "Brooding & hatching",
     "difficulty": "Beginner",
     "season": "All seasons",
     "readMinutes": 6,
