@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'core/theme/app_theme.dart';
 import 'config/router.dart';
+import 'core/models/reminder_model.dart';
+import 'core/providers/database_providers.dart';
 import 'core/providers/notification_providers.dart';
-import 'core/providers/repository_providers.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Android Alarm Manager for background tasks
+  await AndroidAlarmManager.initialize();
+
   runApp(const ProviderScope(child: ChickenTrackerApp()));
 }
+
 
 class ChickenTrackerApp extends ConsumerStatefulWidget {
   const ChickenTrackerApp({super.key});
@@ -22,12 +30,19 @@ class _ChickenTrackerAppState extends ConsumerState<ChickenTrackerApp> {
     super.initState();
     Future.microtask(() async {
       await ref.read(reminderNotificationServiceProvider).initialize();
-      await ref.read(reminderRepositoryProvider).resyncNotificationsFromDatabase();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AsyncValue<List<ReminderModel>>>(allRemindersProvider, (_, next) {
+      next.whenData((reminders) {
+        ref.read(reminderNotificationServiceProvider).resyncActiveReminders(
+              reminders,
+            );
+      });
+    });
+
     return MaterialApp.router(
       builder: (context, child) {
         if (child == null) return const SizedBox.shrink();

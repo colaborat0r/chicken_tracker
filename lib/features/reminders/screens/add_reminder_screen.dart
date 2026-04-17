@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../../core/models/reminder_model.dart';
+import '../../../core/providers/database_providers.dart';
 import '../../../core/providers/notification_providers.dart';
 import '../../../core/providers/repository_providers.dart';
 
@@ -166,7 +167,10 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
       // notification can succeed only after the user approves it. In that
       // case, we must also rebuild the scheduled reminder alarms.
       if (sent) {
-        await ref.read(reminderRepositoryProvider).resyncNotificationsFromDatabase();
+        final reminders = await ref.read(allRemindersProvider.future);
+        await ref
+            .read(reminderNotificationServiceProvider)
+            .resyncActiveReminders(reminders);
       }
 
       if (!mounted) return;

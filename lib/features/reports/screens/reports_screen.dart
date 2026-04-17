@@ -1205,12 +1205,12 @@ class _SalesVsExpensesChartCard extends StatelessWidget {
             const SizedBox(height: 12),
             Row(
               children: [
-                _ChartLegendDot(color: const Color(0xFF0E7A4F)),
+                const _ChartLegendDot(color: Color(0xFF0E7A4F)),
                 const SizedBox(width: 6),
                 Text('Sales: ${_formatAmount(salesTotal)}',
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                 const SizedBox(width: 20),
-                _ChartLegendDot(color: const Color(0xFFC5392A)),
+                const _ChartLegendDot(color: Color(0xFFC5392A)),
                 const SizedBox(width: 6),
                 Text('Expenses: ${_formatAmount(expensesTotal)}',
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),

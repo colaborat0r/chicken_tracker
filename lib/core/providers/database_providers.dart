@@ -149,7 +149,8 @@ final allExpensesProvider = StreamProvider<List<ExpenseModel>>((ref) async* {
 
 /// Provider for this week's expenses total (7-day window including today)
 final thisWeekExpensesTotalProvider = StreamProvider<double>((ref) {
-  return ref.watch(allExpensesProvider.stream).map((expenses) {
+  final db = ref.watch(databaseProvider);
+  return db.select(db.expenses).watch().map((expenses) {
     final now = DateTime.now();
     final start = now.subtract(const Duration(days: 6));
 

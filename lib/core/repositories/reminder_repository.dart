@@ -8,6 +8,7 @@ import '../services/reminder_notification_service.dart';
 class ReminderRepository {
   final AppDatabase database;
   final ReminderNotificationService notificationService;
+  String? _lastResyncError;
 
   ReminderRepository(this.database, this.notificationService);
 
@@ -78,12 +79,16 @@ class ReminderRepository {
     await _resyncNotificationsSafely();
   }
 
+  String? get lastResyncError => _lastResyncError;
+
   Future<void> _resyncNotificationsSafely() async {
     try {
+      _lastResyncError = null;
       final allReminders = await database.getAllRemindersSnapshot();
       await notificationService
           .resyncActiveReminders(allReminders.map(reminderFromDb).toList());
     } catch (e, st) {
+      _lastResyncError = e.toString();
       debugPrint('Failed to resync reminder notifications: $e');
       debugPrint('$st');
     }

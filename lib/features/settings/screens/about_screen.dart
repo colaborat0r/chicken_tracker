@@ -1,8 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class AboutScreen extends StatelessWidget {
+import '../../../core/models/reminder_model.dart';
+import '../../../core/providers/database_providers.dart';
+import '../../../core/providers/notification_providers.dart';
+import '../../../core/providers/repository_providers.dart';
+import '../../../core/services/reminder_notification_service.dart';
+
+class AboutScreen extends ConsumerStatefulWidget {
   const AboutScreen({super.key});
+
+  @override
+  ConsumerState<AboutScreen> createState() => _AboutScreenState();
+}
+
+class _AboutScreenState extends ConsumerState<AboutScreen> {
+  bool _isRefreshingDiagnostics = false;
+  ReminderNotificationDiagnostics? _diagnostics;
+  String? _lastRepositoryResyncError;
 
   static final Uri _feedbackEmailUri = Uri(
     scheme: 'mailto',
@@ -24,8 +40,51 @@ class AboutScreen extends StatelessWidget {
   }
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(_refreshDiagnostics);
+  }
+
+  Future<void> _refreshDiagnostics() async {
+    if (_isRefreshingDiagnostics) return;
+    setState(() => _isRefreshingDiagnostics = true);
+
+    try {
+      final diagnostics = await ref
+          .read(reminderNotificationServiceProvider)
+          .getDiagnostics();
+      final repositoryError =
+          ref.read(reminderRepositoryProvider).lastResyncError;
+      if (!mounted) return;
+      setState(() {
+        _diagnostics = diagnostics;
+        _lastRepositoryResyncError = repositoryError;
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _isRefreshingDiagnostics = false);
+      }
+    }
+  }
+
+  Future<void> _resyncReminderNotifications(List<ReminderModel> reminders) async {
+    await ref
+        .read(reminderNotificationServiceProvider)
+        .resyncActiveReminders(reminders);
+    await _refreshDiagnostics();
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Reminder notifications re-synced.'),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final remindersAsync = ref.watch(allRemindersProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -102,6 +161,26 @@ class AboutScreen extends StatelessWidget {
                         _FeatureBullet('Full export to CSV or PDF for your records'),
                         _FeatureBullet('Works completely offline - perfect for the barn or field'),
                       ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _AboutSection(
+                    title: 'Reminder Diagnostics',
+                    child: remindersAsync.when(
+                      data: (reminders) => _ReminderDiagnosticsCard(
+                        diagnostics: _diagnostics,
+                        remindersCount: reminders.length,
+                        lastRepositoryResyncError: _lastRepositoryResyncError,
+                        isRefreshing: _isRefreshingDiagnostics,
+                        onRefresh: _refreshDiagnostics,
+                        onResync: () => _resyncReminderNotifications(reminders),
+                      ),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (error, _) => Text(
+                        'Unable to load reminder diagnostics: $error',
+                        style: textTheme.bodyMedium,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -185,6 +264,189 @@ class _FeatureBullet extends StatelessWidget {
           ),
           Expanded(
             child: Text(text),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReminderDiagnosticsCard extends StatelessWidget {
+  const _ReminderDiagnosticsCard({
+    required this.diagnostics,
+    required this.remindersCount,
+    required this.lastRepositoryResyncError,
+    required this.isRefreshing,
+    required this.onRefresh,
+    required this.onResync,
+  });
+
+  final ReminderNotificationDiagnostics? diagnostics;
+  final int remindersCount;
+  final String? lastRepositoryResyncError;
+  final bool isRefreshing;
+  final Future<void> Function() onRefresh;
+  final Future<void> Function() onResync;
+
+  @override
+  Widget build(BuildContext context) {
+    final bodyStyle = Theme.of(context).textTheme.bodyMedium;
+    final scheduledTasks = diagnostics?.scheduledTasks ?? const [];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Use this section to confirm whether reminder alarms are actually scheduled on this device.',
+          style: bodyStyle,
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            OutlinedButton.icon(
+              onPressed: isRefreshing ? null : onRefresh,
+              icon: isRefreshing
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.refresh),
+              label: const Text('Refresh'),
+            ),
+            FilledButton.icon(
+              onPressed: isRefreshing ? null : onResync,
+              icon: const Icon(Icons.alarm),
+              label: const Text('Re-sync reminders'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _DiagnosticRow(
+          label: 'Saved reminders',
+          value: '$remindersCount',
+        ),
+        _DiagnosticRow(
+          label: 'Notifications permission',
+          value: _boolLabel(diagnostics?.notificationsGranted),
+        ),
+        _DiagnosticRow(
+          label: 'WorkManager initialized',
+          value: _boolLabel(diagnostics?.workManagerInitialized),
+        ),
+        _DiagnosticRow(
+          label: 'Service instance id',
+          value: '${diagnostics?.serviceInstanceId ?? 0}',
+        ),
+        _DiagnosticRow(
+          label: 'Sync run count',
+          value: '${diagnostics?.syncRunCount ?? 0}',
+        ),
+        _DiagnosticRow(
+          label: 'Last sync attempt',
+          value: diagnostics?.lastSyncAttemptAtIso ?? '(none)',
+        ),
+        _DiagnosticRow(
+          label: 'Reminders seen in last sync',
+          value: '${diagnostics?.totalRemindersSeen ?? 0}',
+        ),
+        _DiagnosticRow(
+          label: 'Eligible reminders in last sync',
+          value: '${diagnostics?.eligibleRemindersSeen ?? 0}',
+        ),
+        _DiagnosticRow(
+          label: 'Grouped schedules prepared',
+          value: '${diagnostics?.groupedNotificationsPrepared ?? 0}',
+        ),
+        _DiagnosticRow(
+          label: 'Scheduled WorkManager tasks',
+          value: '${scheduledTasks.length}',
+        ),
+        if (diagnostics?.lastScheduleError != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Scheduler error: ${diagnostics!.lastScheduleError}',
+            style: bodyStyle,
+          ),
+        ],
+        if (lastRepositoryResyncError != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Repository resync error: $lastRepositoryResyncError',
+            style: bodyStyle,
+          ),
+        ],
+        if (scheduledTasks.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          for (final task in scheduledTasks)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                ),
+                child: Text(
+                  task,
+                  style: bodyStyle,
+                ),
+              ),
+            ),
+        ],
+        if (scheduledTasks.isEmpty && diagnostics != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            'No scheduled WorkManager tasks are currently registered. That means Android has nothing queued to fire.',
+            style: bodyStyle,
+          ),
+        ],
+        const SizedBox(height: 8),
+        Text(
+          'Expected reminder fire time is 8:00 AM local time on each reminder due date.',
+          style: bodyStyle,
+        ),
+      ],
+    );
+  }
+
+  String _boolLabel(bool? value) {
+    if (value == null) return 'Unknown';
+    return value ? 'Yes' : 'No';
+  }
+}
+
+class _DiagnosticRow extends StatelessWidget {
+  const _DiagnosticRow({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
           ),
         ],
       ),
