@@ -333,8 +333,8 @@ class _ReminderDiagnosticsCard extends StatelessWidget {
           value: _boolLabel(diagnostics?.notificationsGranted),
         ),
         _DiagnosticRow(
-          label: 'WorkManager initialized',
-          value: _boolLabel(diagnostics?.workManagerInitialized),
+          label: 'AlarmManager initialized',
+          value: _boolLabel(diagnostics?.alarmManagerInitialized),
         ),
         _DiagnosticRow(
           label: 'Service instance id',
@@ -361,8 +361,8 @@ class _ReminderDiagnosticsCard extends StatelessWidget {
           value: '${diagnostics?.groupedNotificationsPrepared ?? 0}',
         ),
         _DiagnosticRow(
-          label: 'Scheduled WorkManager tasks',
-          value: '${scheduledTasks.length}',
+          label: 'Scheduled AlarmManager alarms',
+          value: '${diagnostics?.groupedNotificationsPrepared ?? 0}',
         ),
         if (diagnostics?.lastScheduleError != null) ...[
           const SizedBox(height: 8),
@@ -397,10 +397,10 @@ class _ReminderDiagnosticsCard extends StatelessWidget {
               ),
             ),
         ],
-        if (scheduledTasks.isEmpty && diagnostics != null) ...[
+        if (scheduledTasks.isEmpty && diagnostics != null && (diagnostics?.groupedNotificationsPrepared ?? 0) == 0) ...[
           const SizedBox(height: 8),
           Text(
-            'No scheduled WorkManager tasks are currently registered. That means Android has nothing queued to fire.',
+            'No scheduled AlarmManager alarms are currently registered. That means Android has nothing queued to fire.',
             style: bodyStyle,
           ),
         ],

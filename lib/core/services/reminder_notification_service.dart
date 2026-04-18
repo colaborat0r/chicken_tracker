@@ -59,7 +59,7 @@ class ReminderNotificationDiagnostics {
     required this.syncRunCount,
     required this.lastSyncAttemptAtIso,
     required this.notificationsGranted,
-    required this.workManagerInitialized,
+    required this.alarmManagerInitialized,
     required this.scheduledTasks,
     required this.totalRemindersSeen,
     required this.eligibleRemindersSeen,
@@ -71,7 +71,7 @@ class ReminderNotificationDiagnostics {
   final int syncRunCount;
   final String? lastSyncAttemptAtIso;
   final bool notificationsGranted;
-  final bool workManagerInitialized;
+  final bool alarmManagerInitialized;
   final List<String> scheduledTasks;
   final int totalRemindersSeen;
   final int eligibleRemindersSeen;
@@ -101,7 +101,7 @@ class ReminderNotificationService {
   Future<void> initialize() async {
     if (!Platform.isAndroid || _isInitialized) return;
 
-    // WorkManager is already initialized in main.dart
+    // AlarmManager is already initialized in main.dart
     // Only initialize local notifications plugin here
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -256,7 +256,7 @@ class ReminderNotificationService {
       syncRunCount: _syncRunCount,
       lastSyncAttemptAtIso: _lastSyncAttemptAt?.toIso8601String(),
       notificationsGranted: notificationStatus.isGranted,
-      workManagerInitialized: _isInitialized,
+      alarmManagerInitialized: _isInitialized,
       scheduledTasks: scheduledTasks,
       totalRemindersSeen: _lastTotalRemindersSeen,
       eligibleRemindersSeen: _lastEligibleRemindersSeen,
@@ -284,7 +284,7 @@ class ReminderNotificationService {
   }
 
   Future<List<String>> _getScheduledTasks() async {
-    // WorkManager doesn't provide a direct way to list scheduled tasks
+    // AlarmManager doesn't provide a direct way to list scheduled alarms
     // This is a limitation, but we can return an empty list for now
     return [];
   }
