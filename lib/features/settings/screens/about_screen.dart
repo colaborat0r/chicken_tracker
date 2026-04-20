@@ -362,7 +362,7 @@ class _ReminderDiagnosticsCard extends StatelessWidget {
         ),
         _DiagnosticRow(
           label: 'Scheduled AlarmManager alarms',
-          value: '${diagnostics?.groupedNotificationsPrepared ?? 0}',
+          value: '${scheduledTasks.length}',
         ),
         if (diagnostics?.lastScheduleError != null) ...[
           const SizedBox(height: 8),
@@ -397,7 +397,7 @@ class _ReminderDiagnosticsCard extends StatelessWidget {
               ),
             ),
         ],
-        if (scheduledTasks.isEmpty && diagnostics != null && (diagnostics?.groupedNotificationsPrepared ?? 0) == 0) ...[
+        if (scheduledTasks.isEmpty && diagnostics != null) ...[
           const SizedBox(height: 8),
           Text(
             'No scheduled AlarmManager alarms are currently registered. That means Android has nothing queued to fire.',

@@ -1,57 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 import '../models/reminder_model.dart';
-
-/// Callback function for alarm manager - runs in main isolate
-@pragma('vm:entry-point')
-void alarmCallback(int id, Map<String, dynamic> params) async {
-  try {
-    final title = params['title'] as String? ?? 'Reminder';
-    final body = params['body'] as String? ?? 'You have a reminder';
-    final payload = params['payload' ] as String?;
-    final notificationId = params['notificationId'] as int? ?? 0;
-
-    final plugin = FlutterLocalNotificationsPlugin();
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const settings = InitializationSettings(android: androidSettings);
-    await plugin.initialize(settings);
-
-    const channel = AndroidNotificationChannel(
-      'reminders_channel',
-      'Reminders',
-      description: 'Chicken care reminders',
-      importance: Importance.high,
-    );
-
-    final androidPlugin = plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
-    await androidPlugin?.createNotificationChannel(channel);
-
-    const notificationDetails = NotificationDetails(
-      android: AndroidNotificationDetails(
-        'reminders_channel',
-        'Reminders',
-        channelDescription: 'Chicken care reminders',
-        importance: Importance.high,
-        priority: Priority.high,
-      ),
-    );
-
-    await plugin.show(
-      notificationId,
-      title,
-      body,
-      notificationDetails,
-      payload: payload,
-    );
-  } catch (e) {
-    // Silently fail
-  }
-}
 
 class ReminderNotificationDiagnostics {
   const ReminderNotificationDiagnostics({
@@ -101,13 +56,21 @@ class ReminderNotificationService {
   Future<void> initialize() async {
     if (!Platform.isAndroid || _isInitialized) return;
 
-    // AlarmManager is already initialized in main.dart
-    // Only initialize local notifications plugin here
+    // Initialize timezone data
+    tz.initializeTimeZones();
+    final timezoneInfo = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(timezoneInfo.identifier));
+
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     const settings = InitializationSettings(android: androidSettings);
-
     await _plugin.initialize(settings);
+
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+
+    // Request exact alarm permission on Android 12+
+    await androidPlugin?.requestExactAlarmsPermission();
 
     const channel = AndroidNotificationChannel(
       _channelId,
@@ -115,9 +78,6 @@ class ReminderNotificationService {
       description: _channelDescription,
       importance: Importance.high,
     );
-
-    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
     await androidPlugin?.createNotificationChannel(channel);
 
     _isInitialized = true;
@@ -145,8 +105,10 @@ class ReminderNotificationService {
       return;
     }
 
-    await _clearScheduledReminderTasks();
+    // Cancel all previously scheduled reminder notifications
+    await _cancelAllScheduledReminders();
 
+    // Group active reminders by due date
     final grouped = <DateTime, List<ReminderModel>>{};
     for (final reminder in reminders) {
       if (!reminder.notifyOnAndroid || !reminder.isActive) continue;
@@ -163,16 +125,20 @@ class ReminderNotificationService {
     final now = DateTime.now();
     try {
       for (final entry in grouped.entries) {
+        // Target 8 AM on the due date
         var fireAt = DateTime(
           entry.key.year,
           entry.key.month,
           entry.key.day,
-          8, // 8 AM
+          8,
         );
 
+        // If 8 AM has already passed, fire in 1 minute
         if (fireAt.isBefore(now)) {
           fireAt = now.add(const Duration(minutes: 1));
         }
+
+        final tzFireAt = tz.TZDateTime.from(fireAt, tz.local);
 
         final remindersForDay = entry.value;
         final title = remindersForDay.length == 1
@@ -186,34 +152,55 @@ class ReminderNotificationService {
             : 'reminder-group:${_dateKey(entry.key)}';
         final notificationId = _summaryNotificationId(entry.key);
 
-        final inputData = <String, dynamic>{
-          'title': title,
-          'body': body,
-          'payload': payload,
-          'notificationId': notificationId,
-        };
-
-        final delay = fireAt.difference(now);
-
-        await AndroidAlarmManager.oneShot(
-          delay,
-          notificationId,
-          alarmCallback,
-          params: inputData,
-          exact: true,
-          wakeup: true,
+        const details = NotificationDetails(
+          android: AndroidNotificationDetails(
+            _channelId,
+            _channelName,
+            channelDescription: _channelDescription,
+            importance: Importance.high,
+            priority: Priority.high,
+          ),
         );
+
+        // Try exact alarm first; fall back to inexact if permission is denied.
+        try {
+          await _plugin.zonedSchedule(
+            notificationId,
+            title,
+            body,
+            tzFireAt,
+            details,
+            payload: payload,
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+          );
+        } catch (_) {
+          // Exact alarms require explicit user permission on Android 12+.
+          // Fall back to inexact scheduling, which works without that permission.
+          await _plugin.zonedSchedule(
+            notificationId,
+            title,
+            body,
+            tzFireAt,
+            details,
+            payload: payload,
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+          );
+        }
       }
     } catch (e) {
       _lastScheduleError = e.toString();
-      rethrow;
+      // Do not rethrow — callers (main.dart listener, UI) should not crash.
     }
   }
 
   Future<void> cancelReminder(int reminderId) async {
     if (!Platform.isAndroid) return;
     await initialize();
-    await _clearScheduledReminderTasks();
+    await _cancelAllScheduledReminders();
   }
 
   Future<bool> sendTestNotification() async {
@@ -224,21 +211,19 @@ class ReminderNotificationService {
     final granted = await _ensurePermissionGranted();
     if (!granted) return false;
 
-    const notificationDetails = NotificationDetails(
-      android: AndroidNotificationDetails(
-        _channelId,
-        _channelName,
-        channelDescription: _channelDescription,
-        importance: Importance.high,
-        priority: Priority.high,
-      ),
-    );
-
     await _plugin.show(
       _testNotificationId,
       'Chicken Tracker test',
       'Notifications are working for reminders.',
-      notificationDetails,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          _channelId,
+          _channelName,
+          channelDescription: _channelDescription,
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+      ),
       payload: 'test-notification',
     );
 
@@ -249,7 +234,13 @@ class ReminderNotificationService {
     await initialize();
 
     final notificationStatus = await Permission.notification.status;
-    final scheduledTasks = await _getScheduledTasks();
+
+    // Query the actual pending (scheduled) notifications from the OS
+    final pending = await _plugin.pendingNotificationRequests();
+    final scheduledTasks = pending
+        .where((n) => n.id >= _summaryNotificationBaseId)
+        .map((n) => 'id=${n.id} title=${n.title ?? ""}')
+        .toList();
 
     return ReminderNotificationDiagnostics(
       serviceInstanceId: _serviceInstanceId,
@@ -268,25 +259,20 @@ class ReminderNotificationService {
   Future<bool> _ensurePermissionGranted() async {
     final status = await Permission.notification.status;
     if (status.isGranted) return true;
-
     final updated = await Permission.notification.request();
     return updated.isGranted;
   }
 
-  Future<void> _clearScheduledReminderTasks() async {
+  /// Cancels all scheduled reminder notifications (IDs in the summary range).
+  Future<void> _cancelAllScheduledReminders() async {
     try {
-      // Android Alarm Manager doesn't have a cancelAll method
-      // Tasks are cancelled individually or on app restart
-      // For now, just return - this is a limitation
-    } catch (_) {
-      // Silently fail
-    }
-  }
-
-  Future<List<String>> _getScheduledTasks() async {
-    // AlarmManager doesn't provide a direct way to list scheduled alarms
-    // This is a limitation, but we can return an empty list for now
-    return [];
+      final pending = await _plugin.pendingNotificationRequests();
+      for (final n in pending) {
+        if (n.id >= _summaryNotificationBaseId) {
+          await _plugin.cancel(n.id);
+        }
+      }
+    } catch (_) {}
   }
 
   int _summaryNotificationId(DateTime date) {
