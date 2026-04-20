@@ -1,0 +1,398 @@
+[
+  {
+    "id": "beak-trimming-welfare-alternatives",
+    "title": "Beak Trimming in Backyard Flocks: Welfare, Risks, and Better Alternatives",
+    "category": "Poultry behavior and welfare",
+    "difficulty": "Intermediate",
+    "season": "All seasons",
+    "readMinutes": 9,
+    "tags": ["beak-trimming", "welfare", "feather-pecking", "cannibalism", "enrichment"],
+    "updatedAt": "2026-04-16T10:00:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Beak trimming (often called debeaking) is the partial removal of a chicken’s upper beak—sometimes the lower—to reduce feather pecking, cannibalism, and feed waste. It is common in large commercial layer operations, but for backyard homesteaders with smaller flocks like your 25 birds, it is almost always unnecessary and can be avoided with good management."
+      },
+      {
+        "type": "warning",
+        "title": "Important welfare note",
+        "text": "The procedure causes acute pain and may lead to chronic nerve issues (neuromas) in some birds. Many countries have banned or restricted it for welfare reasons. In your backyard setup, focus on prevention instead of trimming."
+      },
+      {
+        "type": "paragraph",
+        "text": "Modern beak treatment uses either a hot blade (cuts and cauterizes) or infrared (IR) light at the hatchery on day-old chicks. IR is considered less painful because there is no open wound—the beak tip simply erodes naturally over 7–10 days."
+      },
+      {
+        "type": "checklist",
+        "title": "When commercial farms trim (for context only)",
+        "items": [
+          "Day-old chicks in the hatchery (preferred IR method)",
+          "Up to 10 days old on the farm (hot blade)",
+          "Rarely at 5–10 weeks if regrowth occurs (higher risk of pain)"
+        ]
+      },
+      {
+        "type": "warning",
+        "title": "Risks if done incorrectly",
+        "text": "Excessive bleeding, infection, reduced feed intake, weight loss, or refusal to eat. Older birds (beyond 10 days) experience more pain and longer recovery. Never attempt this yourself without training—consult a vet or experienced keeper."
+      },
+      {
+        "type": "checklist",
+        "title": "Best practices (only if absolutely necessary)",
+        "items": [
+          "Use infrared treatment on day-old chicks when possible",
+          "Ensure tools are sharp, sanitized, and used by trained personnel",
+          "Trim no more than 1/4 to 1/3 of the upper beak tip",
+          "Provide vitamin K and C support plus soft mash feed and easy-access water for 1–2 weeks after",
+          "Monitor every bird closely for eating and behavior changes"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "For your 25-bird homestead flock in Trinidad’s humid climate, beak trimming is rarely needed. Feather pecking and cannibalism usually stem from boredom, overcrowding, poor ventilation, or nutritional stress—not an inevitable behavior."
+      },
+      {
+        "type": "checklist",
+        "title": "Proven alternatives that work for backyard flocks",
+        "items": [
+          "Give more space: at least 4 sq ft per bird in the coop + 10 sq ft in the run",
+          "Add environmental enrichment: pecking blocks, straw bales, hanging greens, dust baths, and scattered foraging material",
+          "Use dim or red lighting to reduce activity and aggression",
+          "Provide multiple feeders and waterers to cut competition",
+          "Choose calmer breeds and maintain excellent nutrition (balanced protein and oyster shell)",
+          "Keep the coop well-ventilated and clean to lower stress"
+        ]
+      },
+      {
+        "type": "tip",
+        "title": "Pro tip for your homestead",
+        "text": "Start with a dust bath station and daily scatter of greens or treats in the run. Most backyard keepers who focus on space and enrichment never need to consider trimming. Your calm, busy flock will thank you—and so will their welfare."
+      },
+      {
+        "type": "link",
+        "label": "Read the full eXtension guide on beak trimming for small flocks",
+        "url": "https://articles.extension.org/pages/66245/beak-trimming-of-poultry-in-small-and-backyard-poultry-flocks"
+      }
+    ]
+  },
+  {
+    "id": "supplemental-lighting-egg-production",
+    "title": "Supplemental Lighting for Egg Production: Bulbs, Timers & Red Lights",
+    "category": "Lighting and egg production",
+    "difficulty": "Intermediate",
+    "season": "Winter",
+    "readMinutes": 7,
+    "tags": ["lighting", "egg production", "red light", "bulbs", "timers"],
+    "updatedAt": "2026-04-14T17:00:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Short winter days kill egg production fast. Adding 14–16 total hours of light per day keeps your layers laying without forcing a stressful molt."
+      },
+      {
+        "type": "paragraph",
+        "text": "A simple timer + the right bulb is all most backyard flocks need. Red lights add an extra calm factor that many homesteaders swear by."
+      },
+      {
+        "type": "checklist",
+        "title": "Lighting setup checklist",
+        "items": [
+          "Install a heavy-duty outdoor timer on a dedicated circuit",
+          "Use one 40–60 W equivalent LED or incandescent bulb per 100 sq ft of coop floor",
+          "Hang lights high and off to the side so birds aren’t staring directly into them",
+          "Start adding light gradually in early fall (15–30 min extra per week)",
+          "Switch to red bulbs if you notice pecking or aggression"
+        ]
+      },
+      {
+        "type": "warning",
+        "title": "Fire & safety first",
+        "text": "Never leave heat lamps on overnight for lighting — use cool LED bulbs only. Always use outdoor-rated cords and a GFCI outlet in the coop."
+      },
+      {
+        "type": "tip",
+        "title": "Why red light works so well",
+        "text": "Chickens see red poorly, so a red bulb feels like “dim daylight” to them. It stimulates laying while reducing stress and cannibalism at the same time."
+      },
+      {
+        "type": "link",
+        "label": "Safe coop electrical tips from Extension experts",
+        "url": "https://extension.psu.edu/programs/4-h/projects/raising-poultry/lighting-for-poultry"
+      }
+    ]
+  },
+  {
+    "id": "chicken-feed-types-quantities",
+    "title": "Chicken Feed Types, Forms & Daily Feeding Amounts",
+    "category": "Feeding and nutrition",
+    "difficulty": "Intermediate",
+    "season": "All seasons",
+    "readMinutes": 9,
+    "tags": ["feed-types", "nutrition", "starter", "grower", "layer", "quantities"],
+    "updatedAt": "2026-04-14T17:00:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Complete feeds are balanced for each life stage. Offer them free-choice with fresh water and grit (after 2–3 weeks). Treats and scratch should stay under 10% of the diet."
+      },
+      {
+        "type": "checklist",
+        "title": "Life-stage feed comparison",
+        "items": [
+          "Chick Starter (0–6/8 weeks): 18–24% protein, low calcium – builds fast growth",
+          "Grower/Pullet (6–20 weeks): 14–18% protein – steady frame development",
+          "Layer (18+ weeks): 15–18% protein, 3–4% calcium – strong shells and eggs",
+          "Broiler Finisher (final weeks): higher energy for meat birds"
+        ]
+      },
+      {
+        "type": "checklist",
+        "title": "Daily feed per bird (free-choice)",
+        "items": [
+          "0–2 weeks starter: 0.5–1 oz",
+          "2–4 weeks starter: 1–1.5 oz",
+          "4–8 weeks starter: 1.5–2.5 oz",
+          "8–20 weeks grower: 2.5–4 oz",
+          "18+ weeks layer: 3.5–5 oz"
+        ]
+      },
+      {
+        "type": "tip",
+        "title": "For your 25-bird flock",
+        "text": "Weeks 1–2: very low intake. By weeks 5–8 you’ll go through 15–25+ lb of starter weekly. Adjust for breed, heat, and free-ranging—healthy birds with full crops at night are on track."
+      }
+    ]
+  },
+  {
+    "id": "starter-feed-chicks",
+    "title": "Starter Feed for Baby Chicks: Timing, Quantities & Storage",
+    "category": "Feeding and nutrition",
+    "difficulty": "Beginner",
+    "season": "All seasons",
+    "readMinutes": 7,
+    "tags": ["starter-feed", "chicks", "quantities", "storage", "buying"],
+    "updatedAt": "2026-04-14T17:00:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Baby chicks need high-protein starter feed (18–22%) for the first 6–8 weeks until they’re fully feathered and look like little chickens. After that, switch to grower feed to avoid excess protein."
+      },
+      {
+        "type": "checklist",
+        "title": "How much to buy for 25 chicks",
+        "items": [
+          "Expect roughly 6–8 lb of starter per chick over the full period",
+          "Total for your flock: 150–200 lb (don’t buy it all at once)",
+          "Start with one or two 25–50 lb bags for weeks 1–4",
+          "Add a 50 lb bag for the rest—most backyarders find this lasts 4–6 weeks"
+        ]
+      },
+      {
+        "type": "warning",
+        "title": "Feed storage in humid climates",
+        "text": "In warm, humid areas like Trinidad, use it within 3–4 months max. Store in airtight metal or heavy plastic bins off the ground, cool and dry. Toss any musty, moldy, or buggy feed immediately."
+      },
+      {
+        "type": "tip",
+        "title": "Pro tip",
+        "text": "Always offer free-choice starter so chicks self-regulate. Scatter a little on paper towels the first day to help weak eaters learn fast."
+      }
+    ]
+  },
+  {
+    "id": "red-heat-lamps-brooding",
+    "title": "Red Heat Lamps for Brooding Chicks",
+    "category": "Brooding chicks",
+    "difficulty": "Beginner",
+    "season": "All seasons",
+    "readMinutes": 6,
+    "tags": ["brooding", "heat-lamp", "red-light", "chicks", "temperature"],
+    "updatedAt": "2026-04-14T17:00:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "The light bulb in your brooder—usually a red or white heat lamp—keeps day-old chicks warm because they can’t regulate their own body temperature yet. A steady 95–100°F (35–38°C) under the lamp for the first week mimics a mother hen and prevents piling, chilling, or death."
+      },
+      {
+        "type": "warning",
+        "title": "Temperature matters most",
+        "text": "Start at 95°F directly under the lamp and drop 5°F each week. Always watch chick behavior—huddling under the lamp means too cold; spreading out and panting means too hot."
+      },
+      {
+        "type": "checklist",
+        "title": "Why red light is the homestead favorite",
+        "items": [
+          "Delivers radiant heat while letting chicks rest at night",
+          "Reduces pecking and cannibalism by masking blood and calming the flock",
+          "Lowers stress and aggression in dense brooders",
+          "Stimulates reproductive hormones later for earlier lay in pullets"
+        ]
+      },
+      {
+        "type": "tip",
+        "title": "Pro tip for your 25 chicks",
+        "text": "Use a red heat lamp 18–24 inches above the brooder floor. Combine with free-choice starter feed and check temperatures twice daily—your calm, evenly spread chicks will thank you."
+      }
+    ]
+  },
+  {
+    "id": "brooding-week-one",
+    "title": "Brooding Chicks: Week One Essentials",
+    "category": "Brooding chicks",
+    "difficulty": "Beginner",
+    "season": "All seasons",
+    "readMinutes": 6,
+    "tags": ["brooding", "temperature", "water", "starter feed"],
+    "updatedAt": "2026-04-01T00:00:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "The first week sets the pace for healthy growth. Keep chicks warm, dry, and eating within the first 24 hours after arrival."
+      },
+      {
+        "type": "warning",
+        "title": "Critical temperature range",
+        "text": "Start at 95°F (35°C) directly under the heat source, then reduce by 5°F each week. Watch chick behavior instead of relying only on a thermometer."
+      },
+      {
+        "type": "checklist",
+        "title": "Daily checklist",
+        "items": [
+          "Refresh water twice daily and clean drinkers",
+          "Provide chick starter feed at all times",
+          "Inspect vents for pasting and clean gently if needed",
+          "Replace damp bedding immediately"
+        ]
+      },
+      {
+        "type": "tip",
+        "title": "Pro tip",
+        "text": "Scatter a small amount of feed on paper towels on day one so weak eaters learn quickly."
+      }
+    ]
+  },
+  {
+    "id": "feed-efficiency-layers",
+    "title": "Feeding Layers for Better Egg Output",
+    "category": "Feeding and nutrition",
+    "difficulty": "Intermediate",
+    "season": "All seasons",
+    "readMinutes": 7,
+    "tags": ["layers", "calcium", "protein", "grit"],
+    "updatedAt": "2026-03-28T00:00:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Consistent feed quality and timing improve shell strength and production. Sudden feed changes can reduce laying for several days."
+      },
+      {
+        "type": "checklist",
+        "title": "Nutrition routine",
+        "items": [
+          "Use 16% to 18% layer ration as baseline",
+          "Offer oyster shell free-choice for calcium",
+          "Provide insoluble grit if birds range less",
+          "Avoid feeding scratch as more than 10% of diet"
+        ]
+      },
+      {
+        "type": "warning",
+        "title": "Mycotoxin risk",
+        "text": "Store feed dry and elevated off concrete. Moldy feed can cause severe drops in egg production and bird health issues."
+      }
+    ]
+  },
+  {
+    "id": "biosecurity-basics",
+    "title": "Biosecurity Basics for Small Flocks",
+    "category": "Disease prevention and biosecurity",
+    "difficulty": "Beginner",
+    "season": "All seasons",
+    "readMinutes": 8,
+    "tags": ["biosecurity", "quarantine", "disinfection"],
+    "updatedAt": "2026-03-20T00:00:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Simple barriers and routines reduce disease introduction. Keep outside traffic low and isolate new birds before mixing."
+      },
+      {
+        "type": "checklist",
+        "title": "Core controls",
+        "items": [
+          "Quarantine new birds for at least 14 days",
+          "Use dedicated boots for coop area",
+          "Disinfect crates and tools after shared use",
+          "Limit visitors near birds and feeders"
+        ]
+      },
+      {
+        "type": "tip",
+        "title": "Pro tip",
+        "text": "Create a handwashing point near the coop entrance to improve compliance."
+      }
+    ]
+  },
+  {
+    "id": "summer-heat-stress",
+    "title": "Summer Heat Stress Prevention",
+    "category": "Seasonal care (heat/cold)",
+    "difficulty": "Intermediate",
+    "season": "Hot season",
+    "readMinutes": 5,
+    "tags": ["summer", "heat", "hydration", "ventilation"],
+    "updatedAt": "2026-03-15T00:00:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Egg production often declines in high heat. Focus on airflow, cool water, and shade during the hottest hours."
+      },
+      {
+        "type": "warning",
+        "title": "Emergency signs",
+        "text": "Panting with wings spread and lethargy can indicate heat stress. Immediate cooling action is required."
+      },
+      {
+        "type": "checklist",
+        "title": "Heat plan",
+        "items": [
+          "Refill cool water several times per day",
+          "Add shade cloth over exposed runs",
+          "Increase coop airflow with safe fans",
+          "Offer wet mash or water-rich treats in evening"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "egg-handling-storage",
+    "title": "Egg Handling and Safe Storage",
+    "category": "Egg handling and storage",
+    "difficulty": "Beginner",
+    "season": "All seasons",
+    "readMinutes": 6,
+    "tags": ["eggs", "cleaning", "storage", "safety"],
+    "updatedAt": "2026-03-10T00:00:00.000Z",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Handle eggs gently and cool them quickly for best quality. Collection timing affects cleanliness and crack rates."
+      },
+      {
+        "type": "checklist",
+        "title": "Collection standards",
+        "items": [
+          "Collect at least twice daily",
+          "Discard heavily cracked eggs",
+          "Dry clean first; wet wash only when needed",
+          "Store point-down in cartons"
+        ]
+      },
+      {
+        "type": "link",
+        "label": "Review local egg sale regulations",
+        "url": "https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/eggs"
+      }
+    ]
+  }
+]

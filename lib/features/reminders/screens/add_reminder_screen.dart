@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../../core/models/reminder_model.dart';
+import '../../../core/providers/database_providers.dart';
 import '../../../core/providers/notification_providers.dart';
 import '../../../core/providers/repository_providers.dart';
+import '../../../core/services/google_calendar_service.dart';
 
 class AddReminderScreen extends ConsumerStatefulWidget {
   /// If non-null the screen operates in edit mode
@@ -31,6 +33,7 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
   bool _notifyOnAndroid = true;
   bool _isLoading = false;
   bool _isSendingTestNotification = false;
+  bool _isAddingToCalendar = false;
 
   bool get _isEdit => widget.reminderToEdit != null;
 
@@ -94,6 +97,8 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
+    ReminderModel? savedReminder;
+
     try {
       final repo = ref.read(reminderRepositoryProvider);
       if (_isEdit) {
@@ -108,6 +113,7 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
           notifyOnAndroid: _notifyOnAndroid,
         );
         await repo.updateReminder(updated);
+        savedReminder = updated;
       } else {
         await repo.addReminder(
           type: _selectedType,
@@ -119,14 +125,14 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
               : _notesController.text.trim(),
           notifyOnAndroid: _notifyOnAndroid,
         );
+        // Fetch the just-created reminder for calendar use
+        final all = await ref.read(allRemindersProvider.future);
+        savedReminder = all
+            .where((r) => r.title == _titleController.text.trim())
+            .lastOrNull;
       }
+
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_isEdit ? 'Reminder updated!' : 'Reminder created!'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
 
       if (_notifyOnAndroid) {
         final permissionStatus = await Permission.notification.status;
@@ -143,6 +149,13 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
       }
 
       if (!mounted) return;
+
+      // Offer to add to Google Calendar
+      if (savedReminder != null) {
+        await _showCalendarDialog(savedReminder);
+      }
+
+      if (!mounted) return;
       context.pop();
     } catch (e) {
       if (!mounted) return;
@@ -154,6 +167,62 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
     }
   }
 
+  /// Shows a dialog offering to open Google Calendar with the reminder details.
+  Future<void> _showCalendarDialog(ReminderModel reminder) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(Icons.calendar_month, size: 32),
+        title: const Text('Add to Google Calendar?'),
+        content: Text(
+          'Open Google Calendar to create a recurring all-day event for '
+          '"${reminder.title}" starting ${DateFormat('MMM d, y').format(reminder.nextDueDate)}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Skip'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(ctx, true),
+            icon: const Icon(Icons.open_in_new, size: 16),
+            label: const Text('Open Calendar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      await _addToGoogleCalendar(reminder);
+    }
+  }
+
+  Future<void> _addToGoogleCalendar(ReminderModel reminder) async {
+    setState(() => _isAddingToCalendar = true);
+    try {
+      final opened = await GoogleCalendarService.addToGoogleCalendar(reminder);
+      if (!mounted) return;
+      if (!opened) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not open Google Calendar. Is it installed?'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error opening Google Calendar: $e'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isAddingToCalendar = false);
+    }
+  }
+
   Future<void> _sendTestNotification() async {
     setState(() => _isSendingTestNotification = true);
 
@@ -161,6 +230,16 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
       final sent = await ref
           .read(reminderNotificationServiceProvider)
           .sendTestNotification();
+
+      // If the permission prompt was previously blocked/unknown, the test
+      // notification can succeed only after the user approves it. In that
+      // case, we must also rebuild the scheduled reminder alarms.
+      if (sent) {
+        final reminders = await ref.read(allRemindersProvider.future);
+        await ref
+            .read(reminderNotificationServiceProvider)
+            .resyncActiveReminders(reminders);
+      }
 
       if (!mounted) return;
 
@@ -445,6 +524,46 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
                       _isEdit ? 'Update Reminder' : 'Create Reminder',
                       style: const TextStyle(
                           fontSize: 16, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // ── Google Calendar button ───────────────────────────────
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: OutlinedButton.icon(
+                    onPressed: (_isAddingToCalendar || _isLoading)
+                        ? null
+                        : () async {
+                            if (!_formKey.currentState!.validate()) return;
+                            // Build a temporary model from current form state
+                            final tempReminder = ReminderModel(
+                              id: widget.reminderToEdit?.id ?? 0,
+                              type: _selectedType,
+                              title: _titleController.text.trim(),
+                              frequencyDays: _effectiveFrequencyDays,
+                              nextDueDate: _nextDueDate,
+                              notes: _notesController.text.trim().isEmpty
+                                  ? null
+                                  : _notesController.text.trim(),
+                              isActive: true,
+                              notifyOnAndroid: _notifyOnAndroid,
+                            );
+                            await _addToGoogleCalendar(tempReminder);
+                          },
+                    icon: _isAddingToCalendar
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.calendar_month_outlined),
+                    label: const Text(
+                      'Add to Google Calendar',
+                      style: TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),

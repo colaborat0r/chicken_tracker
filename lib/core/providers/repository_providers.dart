@@ -3,6 +3,7 @@ import 'database_providers.dart';
 import 'notification_providers.dart';
 import '../repositories/chicken_repository.dart';
 import '../repositories/reminder_repository.dart';
+import '../../features/guides/repositories/guides_repository.dart';
 
 /// Repository provider for chickens
 final chickenRepositoryProvider = Provider<ChickenRepository>((ref) {
@@ -33,4 +34,10 @@ final reminderRepositoryProvider = Provider<ReminderRepository>((ref) {
   final db = ref.watch(databaseProvider);
   final notificationService = ref.watch(reminderNotificationServiceProvider);
   return ReminderRepository(db, notificationService);
+});
+
+/// Repository provider for guides and bookmarks
+final guidesRepositoryProvider = Provider<GuidesRepository>((ref) {
+  final db = ref.watch(databaseProvider);
+  return GuidesRepository(db);
 });

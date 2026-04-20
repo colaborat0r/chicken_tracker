@@ -21,6 +21,10 @@ import 'package:chicken_tracker/features/settings/screens/data_management_screen
 import 'package:chicken_tracker/features/settings/screens/about_screen.dart';
 import 'package:chicken_tracker/features/reminders/screens/reminders_screen.dart';
 import 'package:chicken_tracker/features/reminders/screens/add_reminder_screen.dart';
+import 'package:chicken_tracker/features/guides/screens/guides_home_screen.dart';
+import 'package:chicken_tracker/features/guides/screens/guides_list_screen.dart';
+import 'package:chicken_tracker/features/guides/screens/guide_detail_screen.dart';
+import 'package:chicken_tracker/features/guides/screens/saved_guides_screen.dart';
 import 'package:chicken_tracker/core/models/chicken_model.dart';
 import 'package:chicken_tracker/core/models/reminder_model.dart';
 
@@ -47,6 +51,10 @@ class Routes {
   static const String about = '/about';
   static const String reminders = '/reminders';
   static const String addReminder = '/add-reminder';
+  static const String guidesHome = '/guides-home';
+  static const String guides = '/guides';
+  static const String guideDetail = '/guides/:id';
+  static const String savedGuides = '/saved-guides';
 }
 
 /// GoRouter configuration for the app
@@ -185,6 +193,36 @@ final goRouter = GoRouter(
           reminderToEdit: extra is ReminderModel ? extra : null,
         );
       },
+    ),
+
+    // Guides home screen
+    GoRoute(
+      path: Routes.guidesHome,
+      builder: (context, state) => const GuidesHomeScreen(),
+    ),
+
+    // Guides library screen
+    GoRoute(
+      path: Routes.guides,
+      builder: (context, state) {
+        final category = state.uri.queryParameters['category'];
+        return GuidesListScreen(initialCategory: category);
+      },
+    ),
+
+    // Guide detail screen (deep link ready)
+    GoRoute(
+      path: Routes.guideDetail,
+      builder: (context, state) {
+        final id = state.pathParameters['id'] ?? '';
+        return GuideDetailScreen(guideId: id);
+      },
+    ),
+
+    // Saved guides screen
+    GoRoute(
+      path: Routes.savedGuides,
+      builder: (context, state) => const SavedGuidesScreen(),
     ),
   ],
 

@@ -1,7 +1,7 @@
 name: chicken_tracker
 description: Beautiful offline-first Chicken & Egg Production Tracker for homesteaders.
 publish_to: 'none'
-version: 1.0.1+2
+version: 1.2.0+3
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -75,3 +75,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icons/
+    - assets/guides/

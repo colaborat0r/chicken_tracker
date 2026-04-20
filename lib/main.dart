@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'config/router.dart';
+import 'core/models/reminder_model.dart';
+import 'core/providers/database_providers.dart';
 import 'core/providers/notification_providers.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   runApp(const ProviderScope(child: ChickenTrackerApp()));
 }
+
 
 class ChickenTrackerApp extends ConsumerStatefulWidget {
   const ChickenTrackerApp({super.key});
@@ -19,13 +24,21 @@ class _ChickenTrackerAppState extends ConsumerState<ChickenTrackerApp> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      ref.read(reminderNotificationServiceProvider).initialize();
+    Future.microtask(() async {
+      await ref.read(reminderNotificationServiceProvider).initialize();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AsyncValue<List<ReminderModel>>>(allRemindersProvider, (_, next) {
+      next.whenData((reminders) {
+        ref.read(reminderNotificationServiceProvider).resyncActiveReminders(
+              reminders,
+            );
+      });
+    });
+
     return MaterialApp.router(
       builder: (context, child) {
         if (child == null) return const SizedBox.shrink();

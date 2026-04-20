@@ -8,6 +8,7 @@ import '../services/reminder_notification_service.dart';
 class ReminderRepository {
   final AppDatabase database;
   final ReminderNotificationService notificationService;
+  String? _lastResyncError;
 
   ReminderRepository(this.database, this.notificationService);
 
@@ -30,18 +31,7 @@ class ReminderRepository {
       notifyOnAndroid: Value(notifyOnAndroid),
     ));
 
-    await _scheduleReminderSafely(
-      ReminderModel(
-        id: id,
-        type: type,
-        title: title,
-        frequencyDays: frequencyDays,
-        nextDueDate: nextDueDate,
-        notes: notes,
-        isActive: true,
-        notifyOnAndroid: notifyOnAndroid,
-      ),
-    );
+    await _resyncNotificationsSafely();
 
     return id;
   }
@@ -60,9 +50,7 @@ class ReminderRepository {
 
     await database.markReminderDone(reminder.id, nextDueDate);
 
-    await _scheduleReminderSafely(
-      reminder.copyWith(nextDueDate: nextDueDate),
-    );
+    await _resyncNotificationsSafely();
   }
 
   /// Update an existing reminder's details
@@ -78,29 +66,30 @@ class ReminderRepository {
       notifyOnAndroid: model.notifyOnAndroid,
     );
 
-    await _scheduleReminderSafely(model);
+    await _resyncNotificationsSafely();
   }
 
   /// Delete a reminder permanently
   Future<void> deleteReminder(int id) async {
     await database.deleteReminder(id);
-    await _cancelReminderSafely(id);
+    await _resyncNotificationsSafely();
   }
 
-  Future<void> _scheduleReminderSafely(ReminderModel model) async {
-    try {
-      await notificationService.scheduleReminder(model);
-    } catch (e, st) {
-      debugPrint('Failed to schedule reminder notification: $e');
-      debugPrint('$st');
-    }
+  Future<void> resyncNotificationsFromDatabase() async {
+    await _resyncNotificationsSafely();
   }
 
-  Future<void> _cancelReminderSafely(int id) async {
+  String? get lastResyncError => _lastResyncError;
+
+  Future<void> _resyncNotificationsSafely() async {
     try {
-      await notificationService.cancelReminder(id);
+      _lastResyncError = null;
+      final allReminders = await database.getAllRemindersSnapshot();
+      await notificationService
+          .resyncActiveReminders(allReminders.map(reminderFromDb).toList());
     } catch (e, st) {
-      debugPrint('Failed to cancel reminder notification: $e');
+      _lastResyncError = e.toString();
+      debugPrint('Failed to resync reminder notifications: $e');
       debugPrint('$st');
     }
   }
