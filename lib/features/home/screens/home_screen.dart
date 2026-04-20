@@ -281,12 +281,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       icon: Icons.pets,
                       color: const Color(0xFFE08A24),
                       provider: flockCountProvider,
+                      onTap: () => context.push(Routes.chickenList),
                     ),
                     _StatCardAsync(
                       label: 'Eggs Today',
                       icon: Icons.egg,
                       color: const Color(0xFFDAA520),
                       provider: todayEggCountProvider,
+                      onTap: () => context.push(Routes.productionHistory),
                     ),
                     _StatCardAsync(
                       label: 'This Month Expenses',
@@ -295,6 +297,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       provider: thisMonthExpensesTotalProvider,
                       formatter: (value) => NumberFormat.currency(symbol: '\$')
                           .format((value as num?) ?? 0),
+                      onTap: () => context.push(Routes.expenses),
                     ),
                     _StatCardAsync(
                       label: 'This Month Sales',
@@ -303,6 +306,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       provider: thisMonthSalesTotalProvider,
                       formatter: (value) => NumberFormat.currency(symbol: '\$')
                           .format((value as num?) ?? 0),
+                      onTap: () => context.push(Routes.sales),
                     ),
                   ],
                 ),
@@ -753,6 +757,7 @@ class _StatCardAsync extends ConsumerWidget {
   final Color color;
   final ProviderListenable<dynamic> provider;
   final String Function(dynamic value)? formatter;
+  final VoidCallback? onTap;
 
   const _StatCardAsync({
     required this.label,
@@ -760,6 +765,7 @@ class _StatCardAsync extends ConsumerWidget {
     required this.color,
     required this.provider,
     this.formatter,
+    this.onTap,
   });
 
   @override
@@ -769,9 +775,13 @@ class _StatCardAsync extends ConsumerWidget {
       elevation: 1,
       color: isDark ? const Color(0xFF222222) : Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Builder(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Builder(
           builder: (context) {
             final asyncValue = ref.watch(provider);
             if (asyncValue.isLoading) {
@@ -862,6 +872,7 @@ class _StatCardAsync extends ConsumerWidget {
             }
           },
         ),
+      ),
       ),
     );
   }
