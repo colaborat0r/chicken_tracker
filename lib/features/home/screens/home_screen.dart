@@ -363,24 +363,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       onPressed: () => context.push(Routes.reports),
                     ),
                     _ActionChip(
-                      label: 'Data Management',
-                      icon: Icons.storage_outlined,
-                      color: const Color(0xFF5D4037),
-                      onPressed: () => context.push(Routes.dataManagement),
-                    ),
-                    _ActionChip(
-                      label: 'Flock Purchases',
-                      icon: Icons.shopping_bag,
-                      color: const Color(0xFF00695C),
-                      onPressed: () => context.push(Routes.flockPurchases),
-                    ),
-                    _ActionChip(
-                      label: 'Flock Losses',
-                      icon: Icons.warning_amber,
-                      color: const Color(0xFFB71C1C),
-                      onPressed: () => context.push(Routes.flockLosses),
-                    ),
-                    _ActionChip(
                       label: 'Reminders',
                       icon: Icons.alarm,
                       color: const Color(0xFF2E7D32),
