@@ -2,6 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/chicken_model.dart';
 import 'database_providers.dart';
 
+// Chart view mode enum
+enum ChartViewMode { line, bar }
+
+/// Provider for tracking which chart view mode is selected (line or bar)
+final chartViewModeProvider = StateProvider<ChartViewMode>((ref) => ChartViewMode.bar);
+
 /// Helper function to get the start of the week (Monday)
 DateTime _getWeekStart(DateTime date) {
   final dayOfWeek = date.weekday; // 1 = Monday, 7 = Sunday

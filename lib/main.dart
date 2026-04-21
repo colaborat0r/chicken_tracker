@@ -5,6 +5,7 @@ import 'config/router.dart';
 import 'core/models/reminder_model.dart';
 import 'core/providers/database_providers.dart';
 import 'core/providers/notification_providers.dart';
+import 'core/providers/theme_providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +40,8 @@ class _ChickenTrackerAppState extends ConsumerState<ChickenTrackerApp> {
       });
     });
 
+    final themeMode = ref.watch(themeModeProvider);
+
     return MaterialApp.router(
       builder: (context, child) {
         if (child == null) return const SizedBox.shrink();
@@ -55,7 +58,7 @@ class _ChickenTrackerAppState extends ConsumerState<ChickenTrackerApp> {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.dark, // default = dark for farm use
+      themeMode: themeMode,
       routerConfig: goRouter,
     );
   }

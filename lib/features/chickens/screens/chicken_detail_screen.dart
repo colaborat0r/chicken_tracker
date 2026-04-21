@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import '../../../core/providers/repository_providers.dart';
 import '../../../core/models/chicken_model.dart';
 
@@ -22,6 +24,7 @@ class _ChickenDetailScreenState extends ConsumerState<ChickenDetailScreen> {
   late TextEditingController _notesController;
   String? _selectedEggColor;
   late String _selectedStatus;
+  String? _photoPath;
   bool _isLoading = false;
 
   final List<String> _eggColors = ['Brown', 'Colored', 'White', 'Other'];
@@ -43,6 +46,7 @@ class _ChickenDetailScreenState extends ConsumerState<ChickenDetailScreen> {
         TextEditingController(text: widget.chicken.notes ?? '');
     _selectedEggColor = widget.chicken.eggColor;
     _selectedStatus = widget.chicken.status;
+    _photoPath = widget.chicken.photoPath;
   }
 
   @override
@@ -62,6 +66,7 @@ class _ChickenDetailScreenState extends ConsumerState<ChickenDetailScreen> {
         eggColor: _selectedEggColor,
         status: _selectedStatus,
         notes: _notesController.text.isEmpty ? null : _notesController.text,
+        photoPath: _photoPath,
       );
 
       await repo.updateChicken(updated);
@@ -109,6 +114,12 @@ class _ChickenDetailScreenState extends ConsumerState<ChickenDetailScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // Delete photo if it exists
+      if (_photoPath != null) {
+        final imageService = ref.read(imageStorageServiceProvider);
+        await imageService.deleteImage(_photoPath!);
+      }
+
       final repo = ref.read(chickenRepositoryProvider);
       await repo.deleteChicken(widget.chicken.id);
 
@@ -126,6 +137,35 @@ class _ChickenDetailScreenState extends ConsumerState<ChickenDetailScreen> {
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final file = File(result.files.first.path!);
+        final imageService = ref.read(imageStorageServiceProvider);
+        final savedPath = await imageService.saveImageToAppDirectory(file);
+        setState(() => _photoPath = savedPath);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error picking image: $e')),
+      );
+    }
+  }
+
+  Future<void> _deletePhoto() async {
+    if (_photoPath != null) {
+      final imageService = ref.read(imageStorageServiceProvider);
+      await imageService.deleteImage(_photoPath!);
+      setState(() => _photoPath = null);
     }
   }
 
@@ -310,6 +350,62 @@ class _ChickenDetailScreenState extends ConsumerState<ChickenDetailScreen> {
               ),
               const SizedBox(height: 24),
 
+              // Photo section
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Photo',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      width: double.infinity,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8),
+                        image: _photoPath != null
+                            ? DecorationImage(
+                          image: FileImage(File(_photoPath!)),
+                          fit: BoxFit.cover,
+                        )
+                            : null,
+                      ),
+                      child: _photoPath == null
+                          ? const Icon(
+                        Icons.add_a_photo,
+                        color: Colors.grey,
+                        size: 48,
+                      )
+                          : null,
+                    ),
+                  ),
+                  if (_photoPath != null) ...[
+                    const SizedBox(height: 8),
+                    ElevatedButton.icon(
+                      onPressed: _deletePhoto,
+                      icon: const Icon(Icons.delete),
+                      label: const Text('Remove Photo'),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 24),
+
               // Save button
               SizedBox(
                 width: double.infinity,
@@ -317,10 +413,10 @@ class _ChickenDetailScreenState extends ConsumerState<ChickenDetailScreen> {
                   onPressed: _isLoading ? null : _updateChicken,
                   icon: _isLoading
                       ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                       : const Icon(Icons.save),
                   label: Text(_isLoading ? 'Saving...' : 'Save Changes'),
                 ),

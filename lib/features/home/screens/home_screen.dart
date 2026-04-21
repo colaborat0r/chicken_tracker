@@ -308,6 +308,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           .format((value as num?) ?? 0),
                       onTap: () => context.push(Routes.sales),
                     ),
+                    _StatCardAsync(
+                      label: 'Profit/Loss',
+                      icon: Icons.trending_up,
+                      color: const Color(0xFF6A1B9A),
+                      provider: thisMonthProfitLossProvider,
+                      formatter: (value) {
+                        final val = (value as num?) ?? 0;
+                        return NumberFormat.currency(symbol: val >= 0 ? '\$' : '-\$')
+                            .format(val.abs());
+                      },
+                      onTap: () => context.push(Routes.reports),
+                    ),
+                    _StatCardAsync(
+                      label: 'Feed/Egg',
+                      icon: Icons.calculate,
+                      color: const Color(0xFF1565C0),
+                      provider: thisMonthFeedCostPerEggProvider,
+                      formatter: (value) =>
+                          '\$${((value as num?) ?? 0).toStringAsFixed(2)}',
+                      onTap: () => context.push(Routes.analytics),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 24),

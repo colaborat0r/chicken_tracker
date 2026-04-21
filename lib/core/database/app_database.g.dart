@@ -48,9 +48,15 @@ class $BirdsTable extends Birds with TableInfo<$BirdsTable, Bird> {
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
       'notes', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _photoPathMeta =
+      const VerificationMeta('photoPath');
+  @override
+  late final GeneratedColumn<String> photoPath = GeneratedColumn<String>(
+      'photo_path', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, breed, eggColor, hatchDate, status, notes];
+      [id, breed, eggColor, hatchDate, status, notes, photoPath];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -86,6 +92,10 @@ class $BirdsTable extends Birds with TableInfo<$BirdsTable, Bird> {
       context.handle(
           _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
     }
+    if (data.containsKey('photo_path')) {
+      context.handle(_photoPathMeta,
+          photoPath.isAcceptableOrUnknown(data['photo_path']!, _photoPathMeta));
+    }
     return context;
   }
 
@@ -107,6 +117,8 @@ class $BirdsTable extends Birds with TableInfo<$BirdsTable, Bird> {
           .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
       notes: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}notes']),
+      photoPath: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}photo_path']),
     );
   }
 
@@ -123,13 +135,15 @@ class Bird extends DataClass implements Insertable<Bird> {
   final DateTime hatchDate;
   final String status;
   final String? notes;
+  final String? photoPath;
   const Bird(
       {required this.id,
       required this.breed,
       this.eggColor,
       required this.hatchDate,
       required this.status,
-      this.notes});
+      this.notes,
+      this.photoPath});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -142,6 +156,9 @@ class Bird extends DataClass implements Insertable<Bird> {
     map['status'] = Variable<String>(status);
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
+    }
+    if (!nullToAbsent || photoPath != null) {
+      map['photo_path'] = Variable<String>(photoPath);
     }
     return map;
   }
@@ -157,6 +174,9 @@ class Bird extends DataClass implements Insertable<Bird> {
       status: Value(status),
       notes:
           notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      photoPath: photoPath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(photoPath),
     );
   }
 
@@ -170,6 +190,7 @@ class Bird extends DataClass implements Insertable<Bird> {
       hatchDate: serializer.fromJson<DateTime>(json['hatchDate']),
       status: serializer.fromJson<String>(json['status']),
       notes: serializer.fromJson<String?>(json['notes']),
+      photoPath: serializer.fromJson<String?>(json['photoPath']),
     );
   }
   @override
@@ -182,6 +203,7 @@ class Bird extends DataClass implements Insertable<Bird> {
       'hatchDate': serializer.toJson<DateTime>(hatchDate),
       'status': serializer.toJson<String>(status),
       'notes': serializer.toJson<String?>(notes),
+      'photoPath': serializer.toJson<String?>(photoPath),
     };
   }
 
@@ -191,7 +213,8 @@ class Bird extends DataClass implements Insertable<Bird> {
           Value<String?> eggColor = const Value.absent(),
           DateTime? hatchDate,
           String? status,
-          Value<String?> notes = const Value.absent()}) =>
+          Value<String?> notes = const Value.absent(),
+          Value<String?> photoPath = const Value.absent()}) =>
       Bird(
         id: id ?? this.id,
         breed: breed ?? this.breed,
@@ -199,6 +222,7 @@ class Bird extends DataClass implements Insertable<Bird> {
         hatchDate: hatchDate ?? this.hatchDate,
         status: status ?? this.status,
         notes: notes.present ? notes.value : this.notes,
+        photoPath: photoPath.present ? photoPath.value : this.photoPath,
       );
   Bird copyWithCompanion(BirdsCompanion data) {
     return Bird(
@@ -208,6 +232,7 @@ class Bird extends DataClass implements Insertable<Bird> {
       hatchDate: data.hatchDate.present ? data.hatchDate.value : this.hatchDate,
       status: data.status.present ? data.status.value : this.status,
       notes: data.notes.present ? data.notes.value : this.notes,
+      photoPath: data.photoPath.present ? data.photoPath.value : this.photoPath,
     );
   }
 
@@ -219,14 +244,15 @@ class Bird extends DataClass implements Insertable<Bird> {
           ..write('eggColor: $eggColor, ')
           ..write('hatchDate: $hatchDate, ')
           ..write('status: $status, ')
-          ..write('notes: $notes')
+          ..write('notes: $notes, ')
+          ..write('photoPath: $photoPath')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      Object.hash(id, breed, eggColor, hatchDate, status, notes);
+      Object.hash(id, breed, eggColor, hatchDate, status, notes, photoPath);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -236,7 +262,8 @@ class Bird extends DataClass implements Insertable<Bird> {
           other.eggColor == this.eggColor &&
           other.hatchDate == this.hatchDate &&
           other.status == this.status &&
-          other.notes == this.notes);
+          other.notes == this.notes &&
+          other.photoPath == this.photoPath);
 }
 
 class BirdsCompanion extends UpdateCompanion<Bird> {
@@ -246,6 +273,7 @@ class BirdsCompanion extends UpdateCompanion<Bird> {
   final Value<DateTime> hatchDate;
   final Value<String> status;
   final Value<String?> notes;
+  final Value<String?> photoPath;
   const BirdsCompanion({
     this.id = const Value.absent(),
     this.breed = const Value.absent(),
@@ -253,6 +281,7 @@ class BirdsCompanion extends UpdateCompanion<Bird> {
     this.hatchDate = const Value.absent(),
     this.status = const Value.absent(),
     this.notes = const Value.absent(),
+    this.photoPath = const Value.absent(),
   });
   BirdsCompanion.insert({
     this.id = const Value.absent(),
@@ -261,6 +290,7 @@ class BirdsCompanion extends UpdateCompanion<Bird> {
     required DateTime hatchDate,
     this.status = const Value.absent(),
     this.notes = const Value.absent(),
+    this.photoPath = const Value.absent(),
   }) : hatchDate = Value(hatchDate);
   static Insertable<Bird> custom({
     Expression<int>? id,
@@ -269,6 +299,7 @@ class BirdsCompanion extends UpdateCompanion<Bird> {
     Expression<DateTime>? hatchDate,
     Expression<String>? status,
     Expression<String>? notes,
+    Expression<String>? photoPath,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -277,6 +308,7 @@ class BirdsCompanion extends UpdateCompanion<Bird> {
       if (hatchDate != null) 'hatch_date': hatchDate,
       if (status != null) 'status': status,
       if (notes != null) 'notes': notes,
+      if (photoPath != null) 'photo_path': photoPath,
     });
   }
 
@@ -286,7 +318,8 @@ class BirdsCompanion extends UpdateCompanion<Bird> {
       Value<String?>? eggColor,
       Value<DateTime>? hatchDate,
       Value<String>? status,
-      Value<String?>? notes}) {
+      Value<String?>? notes,
+      Value<String?>? photoPath}) {
     return BirdsCompanion(
       id: id ?? this.id,
       breed: breed ?? this.breed,
@@ -294,6 +327,7 @@ class BirdsCompanion extends UpdateCompanion<Bird> {
       hatchDate: hatchDate ?? this.hatchDate,
       status: status ?? this.status,
       notes: notes ?? this.notes,
+      photoPath: photoPath ?? this.photoPath,
     );
   }
 
@@ -318,6 +352,9 @@ class BirdsCompanion extends UpdateCompanion<Bird> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
+    if (photoPath.present) {
+      map['photo_path'] = Variable<String>(photoPath.value);
+    }
     return map;
   }
 
@@ -329,7 +366,8 @@ class BirdsCompanion extends UpdateCompanion<Bird> {
           ..write('eggColor: $eggColor, ')
           ..write('hatchDate: $hatchDate, ')
           ..write('status: $status, ')
-          ..write('notes: $notes')
+          ..write('notes: $notes, ')
+          ..write('photoPath: $photoPath')
           ..write(')'))
         .toString();
   }
@@ -3323,6 +3361,7 @@ typedef $$BirdsTableCreateCompanionBuilder = BirdsCompanion Function({
   required DateTime hatchDate,
   Value<String> status,
   Value<String?> notes,
+  Value<String?> photoPath,
 });
 typedef $$BirdsTableUpdateCompanionBuilder = BirdsCompanion Function({
   Value<int> id,
@@ -3331,6 +3370,7 @@ typedef $$BirdsTableUpdateCompanionBuilder = BirdsCompanion Function({
   Value<DateTime> hatchDate,
   Value<String> status,
   Value<String?> notes,
+  Value<String?> photoPath,
 });
 
 class $$BirdsTableFilterComposer extends Composer<_$AppDatabase, $BirdsTable> {
@@ -3358,6 +3398,9 @@ class $$BirdsTableFilterComposer extends Composer<_$AppDatabase, $BirdsTable> {
 
   ColumnFilters<String> get notes => $composableBuilder(
       column: $table.notes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get photoPath => $composableBuilder(
+      column: $table.photoPath, builder: (column) => ColumnFilters(column));
 }
 
 class $$BirdsTableOrderingComposer
@@ -3386,6 +3429,9 @@ class $$BirdsTableOrderingComposer
 
   ColumnOrderings<String> get notes => $composableBuilder(
       column: $table.notes, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get photoPath => $composableBuilder(
+      column: $table.photoPath, builder: (column) => ColumnOrderings(column));
 }
 
 class $$BirdsTableAnnotationComposer
@@ -3414,6 +3460,9 @@ class $$BirdsTableAnnotationComposer
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get photoPath =>
+      $composableBuilder(column: $table.photoPath, builder: (column) => column);
 }
 
 class $$BirdsTableTableManager extends RootTableManager<
@@ -3445,6 +3494,7 @@ class $$BirdsTableTableManager extends RootTableManager<
             Value<DateTime> hatchDate = const Value.absent(),
             Value<String> status = const Value.absent(),
             Value<String?> notes = const Value.absent(),
+            Value<String?> photoPath = const Value.absent(),
           }) =>
               BirdsCompanion(
             id: id,
@@ -3453,6 +3503,7 @@ class $$BirdsTableTableManager extends RootTableManager<
             hatchDate: hatchDate,
             status: status,
             notes: notes,
+            photoPath: photoPath,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -3461,6 +3512,7 @@ class $$BirdsTableTableManager extends RootTableManager<
             required DateTime hatchDate,
             Value<String> status = const Value.absent(),
             Value<String?> notes = const Value.absent(),
+            Value<String?> photoPath = const Value.absent(),
           }) =>
               BirdsCompanion.insert(
             id: id,
@@ -3469,6 +3521,7 @@ class $$BirdsTableTableManager extends RootTableManager<
             hatchDate: hatchDate,
             status: status,
             notes: notes,
+            photoPath: photoPath,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

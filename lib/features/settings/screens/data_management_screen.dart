@@ -7,7 +7,9 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 
 import '../../../core/providers/database_providers.dart';
+import '../../../core/providers/theme_providers.dart';
 import '../../../core/services/backup_service.dart';
+import '../../../core/services/csv_import_service.dart';
 
 enum _BackupSourceAction { saved, browse }
 
@@ -47,6 +49,71 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
     });
   }
 
+  Future<void> _importCsv() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+        allowMultiple: false,
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      final file = File(result.files.first.path!);
+      final fileName = p.basename(file.path);
+
+      // Show import type selection
+      if (!mounted) return;
+      final importType = await showDialog<String>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Import Type'),
+          content: const Text('What would you like to import?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'production'),
+              child: const Text('Production Data'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'flock'),
+              child: const Text('Flock Inventory'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+          ],
+        ),
+      );
+
+      if (importType == null) return;
+
+      setState(() => _isWorking = true);
+
+      final db = ref.read(databaseProvider);
+      final results = importType == 'production'
+          ? await CsvImportService.importProductionCsv(file, db)
+          : await CsvImportService.importFlockInventoryCsv(file, db);
+
+      if (!mounted) return;
+      final imported = results['imported'] as int;
+      final skipped = results['skipped'] as int;
+      final errors = results['errors'] as List<String>;
+
+      String message = 'Imported $imported records from $fileName';
+      if (skipped > 0) message += ' (skipped $skipped)';
+      if (errors.isNotEmpty) {
+        message += '\n\nWarnings:\n${errors.take(3).join('\n')}';
+        if (errors.length > 3) message += '\n...and ${errors.length - 3} more';
+      }
+
+      _showMessage(message, isError: errors.isNotEmpty);
+    } catch (e) {
+      _showMessage('Import failed: $e', isError: true);
+    } finally {
+      if (mounted) setState(() => _isWorking = false);
+    }
+  }
   Future<void> _createBackup() async {
     final db = ref.read(databaseProvider);
     setState(() => _isWorking = true);
@@ -556,6 +623,8 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeModeProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Backup & Restore'),
@@ -565,6 +634,56 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            // Theme Toggle Card
+            Card(
+              child: ListTile(
+                leading: Icon(
+                  themeMode == ThemeMode.dark ? Icons.dark_mode : Icons.light_mode,
+                  color: themeMode == ThemeMode.dark ? Colors.amber : Colors.orange,
+                ),
+                title: const Text('Appearance'),
+                subtitle: Text(
+                  themeMode == ThemeMode.dark ? 'Dark Mode' : 'Light Mode',
+                ),
+                trailing: Switch(
+                  value: themeMode == ThemeMode.dark,
+                  onChanged: (value) {
+                    ref.read(themeModeProvider.notifier).setThemeMode(
+                      value ? ThemeMode.dark : ThemeMode.light,
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Data Import',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.upload_file, color: Colors.purple),
+                title: const Text('Import from CSV'),
+                subtitle: const Text(
+                    'Restore production logs or flock data from exported files.'),
+                onTap: _importCsv,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Backup & Restore',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
             Card(
               child: ListTile(
                 leading: const Icon(Icons.history),

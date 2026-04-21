@@ -7,6 +7,7 @@ class ChickenModel {
   final DateTime hatchDate;
   final String status; // laying, growing, sold, deceased
   final String? notes;
+  final String? photoPath; // Path to photo file
 
   ChickenModel({
     required this.id,
@@ -15,6 +16,7 @@ class ChickenModel {
     required this.hatchDate,
     required this.status,
     this.notes,
+    this.photoPath,
   });
 
   /// Get age in days
@@ -44,6 +46,7 @@ class ChickenModel {
     DateTime? hatchDate,
     String? status,
     String? notes,
+    String? photoPath,
   }) {
     return ChickenModel(
       id: id ?? this.id,
@@ -52,6 +55,7 @@ class ChickenModel {
       hatchDate: hatchDate ?? this.hatchDate,
       status: status ?? this.status,
       notes: notes ?? this.notes,
+      photoPath: photoPath ?? this.photoPath,
     );
   }
 }

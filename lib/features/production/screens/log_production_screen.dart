@@ -23,6 +23,7 @@ class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
   late TextEditingController _coloredController;
   late TextEditingController _whiteController;
   late TextEditingController _notesController;
+  late DateTime _selectedDate;
   bool _isLoading = false;
 
   bool get _isEdit => widget.logToEdit != null;
@@ -43,6 +44,11 @@ class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
       _coloredController = TextEditingController(text: '0');
       _whiteController = TextEditingController(text: '0');
       _notesController = TextEditingController();
+      _selectedDate = DateTime.now();
+    }
+
+    if (_isEdit) {
+      _selectedDate = widget.logToEdit!.date;
     }
   }
 
@@ -76,25 +82,26 @@ class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
 
     try {
       final repo = ref.read(productionRepositoryProvider);
-      if (_isEdit) {
-        await repo.updateLog(DailyProductionModel(
-          id: widget.logToEdit!.id,
-          date: widget.logToEdit!.date,
-          layingHens: int.parse(_layingHensController.text),
-          eggsBrown: int.parse(_brownController.text),
-          eggsColored: int.parse(_coloredController.text),
-          eggsWhite: int.parse(_whiteController.text),
-          notes: _notesController.text.isEmpty ? null : _notesController.text,
-        ));
-      } else {
-        await repo.logDailyProduction(
-          layingHens: int.parse(_layingHensController.text),
-          eggsBrown: int.parse(_brownController.text),
-          eggsColored: int.parse(_coloredController.text),
-          eggsWhite: int.parse(_whiteController.text),
-          notes: _notesController.text.isEmpty ? null : _notesController.text,
-        );
-      }
+       if (_isEdit) {
+         await repo.updateLog(DailyProductionModel(
+           id: widget.logToEdit!.id,
+           date: _selectedDate,
+           layingHens: int.parse(_layingHensController.text),
+           eggsBrown: int.parse(_brownController.text),
+           eggsColored: int.parse(_coloredController.text),
+           eggsWhite: int.parse(_whiteController.text),
+           notes: _notesController.text.isEmpty ? null : _notesController.text,
+         ));
+       } else {
+         await repo.logDailyProduction(
+           date: _selectedDate,
+           layingHens: int.parse(_layingHensController.text),
+           eggsBrown: int.parse(_brownController.text),
+           eggsColored: int.parse(_coloredController.text),
+           eggsWhite: int.parse(_whiteController.text),
+           notes: _notesController.text.isEmpty ? null : _notesController.text,
+         );
+       }
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -135,27 +142,48 @@ class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
             children: [
               AppFormSection(
                 title: 'Basic Info',
-                subtitle: 'Date: Today',
-                child: TextFormField(
-                  controller: _layingHensController,
-                  decoration: InputDecoration(
-                    label: const Text('Laying Hens *'),
-                    hintText: 'Number of hens laying eggs today',
-                    prefixIcon: const Icon(Icons.pets),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                subtitle: 'Date: ${_selectedDate.toString().split(' ')[0]}',
+                child: Column(
+                  children: [
+                    ListTile(
+                      title: const Text('Log Date'),
+                      subtitle: Text(_selectedDate.toString().split(' ')[0]),
+                      trailing: const Icon(Icons.calendar_today),
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: _selectedDate,
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime.now(),
+                        );
+                        if (picked != null) {
+                          setState(() => _selectedDate = picked);
+                        }
+                      },
                     ),
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter number of laying hens';
-                    }
-                    if (int.tryParse(value) == null) {
-                      return 'Please enter a valid number';
-                    }
-                    return null;
-                  },
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _layingHensController,
+                      decoration: InputDecoration(
+                        label: const Text('Laying Hens *'),
+                        hintText: 'Number of hens laying eggs today',
+                        prefixIcon: const Icon(Icons.pets),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter number of laying hens';
+                        }
+                        if (int.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 18),

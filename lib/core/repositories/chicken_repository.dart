@@ -144,6 +144,7 @@ class ChickenRepository {
               hatchDate: bird.hatchDate,
               status: bird.status,
               notes: bird.notes,
+              photoPath: bird.photoPath,
             ))
         .toList();
   }
@@ -172,6 +173,7 @@ class ChickenRepository {
       hatchDate: bird.hatchDate,
       status: bird.status,
       notes: bird.notes,
+      photoPath: bird.photoPath,
     );
   }
 
@@ -184,6 +186,7 @@ class ChickenRepository {
       hatchDate: chicken.hatchDate,
       status: chicken.status,
       notes: chicken.notes,
+      photoPath: chicken.photoPath,
     ));
   }
 
@@ -234,15 +237,16 @@ class ProductionRepository {
     required int eggsColored,
     required int eggsWhite,
     String? notes,
+    DateTime? date,
   }) async {
-    final today = DateTime.now();
-    // Check if log exists for today
-    final existing = await database.getDailyLogByDate(today);
+    final logDate = date ?? DateTime.now();
+    // Check if log exists for the specified date
+    final existing = await database.getDailyLogByDate(logDate);
 
     if (existing != null) {
       final log = DailyLog(
         id: existing.id,
-        date: today,
+        date: logDate,
         layingHens: layingHens,
         eggsBrown: eggsBrown,
         eggsColored: eggsColored,
@@ -252,7 +256,7 @@ class ProductionRepository {
       await database.updateDailyLog(log);
     } else {
       await database.addDailyLog(DailyLogsCompanion(
-        date: Value(today),
+        date: Value(logDate),
         layingHens: Value(layingHens),
         eggsBrown: Value(eggsBrown),
         eggsColored: Value(eggsColored),
@@ -612,8 +616,40 @@ class FlockPurchaseRepository {
 /// Repository for managing flock losses
 class FlockLossRepository {
   final AppDatabase database;
+  final ChickenRepository _chickenRepository;
 
-  FlockLossRepository(this.database);
+  FlockLossRepository(this.database) : _chickenRepository = ChickenRepository(database);
+
+  /// Record a new flock loss and mark birds as deceased (except for 'sold' type)
+  Future<int> recordLoss({
+    required DateTime date,
+    required String type,
+    required int quantity,
+    String? predatorSubtype,
+  }) async {
+    return await database.transaction(() async {
+      // Insert the loss record
+      final lossId = await database.into(database.flockLosses).insert(
+            FlockLossesCompanion(
+              date: Value(date),
+              type: Value(type),
+              quantity: Value(quantity),
+              predatorSubtype: Value(predatorSubtype),
+            ),
+          );
+
+      // Mark birds as deceased only for non-sold losses
+      if (type != 'sold') {
+        final activeChickens = await _chickenRepository.getActiveChickens();
+        // Mark the specified quantity of active birds as deceased
+        for (int i = 0; i < quantity && i < activeChickens.length; i++) {
+          await _chickenRepository.markAsDeceased(activeChickens[i].id);
+        }
+      }
+
+      return lossId;
+    });
+  }
 
   Future<void> updateLoss(FlockLossModel loss) {
     return database.updateFlockLoss(FlockLossesData(

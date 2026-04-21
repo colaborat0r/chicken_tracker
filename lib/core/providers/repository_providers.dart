@@ -3,6 +3,7 @@ import 'database_providers.dart';
 import 'notification_providers.dart';
 import '../repositories/chicken_repository.dart';
 import '../repositories/reminder_repository.dart';
+import '../services/image_storage_service.dart';
 import '../../features/guides/repositories/guides_repository.dart';
 
 /// Repository provider for chickens
@@ -48,6 +49,10 @@ final flockLossRepositoryProvider = Provider<FlockLossRepository>((ref) {
   return FlockLossRepository(db);
 });
 
+/// Service provider for image storage
+final imageStorageServiceProvider = Provider<ImageStorageService>((ref) {
+  return ImageStorageService();
+});
 /// Repository provider for guides and bookmarks
 final guidesRepositoryProvider = Provider<GuidesRepository>((ref) {
   final db = ref.watch(databaseProvider);

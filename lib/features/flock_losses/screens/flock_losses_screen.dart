@@ -311,22 +311,26 @@ class _FlockLossesScreenState extends ConsumerState<FlockLossesScreen> {
                               onSelected: (value) async {
                                 if (value == 'edit') {
                                   context.push(Routes.addFlockLoss, extra: loss);
-                                } else if (value == 'delete') {
-                                  final confirmed = await showDialog<bool>(
-                                    context: context,
-                                    builder: (ctx) => AlertDialog(
-                                      title: const Text('Delete Loss Record'),
-                                      content: const Text('Delete this flock loss record?'),
-                                      actions: [
-                                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-                                        TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete', style: TextStyle(color: Colors.red))),
-                                      ],
-                                    ),
-                                  );
-                                  if (confirmed == true && mounted) {
-                                    await ref.read(flockLossRepositoryProvider).deleteLoss(loss.id);
-                                  }
-                                }
+                                 } else if (value == 'delete') {
+                                   final confirmed = await showDialog<bool>(
+                                     context: context,
+                                     builder: (ctx) => AlertDialog(
+                                       title: const Text('Delete Loss Record'),
+                                       content: Text(
+                                         loss.type == 'sold'
+                                             ? 'Delete this flock loss record? Note: bird records marked as sold will not be changed.'
+                                             : 'Delete this flock loss record? Note: bird records marked as deceased will not be unmarked.',
+                                       ),
+                                       actions: [
+                                         TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                         TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete', style: TextStyle(color: Colors.red))),
+                                       ],
+                                     ),
+                                   );
+                                   if (confirmed == true && mounted) {
+                                     await ref.read(flockLossRepositoryProvider).deleteLoss(loss.id);
+                                   }
+                                 }
                               },
                               itemBuilder: (context) => [
                                 const PopupMenuItem(value: 'edit', child: ListTile(leading: Icon(Icons.edit), title: Text('Edit'))),

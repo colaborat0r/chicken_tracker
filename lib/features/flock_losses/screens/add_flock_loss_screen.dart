@@ -1,10 +1,7 @@
-import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/database/app_database.dart';
 import '../../../core/models/chicken_model.dart';
-import '../../../core/providers/database_providers.dart';
 import '../../../core/providers/repository_providers.dart';
 import '../../../core/services/form_memory_service.dart';
 import '../../../core/widgets/app_ui_components.dart';
@@ -67,25 +64,25 @@ class _AddFlockLossScreenState extends ConsumerState<AddFlockLossScreen> {
       final predatorSubtype = _selectedType == 'predator' && _predatorController.text.trim().isNotEmpty
           ? _predatorController.text.trim()
           : null;
+      final quantity = int.parse(_quantityController.text.trim());
 
       if (_isEdit) {
         await ref.read(flockLossRepositoryProvider).updateLoss(FlockLossModel(
           id: widget.lossToEdit!.id,
           date: _selectedDate,
           type: _selectedType,
-          quantity: int.parse(_quantityController.text.trim()),
+          quantity: quantity,
           predatorSubtype: predatorSubtype,
         ));
       } else {
         FormMemoryService.lastLossType = _selectedType;
         FormMemoryService.lastPredatorSubtype = _predatorController.text.trim();
-        final db = ref.read(databaseProvider);
-        await db.into(db.flockLosses).insert(FlockLossesCompanion(
-          date: Value(_selectedDate),
-          type: Value(_selectedType),
-          quantity: Value(int.parse(_quantityController.text.trim())),
-          predatorSubtype: Value(predatorSubtype),
-        ));
+        await ref.read(flockLossRepositoryProvider).recordLoss(
+          date: _selectedDate,
+          type: _selectedType,
+          quantity: quantity,
+          predatorSubtype: predatorSubtype,
+        );
       }
 
       if (!mounted) return;
@@ -115,6 +112,32 @@ class _AddFlockLossScreenState extends ConsumerState<AddFlockLossScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (!_isEdit) ...[
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withValues(alpha: 0.15),
+                    border: Border.all(color: Colors.blue.shade700),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.blue.shade800, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _selectedType == 'sold'
+                              ? 'The specified quantity of birds will be marked as sold.'
+                              : 'The specified quantity of active birds will automatically be marked as deceased.',
+                          style: TextStyle(color: Colors.blue.shade900, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               AppFormSection(
                 title: 'Basic Info',
                 child: Column(

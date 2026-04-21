@@ -15,6 +15,7 @@ class Birds extends Table {
   DateTimeColumn get hatchDate => dateTime()();
   TextColumn get status => text().withDefault(const Constant('laying'))(); // laying, growing, sold, deceased
   TextColumn get notes => text().nullable()();
+  TextColumn get photoPath => text().nullable()(); // Path to stored photo file
 }
 
 // 2. Daily Log (core of the original spreadsheet)
@@ -299,17 +300,40 @@ class AppDatabase extends _$AppDatabase {
     return row != null;
   }
 
-  Future<void> upsertReadGuide(
-    String guideId, {
-    required int progressPercent,
-    required bool completed,
-  }) =>
-      into(readGuides).insertOnConflictUpdate(
-        ReadGuidesCompanion(
-          guideId: Value(guideId),
-          progressPercent: Value(progressPercent),
-          completed: Value(completed),
-          lastReadAt: Value(DateTime.now()),
-        ),
-      );
+   Future<void> upsertReadGuide(
+     String guideId, {
+     required int progressPercent,
+     required bool completed,
+   }) =>
+       into(readGuides).insertOnConflictUpdate(
+         ReadGuidesCompanion(
+           guideId: Value(guideId),
+           progressPercent: Value(progressPercent),
+           completed: Value(completed),
+           lastReadAt: Value(DateTime.now()),
+         ),
+       );
+
+   // ====================== SETTINGS DAO ======================
+   Future<Setting?> getSettings() async {
+     final result = await (select(settings)..where((s) => s.id.equals(1))).getSingleOrNull();
+     return result;
+   }
+
+   Future<void> updateThemeMode(bool darkMode) async {
+     await (update(settings)..where((s) => s.id.equals(1))).write(
+       SettingsCompanion(darkMode: Value(darkMode)),
+     );
+   }
+
+   Future<void> initializeSettings() async {
+     final existing = await getSettings();
+     if (existing == null) {
+       await into(settings).insert(SettingsCompanion.insert(
+         currency: const Value('USD'),
+         weightUnit: const Value('lbs'),
+         darkMode: const Value(true),
+       ));
+     }
+   }
 }

@@ -189,6 +189,43 @@ final thisMonthSalesTotalProvider = FutureProvider<double>((ref) async {
       .fold<double>(0.0, (sum, item) => sum + item.amount);
 });
 
+/// Provider for this month's profit/loss (sales - expenses)
+final thisMonthProfitLossProvider = FutureProvider<double>((ref) async {
+  final sales = await ref.watch(thisMonthSalesTotalProvider.future);
+  final expenses = await ref.watch(thisMonthExpensesTotalProvider.future);
+  return sales - expenses;
+});
+
+/// Provider for this month's feed cost per egg
+final thisMonthFeedCostPerEggProvider = FutureProvider<double>((ref) async {
+  final logs = await ref.watch(allDailyLogsProvider.future);
+  final expenses = await ref.watch(allExpensesProvider.future);
+  final now = DateTime.now();
+
+  // Get this month's egg logs
+  final monthLogs = logs
+      .where((log) => log.date.year == now.year && log.date.month == now.month)
+      .toList();
+
+  // Get this month's feed expenses
+  final feedExpenses = expenses
+      .where((e) =>
+          e.category == 'feed' &&
+          e.date.year == now.year &&
+          e.date.month == now.month)
+      .toList();
+
+  if (monthLogs.isEmpty) return 0;
+
+  final totalEggs =
+      monthLogs.fold<int>(0, (sum, log) => sum + log.totalEggs);
+  final totalFeedCost =
+      feedExpenses.fold<double>(0, (sum, expense) => sum + expense.amount);
+
+  if (totalEggs == 0) return 0;
+  return totalFeedCost / totalEggs;
+});
+
 /// Provider for flock purchases data
 final allFlockPurchasesProvider =
     StreamProvider<List<FlockPurchaseModel>>((ref) async* {

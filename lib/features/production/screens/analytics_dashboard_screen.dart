@@ -71,12 +71,33 @@ class AnalyticsDashboardScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 28),
 
-              // 30-Day Trend Chart
-              Text(
-                '30-Day Production Trend',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+              // 30-Day Trend Chart with Toggle
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '30-Day Production Trend',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SegmentedButton<ChartViewMode>(
+                    segments: const <ButtonSegment<ChartViewMode>>[
+                      ButtonSegment<ChartViewMode>(
+                        value: ChartViewMode.bar,
+                        label: Text('📊 Bar'),
+                      ),
+                      ButtonSegment<ChartViewMode>(
+                        value: ChartViewMode.line,
+                        label: Text('📈 Line'),
+                      ),
+                    ],
+                    selected: <ChartViewMode>{ref.watch(chartViewModeProvider)},
+                    onSelectionChanged: (Set<ChartViewMode> newSelection) {
+                      ref.read(chartViewModeProvider.notifier).state = newSelection.first;
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               Card(
@@ -96,105 +117,187 @@ class AnalyticsDashboardScreen extends ConsumerWidget {
                         );
                       }
 
-                      // Find max value for Y axis
                       final maxEggs = points.fold<int>(
                           0, (max, point) => point.eggs > max ? point.eggs : max);
-                      final yMax = (maxEggs / 10).ceil() * 10; // Round up to nearest 10
+                      final yMax = (maxEggs / 10).ceil() * 10;
 
-                      // Create line chart spots
-                      final spots = points.asMap().entries.map((entry) {
-                        return FlSpot(
-                          entry.key.toDouble(),
-                          entry.value.eggs.toDouble(),
-                        );
-                      }).toList();
+                      final chartViewMode = ref.watch(chartViewModeProvider);
 
-                      return SizedBox(
-                        height: 250,
-                        child: LineChart(
-                          LineChartData(
-                            gridData: FlGridData(
-                              show: true,
-                              drawVerticalLine: false,
-                              horizontalInterval: yMax > 0 ? (yMax / 5) : 10,
-                              getDrawingHorizontalLine: (value) {
-                                return FlLine(
-                                  color: isDark ? Colors.grey[700] : Colors.grey[300],
-                                  strokeWidth: 0.8,
-                                );
-                              },
-                            ),
-                            titlesData: FlTitlesData(
-                              show: true,
-                              topTitles: const AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
+                      if (chartViewMode == ChartViewMode.bar) {
+                        // Bar Chart
+                        final barGroups = points.asMap().entries.map((entry) {
+                          return BarChartGroupData(
+                            x: entry.key,
+                            barRods: [
+                              BarChartRodData(
+                                toY: entry.value.eggs.toDouble(),
+                                color: Colors.amber[600],
+                                width: 8,
+                                borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
                               ),
-                              rightTitles: const AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
+                            ],
+                          );
+                        }).toList();
+
+                        return SizedBox(
+                          height: 250,
+                          child: BarChart(
+                            BarChartData(
+                              gridData: FlGridData(
+                                show: true,
+                                drawVerticalLine: false,
+                                horizontalInterval: yMax > 0 ? (yMax / 5) : 10,
+                                getDrawingHorizontalLine: (value) {
+                                  return FlLine(
+                                    color: isDark ? Colors.grey[700] : Colors.grey[300],
+                                    strokeWidth: 0.8,
+                                  );
+                                },
                               ),
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  reservedSize: 28,
-                                  getTitlesWidget: (value, meta) {
-                                    if (value.toInt() % 5 == 0 &&
-                                        value.toInt() < points.length) {
+                              titlesData: FlTitlesData(
+                                show: true,
+                                topTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
+                                ),
+                                rightTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
+                                ),
+                                bottomTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    reservedSize: 28,
+                                    getTitlesWidget: (value, meta) {
+                                      if (value.toInt() % 5 == 0 &&
+                                          value.toInt() < points.length) {
+                                        return Text(
+                                          value.toInt().toString(),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelSmall,
+                                        );
+                                      }
+                                      return const SizedBox();
+                                    },
+                                  ),
+                                ),
+                                leftTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    reservedSize: 32,
+                                    getTitlesWidget: (value, meta) {
                                       return Text(
                                         value.toInt().toString(),
                                         style: Theme.of(context)
                                             .textTheme
                                             .labelSmall,
                                       );
-                                    }
-                                    return const SizedBox();
-                                  },
+                                    },
+                                  ),
                                 ),
                               ),
-                              leftTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  reservedSize: 32,
-                                  getTitlesWidget: (value, meta) {
-                                    return Text(
-                                      value.toInt().toString(),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelSmall,
-                                    );
-                                  },
-                                ),
-                              ),
+                              borderData: FlBorderData(show: false),
+                              barGroups: barGroups,
+                              minY: 0,
+                              maxY: yMax.toDouble(),
                             ),
-                            borderData: FlBorderData(show: false),
-                            lineBarsData: [
-                              LineChartBarData(
-                                spots: spots,
-                                isCurved: true,
-                                color: Colors.amber[600],
-                                barWidth: 3,
-                                dotData: FlDotData(
-                                  show: true,
-                                  getDotPainter: (spot, percent, barData, index) {
-                                    return FlDotCirclePainter(
-                                      radius: 4,
-                                      color: Colors.amber[600]!,
-                                      strokeWidth: 0,
-                                    );
-                                  },
+                          ),
+                        );
+                      } else {
+                        // Line Chart
+                        final spots = points.asMap().entries.map((entry) {
+                          return FlSpot(
+                            entry.key.toDouble(),
+                            entry.value.eggs.toDouble(),
+                          );
+                        }).toList();
+
+                        return SizedBox(
+                          height: 250,
+                          child: LineChart(
+                            LineChartData(
+                              gridData: FlGridData(
+                                show: true,
+                                drawVerticalLine: false,
+                                horizontalInterval: yMax > 0 ? (yMax / 5) : 10,
+                                getDrawingHorizontalLine: (value) {
+                                  return FlLine(
+                                    color: isDark ? Colors.grey[700] : Colors.grey[300],
+                                    strokeWidth: 0.8,
+                                  );
+                                },
+                              ),
+                              titlesData: FlTitlesData(
+                                show: true,
+                                topTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
                                 ),
-                                belowBarData: BarAreaData(
-                                  show: true,
-                                  color: Colors.amber[300]?.withValues(alpha: 0.2),
+                                rightTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
+                                ),
+                                bottomTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    reservedSize: 28,
+                                    getTitlesWidget: (value, meta) {
+                                      if (value.toInt() % 5 == 0 &&
+                                          value.toInt() < points.length) {
+                                        return Text(
+                                          value.toInt().toString(),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelSmall,
+                                        );
+                                      }
+                                      return const SizedBox();
+                                    },
+                                  ),
+                                ),
+                                leftTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    reservedSize: 32,
+                                    getTitlesWidget: (value, meta) {
+                                      return Text(
+                                        value.toInt().toString(),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelSmall,
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
-                            ],
-                            minX: 0,
-                            maxX: (points.length - 1).toDouble(),
-                            minY: 0,
-                            maxY: yMax.toDouble(),
+                              borderData: FlBorderData(show: false),
+                              lineBarsData: [
+                                LineChartBarData(
+                                  spots: spots,
+                                  isCurved: true,
+                                  color: Colors.amber[600],
+                                  barWidth: 3,
+                                  dotData: FlDotData(
+                                    show: true,
+                                    getDotPainter: (spot, percent, barData, index) {
+                                      return FlDotCirclePainter(
+                                        radius: 4,
+                                        color: Colors.amber[600]!,
+                                        strokeWidth: 0,
+                                      );
+                                    },
+                                  ),
+                                  belowBarData: BarAreaData(
+                                    show: true,
+                                    color: Colors.amber[300]?.withValues(alpha: 0.2),
+                                  ),
+                                ),
+                              ],
+                              minX: 0,
+                              maxX: (points.length - 1).toDouble(),
+                              minY: 0,
+                              maxY: yMax.toDouble(),
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      }
                     },
                     loading: () => const SizedBox(
                       height: 250,
