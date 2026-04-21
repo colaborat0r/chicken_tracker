@@ -57,6 +57,7 @@ class ChickenModel {
 }
 
 class DailyProductionModel {
+  final int id;
   final DateTime date;
   final int layingHens;
   final int eggsBrown;
@@ -65,6 +66,7 @@ class DailyProductionModel {
   final String? notes;
 
   DailyProductionModel({
+    required this.id,
     required this.date,
     required this.layingHens,
     required this.eggsBrown,
@@ -89,6 +91,7 @@ class DailyProductionModel {
   }
 
   DailyProductionModel copyWith({
+    int? id,
     DateTime? date,
     int? layingHens,
     int? eggsBrown,
@@ -97,6 +100,7 @@ class DailyProductionModel {
     String? notes,
   }) {
     return DailyProductionModel(
+      id: id ?? this.id,
       date: date ?? this.date,
       layingHens: layingHens ?? this.layingHens,
       eggsBrown: eggsBrown ?? this.eggsBrown,

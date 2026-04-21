@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../../../core/models/reminder_model.dart';
 import '../../../core/providers/database_providers.dart';
-import '../../../core/providers/notification_providers.dart';
 import '../../../core/providers/repository_providers.dart';
 import '../../../core/services/google_calendar_service.dart';
 
@@ -30,9 +28,7 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
   int _frequencyPreset = 1;
   int _customDays = 3;
   DateTime _nextDueDate = DateTime.now();
-  bool _notifyOnAndroid = true;
   bool _isLoading = false;
-  bool _isSendingTestNotification = false;
   bool _isAddingToCalendar = false;
 
   bool get _isEdit => widget.reminderToEdit != null;
@@ -51,7 +47,6 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
     _customDays = (r != null && !knownPresets.contains(r.frequencyDays))
         ? r.frequencyDays
         : 3;
-    _notifyOnAndroid = r?.notifyOnAndroid ?? true;
 
     _titleController =
         TextEditingController(text: r?.title ?? _defaultTitle('feeding'));
@@ -110,7 +105,6 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
           notes: _notesController.text.trim().isEmpty
               ? null
               : _notesController.text.trim(),
-          notifyOnAndroid: _notifyOnAndroid,
         );
         await repo.updateReminder(updated);
         savedReminder = updated;
@@ -123,7 +117,7 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
           notes: _notesController.text.trim().isEmpty
               ? null
               : _notesController.text.trim(),
-          notifyOnAndroid: _notifyOnAndroid,
+          notifyOnAndroid: true,
         );
         // Fetch the just-created reminder for calendar use
         final all = await ref.read(allRemindersProvider.future);
@@ -132,21 +126,6 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
             .lastOrNull;
       }
 
-      if (!mounted) return;
-
-      if (_notifyOnAndroid) {
-        final permissionStatus = await Permission.notification.status;
-        if (!permissionStatus.isGranted && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Reminder saved, but notifications are blocked. Enable app notifications in Android settings.',
-              ),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-      }
 
       if (!mounted) return;
 
@@ -223,46 +202,6 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
     }
   }
 
-  Future<void> _sendTestNotification() async {
-    setState(() => _isSendingTestNotification = true);
-
-    try {
-      final sent = await ref
-          .read(reminderNotificationServiceProvider)
-          .sendTestNotification();
-
-      // If the permission prompt was previously blocked/unknown, the test
-      // notification can succeed only after the user approves it. In that
-      // case, we must also rebuild the scheduled reminder alarms.
-      if (sent) {
-        final reminders = await ref.read(allRemindersProvider.future);
-        await ref
-            .read(reminderNotificationServiceProvider)
-            .resyncActiveReminders(reminders);
-      }
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(sent
-              ? 'Test notification sent. Check your notification tray.'
-              : 'Notifications are blocked or unavailable on this device.'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Unable to send test notification: $e'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _isSendingTestNotification = false);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -476,34 +415,6 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
                   maxLines: 4,
                   textCapitalization: TextCapitalization.sentences,
                 ),
-                const SizedBox(height: 12),
-
-                SwitchListTile.adaptive(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Android notification'),
-                  subtitle: const Text(
-                    'Notify on due date at 8:00 AM',
-                  ),
-                  value: _notifyOnAndroid,
-                  onChanged: (value) =>
-                      setState(() => _notifyOnAndroid = value),
-                ),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: _isSendingTestNotification
-                        ? null
-                        : _sendTestNotification,
-                    icon: _isSendingTestNotification
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.notifications_active_outlined),
-                    label: const Text('Send Test Notification'),
-                  ),
-                ),
                 const SizedBox(height: 32),
 
                 // ── Save button ──────────────────────────────────────────
@@ -549,7 +460,7 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
                                   ? null
                                   : _notesController.text.trim(),
                               isActive: true,
-                              notifyOnAndroid: _notifyOnAndroid,
+                              notifyOnAndroid: true,
                             );
                             await _addToGoogleCalendar(tempReminder);
                           },

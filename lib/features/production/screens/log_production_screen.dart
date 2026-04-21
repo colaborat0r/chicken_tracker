@@ -3,16 +3,17 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/models/chicken_model.dart';
 import '../../../core/providers/repository_providers.dart';
 import '../../../core/providers/database_providers.dart';
 import '../../../core/widgets/app_ui_components.dart';
 
 class LogProductionScreen extends ConsumerStatefulWidget {
-  const LogProductionScreen({super.key});
+  final DailyProductionModel? logToEdit;
+  const LogProductionScreen({super.key, this.logToEdit});
 
   @override
-  ConsumerState<LogProductionScreen> createState() =>
-      _LogProductionScreenState();
+  ConsumerState<LogProductionScreen> createState() => _LogProductionScreenState();
 }
 
 class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
@@ -24,14 +25,25 @@ class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
   late TextEditingController _notesController;
   bool _isLoading = false;
 
+  bool get _isEdit => widget.logToEdit != null;
+
   @override
   void initState() {
     super.initState();
-    _layingHensController = TextEditingController();
-    _brownController = TextEditingController(text: '0');
-    _coloredController = TextEditingController(text: '0');
-    _whiteController = TextEditingController(text: '0');
-    _notesController = TextEditingController();
+    final l = widget.logToEdit;
+    if (l != null) {
+      _layingHensController = TextEditingController(text: l.layingHens.toString());
+      _brownController = TextEditingController(text: l.eggsBrown.toString());
+      _coloredController = TextEditingController(text: l.eggsColored.toString());
+      _whiteController = TextEditingController(text: l.eggsWhite.toString());
+      _notesController = TextEditingController(text: l.notes ?? '');
+    } else {
+      _layingHensController = TextEditingController();
+      _brownController = TextEditingController(text: '0');
+      _coloredController = TextEditingController(text: '0');
+      _whiteController = TextEditingController(text: '0');
+      _notesController = TextEditingController();
+    }
   }
 
   @override
@@ -64,31 +76,41 @@ class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
 
     try {
       final repo = ref.read(productionRepositoryProvider);
-      await repo.logDailyProduction(
-        layingHens: int.parse(_layingHensController.text),
-        eggsBrown: int.parse(_brownController.text),
-        eggsColored: int.parse(_coloredController.text),
-        eggsWhite: int.parse(_whiteController.text),
-        notes: _notesController.text.isEmpty ? null : _notesController.text,
-      );
+      if (_isEdit) {
+        await repo.updateLog(DailyProductionModel(
+          id: widget.logToEdit!.id,
+          date: widget.logToEdit!.date,
+          layingHens: int.parse(_layingHensController.text),
+          eggsBrown: int.parse(_brownController.text),
+          eggsColored: int.parse(_coloredController.text),
+          eggsWhite: int.parse(_whiteController.text),
+          notes: _notesController.text.isEmpty ? null : _notesController.text,
+        ));
+      } else {
+        await repo.logDailyProduction(
+          layingHens: int.parse(_layingHensController.text),
+          eggsBrown: int.parse(_brownController.text),
+          eggsColored: int.parse(_coloredController.text),
+          eggsWhite: int.parse(_whiteController.text),
+          notes: _notesController.text.isEmpty ? null : _notesController.text,
+        );
+      }
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('📊 Production logged successfully!')),
+        SnackBar(content: Text(_isEdit ? '📊 Production updated!' : '📊 Production logged successfully!')),
       );
 
-      // Invalidate the providers to refresh dashboard
       unawaited(ref.refresh(todayProductionProvider.future));
       unawaited(ref.refresh(allDailyLogsProvider.future));
       unawaited(ref.refresh(weeklyEggTotalProvider.future));
 
-      // Delay to show the snackbar before popping
       await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) context.pop();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error logging production: $e')),
+        SnackBar(content: Text('Error: $e')),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -99,7 +121,7 @@ class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Log Egg Production'),
+        title: Text(_isEdit ? 'Edit Production Log' : 'Log Egg Production'),
       ),
       body: AppFormShell(
         title: 'Log Daily Production',

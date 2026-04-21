@@ -52,6 +52,7 @@ final allDailyLogsProvider =
   yield* db.select(db.dailyLogs).watch().map((logs) {
     return logs
         .map((log) => DailyProductionModel(
+              id: log.id,
               date: log.date,
               layingHens: log.layingHens,
               eggsBrown: log.eggsBrown,
@@ -73,6 +74,7 @@ final todayProductionProvider =
   if (log == null) return null;
 
   return DailyProductionModel(
+    id: log.id,
     date: log.date,
     layingHens: log.layingHens,
     eggsBrown: log.eggsBrown,

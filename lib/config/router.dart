@@ -97,7 +97,12 @@ final goRouter = GoRouter(
     // Log production screen
     GoRoute(
       path: Routes.logProduction,
-      builder: (context, state) => const LogProductionScreen(),
+      builder: (context, state) {
+        final extra = state.extra;
+        return LogProductionScreen(
+          logToEdit: extra is DailyProductionModel ? extra : null,
+        );
+      },
     ),
 
     // Production history screen
@@ -127,7 +132,10 @@ final goRouter = GoRouter(
     // Add sale screen
     GoRoute(
       path: Routes.addSale,
-      builder: (context, state) => const AddSaleScreen(),
+      builder: (context, state) {
+        final extra = state.extra;
+        return AddSaleScreen(saleToEdit: extra is SaleModel ? extra : null);
+      },
     ),
 
     // Expenses screen
@@ -139,7 +147,10 @@ final goRouter = GoRouter(
     // Add expense screen
     GoRoute(
       path: Routes.addExpense,
-      builder: (context, state) => const AddExpenseScreen(),
+      builder: (context, state) {
+        final extra = state.extra;
+        return AddExpenseScreen(expenseToEdit: extra is ExpenseModel ? extra : null);
+      },
     ),
 
     // Flock purchases screen
@@ -151,7 +162,12 @@ final goRouter = GoRouter(
     // Add flock purchase screen
     GoRoute(
       path: Routes.addFlockPurchase,
-      builder: (context, state) => const AddFlockPurchaseScreen(),
+      builder: (context, state) {
+        final extra = state.extra;
+        return AddFlockPurchaseScreen(
+          purchaseToEdit: extra is FlockPurchaseModel ? extra : null,
+        );
+      },
     ),
 
     // Flock losses screen
@@ -163,7 +179,12 @@ final goRouter = GoRouter(
     // Add flock loss screen
     GoRoute(
       path: Routes.addFlockLoss,
-      builder: (context, state) => const AddFlockLossScreen(),
+      builder: (context, state) {
+        final extra = state.extra;
+        return AddFlockLossScreen(
+          lossToEdit: extra is FlockLossModel ? extra : null,
+        );
+      },
     ),
 
     // Data management screen

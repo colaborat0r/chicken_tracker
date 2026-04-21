@@ -36,6 +36,18 @@ final reminderRepositoryProvider = Provider<ReminderRepository>((ref) {
   return ReminderRepository(db, notificationService);
 });
 
+/// Repository provider for flock purchases
+final flockPurchaseRepositoryProvider = Provider<FlockPurchaseRepository>((ref) {
+  final db = ref.watch(databaseProvider);
+  return FlockPurchaseRepository(db);
+});
+
+/// Repository provider for flock losses
+final flockLossRepositoryProvider = Provider<FlockLossRepository>((ref) {
+  final db = ref.watch(databaseProvider);
+  return FlockLossRepository(db);
+});
+
 /// Repository provider for guides and bookmarks
 final guidesRepositoryProvider = Provider<GuidesRepository>((ref) {
   final db = ref.watch(databaseProvider);

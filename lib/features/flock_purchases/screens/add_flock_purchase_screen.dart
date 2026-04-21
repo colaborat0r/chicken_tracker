@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/models/chicken_model.dart';
 import '../../../core/providers/repository_providers.dart';
 import '../../../core/services/form_memory_service.dart';
 import '../../../core/widgets/app_ui_components.dart';
 
 class AddFlockPurchaseScreen extends ConsumerStatefulWidget {
-  const AddFlockPurchaseScreen({super.key});
+  final FlockPurchaseModel? purchaseToEdit;
+  const AddFlockPurchaseScreen({super.key, this.purchaseToEdit});
 
   @override
   ConsumerState<AddFlockPurchaseScreen> createState() =>
@@ -29,6 +31,8 @@ class _AddFlockPurchaseScreenState
   DateTime _selectedHatchDate = DateTime.now();
   bool _isLoading = false;
 
+  bool get _isEdit => widget.purchaseToEdit != null;
+
   final List<String> _statuses = [
     'laying',
     'growing',
@@ -40,15 +44,25 @@ class _AddFlockPurchaseScreenState
   @override
   void initState() {
     super.initState();
-    _quantityController = TextEditingController();
-    _costController = TextEditingController();
-    _supplierController = TextEditingController(
-      text: FormMemoryService.lastPurchaseSupplier,
-    );
-    _hatchedCountController = TextEditingController();
-    _breedController = TextEditingController();
-    _notesController = TextEditingController();
-    _selectedType = FormMemoryService.lastPurchaseType;
+    final p = widget.purchaseToEdit;
+    if (p != null) {
+      _quantityController = TextEditingController(text: p.quantity.toString());
+      _costController = TextEditingController(text: p.cost.toStringAsFixed(2));
+      _supplierController = TextEditingController(text: p.supplier ?? '');
+      _hatchedCountController = TextEditingController(text: p.hatchedCount?.toString() ?? '');
+      _breedController = TextEditingController();
+      _notesController = TextEditingController();
+      _selectedType = p.type;
+      _selectedDate = p.date;
+    } else {
+      _quantityController = TextEditingController();
+      _costController = TextEditingController();
+      _supplierController = TextEditingController(text: FormMemoryService.lastPurchaseSupplier);
+      _hatchedCountController = TextEditingController();
+      _breedController = TextEditingController();
+      _notesController = TextEditingController();
+      _selectedType = FormMemoryService.lastPurchaseType;
+    }
   }
 
   @override
@@ -106,11 +120,9 @@ class _AddFlockPurchaseScreenState
       return;
     }
 
-    if (_selectedType == 'live_chicks' &&
-        _breedController.text.trim().isEmpty) {
+    if (!_isEdit && _selectedType == 'live_chicks' && _breedController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Breed is required for live chick purchases.')),
+        const SnackBar(content: Text('Breed is required for live chick purchases.')),
       );
       return;
     }
@@ -118,35 +130,54 @@ class _AddFlockPurchaseScreenState
     setState(() => _isLoading = true);
 
     try {
-      FormMemoryService.lastPurchaseType = _selectedType;
-      FormMemoryService.lastPurchaseSupplier = _supplierController.text.trim();
-
-      final repo = ref.read(chickenRepositoryProvider);
-      await repo.recordFlockPurchase(
-        date: _selectedDate,
-        type: _selectedType,
-        quantity: quantity,
-        cost: double.parse(_costController.text.trim()),
-        supplier: _supplierController.text.trim(),
-        hatchedCount: hatchedCount,
-        breed: _selectedType == 'live_chicks' ? _breedController.text : null,
-        status: _selectedType == 'live_chicks' ? _selectedStatus : null,
-        hatchDate: _selectedType == 'live_chicks' ? _selectedHatchDate : null,
-        notes: _selectedType == 'live_chicks' ? _notesController.text : null,
-      );
-
-      if (!mounted) return;
-      final addedBirds = _selectedType == 'live_chicks' ? quantity : 0;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            addedBirds > 0
-                ? 'Purchase saved and $addedBirds chickens added to flock.'
-                : 'Flock purchase recorded successfully!',
+      if (_isEdit) {
+        await ref.read(flockPurchaseRepositoryProvider).updatePurchase(
+          FlockPurchaseModel(
+            id: widget.purchaseToEdit!.id,
+            date: _selectedDate,
+            type: _selectedType,
+            quantity: quantity,
+            cost: double.parse(_costController.text.trim()),
+            supplier: _supplierController.text.trim().isEmpty ? null : _supplierController.text.trim(),
+            hatchedCount: hatchedCount,
           ),
-        ),
-      );
-      context.pop();
+        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Purchase updated!')),
+        );
+        context.pop();
+      } else {
+        FormMemoryService.lastPurchaseType = _selectedType;
+        FormMemoryService.lastPurchaseSupplier = _supplierController.text.trim();
+
+        final repo = ref.read(chickenRepositoryProvider);
+        await repo.recordFlockPurchase(
+          date: _selectedDate,
+          type: _selectedType,
+          quantity: quantity,
+          cost: double.parse(_costController.text.trim()),
+          supplier: _supplierController.text.trim(),
+          hatchedCount: hatchedCount,
+          breed: _selectedType == 'live_chicks' ? _breedController.text : null,
+          status: _selectedType == 'live_chicks' ? _selectedStatus : null,
+          hatchDate: _selectedType == 'live_chicks' ? _selectedHatchDate : null,
+          notes: _selectedType == 'live_chicks' ? _notesController.text : null,
+        );
+
+        if (!mounted) return;
+        final addedBirds = _selectedType == 'live_chicks' ? quantity : 0;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              addedBirds > 0
+                  ? 'Purchase saved and $addedBirds chickens added to flock.'
+                  : 'Flock purchase recorded successfully!',
+            ),
+          ),
+        );
+        context.pop();
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -161,7 +192,7 @@ class _AddFlockPurchaseScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Flock Purchase'),
+        title: Text(_isEdit ? 'Edit Flock Purchase' : 'Add Flock Purchase'),
       ),
       body: AppFormShell(
         title: 'Record A Flock Purchase',
@@ -173,6 +204,30 @@ class _AddFlockPurchaseScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (_isEdit && _selectedType == 'live_chicks')
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withValues(alpha: 0.15),
+                    border: Border.all(color: Colors.amber.shade700),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.amber.shade800, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Note: editing this purchase does not change individual bird records. '
+                          'To adjust flock headcount, update birds directly from the Flock page.',
+                          style: TextStyle(color: Colors.amber.shade900, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               AppFormSection(
                 title: 'Basic Info',
                 subtitle: 'Purchase details',
@@ -361,7 +416,7 @@ class _AddFlockPurchaseScreenState
               AppSubmitButton(
                 isLoading: _isLoading,
                 onPressed: _submit,
-                label: 'Save Purchase',
+                label: _isEdit ? 'Update Purchase' : 'Save Purchase',
                 loadingLabel: 'Saving...',
               ),
             ],

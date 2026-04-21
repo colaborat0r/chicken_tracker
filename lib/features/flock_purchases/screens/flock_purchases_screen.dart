@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../config/router.dart';
 import '../../../core/providers/database_providers.dart';
+import '../../../core/providers/repository_providers.dart';
 import '../../../core/widgets/app_ui_components.dart';
 
 class FlockPurchasesScreen extends ConsumerStatefulWidget {
@@ -19,6 +20,7 @@ class _FlockPurchasesScreenState extends ConsumerState<FlockPurchasesScreen> {
   int _selectedRangeDays = -1;
   DateTime? _customStartDate;
   DateTime? _customEndDate;
+  bool _sortNewestFirst = true;
 
   Future<void> _selectCustomRange() async {
     final now = DateTime.now();
@@ -56,6 +58,13 @@ class _FlockPurchasesScreenState extends ConsumerState<FlockPurchasesScreen> {
       appBar: AppBar(
         title: const Text('Flock Purchases'),
         elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: _sortNewestFirst ? 'Showing newest first' : 'Showing oldest first',
+            icon: Icon(_sortNewestFirst ? Icons.arrow_downward : Icons.arrow_upward),
+            onPressed: () => setState(() => _sortNewestFirst = !_sortNewestFirst),
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -111,7 +120,10 @@ class _FlockPurchasesScreenState extends ConsumerState<FlockPurchasesScreen> {
                   supplier.contains(query) ||
                   purchase.quantity.toString().contains(query) ||
                   purchase.cost.toStringAsFixed(2).contains(query);
-            }).toList();
+            }).toList()
+              ..sort((a, b) => _sortNewestFirst
+                  ? b.date.compareTo(a.date)
+                  : a.date.compareTo(b.date));
 
             if (filteredPurchases.isEmpty) {
               return const Center(
@@ -310,14 +322,48 @@ class _FlockPurchasesScreenState extends ConsumerState<FlockPurchasesScreen> {
                             ],
                           ],
                         ),
-                        trailing: Text(
-                          '\$${purchase.cost.toStringAsFixed(2)}\n${_purchaseStatusText(purchase)}',
-                          textAlign: TextAlign.right,
-                          style:
-                              Theme.of(context).textTheme.labelLarge?.copyWith(
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '\$${purchase.cost.toStringAsFixed(2)}\n${_purchaseStatusText(purchase)}',
+                              textAlign: TextAlign.right,
+                              style: Theme.of(context).textTheme.labelLarge?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     color: const Color(0xFF0D6E77),
                                   ),
+                            ),
+                            PopupMenuButton<String>(
+                              onSelected: (value) async {
+                                if (value == 'edit') {
+                                  context.push(Routes.addFlockPurchase, extra: purchase);
+                                } else if (value == 'delete') {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: const Text('Delete Purchase'),
+                                      content: Text(
+                                        purchase.type == 'live_chicks'
+                                            ? 'Delete this purchase record? Note: the individual bird records added at purchase time will NOT be removed.'
+                                            : 'Delete this flock purchase record?',
+                                      ),
+                                      actions: [
+                                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                        TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete', style: TextStyle(color: Colors.red))),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirmed == true && mounted) {
+                                    await ref.read(flockPurchaseRepositoryProvider).deletePurchase(purchase.id);
+                                  }
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(value: 'edit', child: ListTile(leading: Icon(Icons.edit), title: Text('Edit'))),
+                                const PopupMenuItem(value: 'delete', child: ListTile(leading: Icon(Icons.delete, color: Colors.red), title: Text('Delete', style: TextStyle(color: Colors.red)))),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     )),

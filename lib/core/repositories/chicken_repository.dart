@@ -267,6 +267,7 @@ class ProductionRepository {
     final logs = await database.getAllDailyLogs();
     return logs
         .map((log) => DailyProductionModel(
+              id: log.id,
               date: log.date,
               layingHens: log.layingHens,
               eggsBrown: log.eggsBrown,
@@ -285,6 +286,7 @@ class ProductionRepository {
     if (log == null) return null;
 
     return DailyProductionModel(
+      id: log.id,
       date: log.date,
       layingHens: log.layingHens,
       eggsBrown: log.eggsBrown,
@@ -347,6 +349,22 @@ class ProductionRepository {
     logs.sort((a, b) => b.totalEggs.compareTo(a.totalEggs));
     return logs.first;
   }
+
+  /// Update an existing daily log
+  Future<void> updateLog(DailyProductionModel log) {
+    return database.updateDailyLog(DailyLog(
+      id: log.id,
+      date: log.date,
+      layingHens: log.layingHens,
+      eggsBrown: log.eggsBrown,
+      eggsColored: log.eggsColored,
+      eggsWhite: log.eggsWhite,
+      notes: log.notes,
+    ));
+  }
+
+  /// Delete a daily log by id
+  Future<void> deleteLog(int id) => database.deleteDailyLog(id);
 }
 
 /// Repository for managing sales
@@ -357,19 +375,35 @@ class SalesRepository {
 
   /// Record a sale
   Future<int> recordSale({
-    required String type, // 'eggs' or 'chickens'
+    required String type,
     required int quantity,
     required double amount,
     String? customerName,
+    DateTime? date,
   }) {
     return database.addSale(SalesCompanion(
-      date: Value(DateTime.now()),
+      date: Value(date ?? DateTime.now()),
       type: Value(type),
       quantity: Value(quantity),
       amount: Value(amount),
       customerName: Value(customerName),
     ));
   }
+
+  /// Update an existing sale
+  Future<void> updateSale(SaleModel sale) {
+    return database.updateSale(Sale(
+      id: sale.id,
+      date: sale.date,
+      type: sale.type,
+      quantity: sale.quantity,
+      amount: sale.amount,
+      customerName: sale.customerName,
+    ));
+  }
+
+  /// Delete a sale by id
+  Future<void> deleteSale(int id) => database.deleteSale(id);
 
   /// Get all sales records
   Future<List<SaleModel>> getAllSales() async {
@@ -450,19 +484,35 @@ class ExpenseRepository {
 
   /// Record an expense
   Future<int> recordExpense({
-    required String category, // feed, bedding, general, medicine, other
+    required String category,
     required double amount,
     String? description,
-    double? pounds, // only for feed
+    double? pounds,
+    DateTime? date,
   }) {
     return database.addExpense(ExpensesCompanion(
-      date: Value(DateTime.now()),
+      date: Value(date ?? DateTime.now()),
       category: Value(category),
       amount: Value(amount),
       description: Value(description),
       pounds: Value(pounds),
     ));
   }
+
+  /// Update an existing expense
+  Future<void> updateExpense(ExpenseModel expense) {
+    return database.updateExpense(Expense(
+      id: expense.id,
+      date: expense.date,
+      category: expense.category,
+      amount: expense.amount,
+      description: expense.description,
+      pounds: expense.pounds,
+    ));
+  }
+
+  /// Delete an expense by id
+  Future<void> deleteExpense(int id) => database.deleteExpense(id);
 
   /// Get all expenses
   Future<List<ExpenseModel>> getAllExpenses() async {
@@ -538,80 +588,42 @@ class ExpenseRepository {
   }
 }
 
-/// Model class for easy use
-class SaleModel {
-  final int id;
-  final DateTime date;
-  final String type;
-  final int quantity;
-  final double amount;
-  final String? customerName;
+/// Repository for managing flock purchases
+class FlockPurchaseRepository {
+  final AppDatabase database;
 
-  SaleModel({
-    required this.id,
-    required this.date,
-    required this.type,
-    required this.quantity,
-    required this.amount,
-    this.customerName,
-  });
+  FlockPurchaseRepository(this.database);
 
-  double get unitPrice => amount / quantity;
+  Future<void> updatePurchase(FlockPurchaseModel purchase) {
+    return database.updateFlockPurchase(FlockPurchase(
+      id: purchase.id,
+      date: purchase.date,
+      type: purchase.type,
+      quantity: purchase.quantity,
+      cost: purchase.cost,
+      supplier: purchase.supplier,
+      hatchedCount: purchase.hatchedCount,
+    ));
+  }
+
+  Future<void> deletePurchase(int id) => database.deleteFlockPurchase(id);
 }
 
-/// Model class for easy use
-class ExpenseModel {
-  final int id;
-  final DateTime date;
-  final String category;
-  final double amount;
-  final String? description;
-  final double? pounds;
+/// Repository for managing flock losses
+class FlockLossRepository {
+  final AppDatabase database;
 
-  ExpenseModel({
-    required this.id,
-    required this.date,
-    required this.category,
-    required this.amount,
-    this.description,
-    this.pounds,
-  });
+  FlockLossRepository(this.database);
 
-  double? get costPerPound {
-    if (category == 'feed' && pounds != null && pounds! > 0) {
-      return amount / pounds!;
-    }
-    return null;
-  }
-}
-
-/// Model class for easy use
-class DailyProductionModel {
-  final DateTime date;
-  final int layingHens;
-  final int eggsBrown;
-  final int eggsColored;
-  final int eggsWhite;
-  final String? notes;
-
-  DailyProductionModel({
-    required this.date,
-    required this.layingHens,
-    required this.eggsBrown,
-    required this.eggsColored,
-    required this.eggsWhite,
-    this.notes,
-  });
-
-  int get totalEggs => eggsBrown + eggsColored + eggsWhite;
-
-  double get eggsPerHen {
-    if (layingHens == 0) return 0;
-    return totalEggs / layingHens;
+  Future<void> updateLoss(FlockLossModel loss) {
+    return database.updateFlockLoss(FlockLossesData(
+      id: loss.id,
+      date: loss.date,
+      type: loss.type,
+      quantity: loss.quantity,
+      predatorSubtype: loss.predatorSubtype,
+    ));
   }
 
-  double get productionPercentage {
-    if (layingHens == 0) return 0;
-    return (eggsPerHen / 1.0) * 100;
-  }
+  Future<void> deleteLoss(int id) => database.deleteFlockLoss(id);
 }

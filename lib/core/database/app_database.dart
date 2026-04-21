@@ -194,12 +194,40 @@ class AppDatabase extends _$AppDatabase {
     (select(sales)..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc)]))
       .get();
 
+  Future<void> updateSale(Sale sale) => update(sales).replace(sale);
+
+  Future<void> deleteSale(int id) =>
+      (delete(sales)..where((s) => s.id.equals(id))).go();
+
   // ====================== EXPENSES DAO ======================
   Future<int> addExpense(ExpensesCompanion expense) => into(expenses).insert(expense);
   
   Future<List<Expense>> getAllExpenses() => 
     (select(expenses)..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc)]))
       .get();
+
+  Future<void> updateExpense(Expense expense) => update(expenses).replace(expense);
+
+  Future<void> deleteExpense(int id) =>
+      (delete(expenses)..where((e) => e.id.equals(id))).go();
+
+  // ====================== FLOCK PURCHASES DAO ======================
+  Future<void> updateFlockPurchase(FlockPurchase purchase) =>
+      update(flockPurchases).replace(purchase);
+
+  Future<void> deleteFlockPurchase(int id) =>
+      (delete(flockPurchases)..where((p) => p.id.equals(id))).go();
+
+  // ====================== FLOCK LOSSES DAO ======================
+  Future<void> updateFlockLoss(FlockLossesData loss) =>
+      update(flockLosses).replace(loss);
+
+  Future<void> deleteFlockLoss(int id) =>
+      (delete(flockLosses)..where((l) => l.id.equals(id))).go();
+
+  // ====================== DAILY LOGS DAO ======================
+  Future<void> deleteDailyLog(int id) =>
+      (delete(dailyLogs)..where((l) => l.id.equals(id))).go();
 
   // ====================== REMINDERS DAO ======================
   Stream<List<Reminder>> watchAllReminders() =>

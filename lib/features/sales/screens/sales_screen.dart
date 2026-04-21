@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../config/router.dart';
 import '../../../core/providers/database_providers.dart';
+import '../../../core/providers/repository_providers.dart';
 import '../../../core/widgets/app_ui_components.dart';
 
 class SalesScreen extends ConsumerStatefulWidget {
@@ -18,6 +19,7 @@ class _SalesScreenState extends ConsumerState<SalesScreen> {
   int _selectedRangeDays = -1;
   DateTime? _customStartDate;
   DateTime? _customEndDate;
+  bool _sortNewestFirst = true;
 
   Future<void> _selectCustomRange() async {
     final now = DateTime.now();
@@ -55,6 +57,13 @@ class _SalesScreenState extends ConsumerState<SalesScreen> {
       appBar: AppBar(
         title: const Text('Sales'),
         elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: _sortNewestFirst ? 'Showing newest first' : 'Showing oldest first',
+            icon: Icon(_sortNewestFirst ? Icons.arrow_downward : Icons.arrow_upward),
+            onPressed: () => setState(() => _sortNewestFirst = !_sortNewestFirst),
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -109,7 +118,10 @@ class _SalesScreenState extends ConsumerState<SalesScreen> {
                   customer.contains(query) ||
                   sale.quantity.toString().contains(query) ||
                   sale.amount.toStringAsFixed(2).contains(query);
-            }).toList();
+            }).toList()
+              ..sort((a, b) => _sortNewestFirst
+                  ? b.date.compareTo(a.date)
+                  : a.date.compareTo(b.date));
 
             if (filteredSales.isEmpty) {
               return const Center(
@@ -211,7 +223,13 @@ class _SalesScreenState extends ConsumerState<SalesScreen> {
                   subtitle: 'Grouped by month',
                 ),
                 const SizedBox(height: 10),
-                ...groupedSales.entries.map((entry) {
+                ...(groupedSales.entries.toList()
+                  ..sort((a, b) {
+                    final aDate = DateFormat('MMMM yyyy').parse(a.key);
+                    final bDate = DateFormat('MMMM yyyy').parse(b.key);
+                    return _sortNewestFirst ? bDate.compareTo(aDate) : aDate.compareTo(bDate);
+                  }))
+                  .map((entry) {
                   final month = entry.key;
                   final monthSales = entry.value;
                   final totalAmount = monthSales.fold<double>(
@@ -284,52 +302,82 @@ class _SalesScreenState extends ConsumerState<SalesScreen> {
                                     Text('Customer: ${sale.customerName}'),
                                 ],
                               ),
-                              trailing: Builder(builder: (context) {
-                                final isPending = (sale.customerName ?? '')
-                                    .toLowerCase()
-                                    .contains('pending');
-                                final statusColor =
-                                    isPending ? Colors.amber : Colors.green;
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Builder(builder: (context) {
+                                    final isPending = (sale.customerName ?? '')
+                                        .toLowerCase()
+                                        .contains('pending');
+                                    final statusColor =
+                                        isPending ? Colors.amber : Colors.green;
 
-                                return Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      '\$${sale.amount.toStringAsFixed(2)}',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w800,
-                                            color: const Color(0xFF0E7A4F),
+                                    return Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          '\$${sale.amount.toStringAsFixed(2)}',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w800,
+                                                color: const Color(0xFF0E7A4F),
+                                              ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 2,
                                           ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color:
-                                            statusColor.withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Text(
-                                        isPending ? 'Pending' : 'Paid',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelSmall
-                                            ?.copyWith(
-                                              color: statusColor,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }),
+                                          decoration: BoxDecoration(
+                                            color: statusColor.withValues(alpha: 0.15),
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          child: Text(
+                                            isPending ? 'Pending' : 'Paid',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelSmall
+                                                ?.copyWith(
+                                                  color: statusColor,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }),
+                                  PopupMenuButton<String>(
+                                    onSelected: (value) async {
+                                      if (value == 'edit') {
+                                        context.push(Routes.addSale, extra: sale);
+                                      } else if (value == 'delete') {
+                                        final confirmed = await showDialog<bool>(
+                                          context: context,
+                                          builder: (ctx) => AlertDialog(
+                                            title: const Text('Delete Sale'),
+                                            content: const Text('Delete this sale record?'),
+                                            actions: [
+                                              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                              TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete', style: TextStyle(color: Colors.red))),
+                                            ],
+                                          ),
+                                        );
+                                        if (confirmed == true && mounted) {
+                                          await ref.read(salesRepositoryProvider).deleteSale(sale.id);
+                                        }
+                                      }
+                                    },
+                                    itemBuilder: (context) => [
+                                      const PopupMenuItem(value: 'edit', child: ListTile(leading: Icon(Icons.edit), title: Text('Edit'))),
+                                      const PopupMenuItem(value: 'delete', child: ListTile(leading: Icon(Icons.delete, color: Colors.red), title: Text('Delete', style: TextStyle(color: Colors.red)))),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           )),
                       const SizedBox(height: 14),

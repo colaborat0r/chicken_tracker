@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/providers/database_providers.dart';
+import '../../../core/providers/repository_providers.dart';
 import '../../../core/widgets/app_ui_components.dart';
 import '../../../config/router.dart';
 
@@ -18,6 +19,7 @@ class _ProductionHistoryScreenState
   DateTime? _selectedStartDate;
   DateTime? _selectedEndDate;
   final TextEditingController _searchController = TextEditingController();
+  bool _sortNewestFirst = true;
 
   @override
   void initState() {
@@ -61,6 +63,13 @@ class _ProductionHistoryScreenState
       appBar: AppBar(
         title: const Text('Production History'),
         elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: _sortNewestFirst ? 'Showing newest first' : 'Showing oldest first',
+            icon: Icon(_sortNewestFirst ? Icons.arrow_downward : Icons.arrow_upward),
+            onPressed: () => setState(() => _sortNewestFirst = !_sortNewestFirst),
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -101,7 +110,9 @@ class _ProductionHistoryScreenState
                   log.totalEggs.toString().contains(query) ||
                   log.layingHens.toString().contains(query);
             }).toList()
-              ..sort((a, b) => b.date.compareTo(a.date)); // Most recent first
+              ..sort((a, b) => _sortNewestFirst
+                  ? b.date.compareTo(a.date)
+                  : a.date.compareTo(b.date));
 
             if (filteredLogs.isEmpty) {
               return CustomScrollView(
@@ -328,25 +339,30 @@ class _ProductionHistoryScreenState
                             '$dayOfWeek • ${log.layingHens} hens • ${log.eggsPerHen.toStringAsFixed(2)}/hen',
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
-                          trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              if (log.eggsBrown > 0)
-                                Text(
-                                  '🟤 ${log.eggsBrown}',
-                                  style: Theme.of(context).textTheme.labelSmall,
-                                ),
-                              if (log.eggsColored > 0)
-                                Text(
-                                  '🟤🟠 ${log.eggsColored}',
-                                  style: Theme.of(context).textTheme.labelSmall,
-                                ),
-                              if (log.eggsWhite > 0)
-                                Text(
-                                  '⚪ ${log.eggsWhite}',
-                                  style: Theme.of(context).textTheme.labelSmall,
-                                ),
+                          trailing: PopupMenuButton<String>(
+                            onSelected: (value) async {
+                              if (value == 'edit') {
+                                context.push(Routes.logProduction, extra: log);
+                              } else if (value == 'delete') {
+                                final confirmed = await showDialog<bool>(
+                                  context: context,
+                                  builder: (ctx) => AlertDialog(
+                                    title: const Text('Delete Log'),
+                                    content: Text('Delete production log for $dateStr?'),
+                                    actions: [
+                                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                      TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete', style: TextStyle(color: Colors.red))),
+                                    ],
+                                  ),
+                                );
+                                if (confirmed == true && mounted) {
+                                  await ref.read(productionRepositoryProvider).deleteLog(log.id);
+                                }
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(value: 'edit', child: ListTile(leading: Icon(Icons.edit), title: Text('Edit'))),
+                              const PopupMenuItem(value: 'delete', child: ListTile(leading: Icon(Icons.delete, color: Colors.red), title: Text('Delete', style: TextStyle(color: Colors.red)))),
                             ],
                           ),
                         ),

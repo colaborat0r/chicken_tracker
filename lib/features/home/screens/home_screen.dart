@@ -274,7 +274,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   physics: const NeverScrollableScrollPhysics(),
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
-                  childAspectRatio: 1.15,
+                  childAspectRatio: 0.95,
                   children: [
                     _StatCardAsync(
                       label: 'Flock Count',

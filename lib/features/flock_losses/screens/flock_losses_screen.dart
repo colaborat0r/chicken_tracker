@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../config/router.dart';
 import '../../../core/providers/database_providers.dart';
+import '../../../core/providers/repository_providers.dart';
 import '../../../core/widgets/app_ui_components.dart';
 
 class FlockLossesScreen extends ConsumerStatefulWidget {
@@ -18,6 +19,7 @@ class _FlockLossesScreenState extends ConsumerState<FlockLossesScreen> {
   int _selectedRangeDays = -1;
   DateTime? _customStartDate;
   DateTime? _customEndDate;
+  bool _sortNewestFirst = true;
 
   Future<void> _selectCustomRange() async {
     final now = DateTime.now();
@@ -55,6 +57,13 @@ class _FlockLossesScreenState extends ConsumerState<FlockLossesScreen> {
       appBar: AppBar(
         title: const Text('Flock Losses'),
         elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: _sortNewestFirst ? 'Showing newest first' : 'Showing oldest first',
+            icon: Icon(_sortNewestFirst ? Icons.arrow_downward : Icons.arrow_upward),
+            onPressed: () => setState(() => _sortNewestFirst = !_sortNewestFirst),
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -109,7 +118,10 @@ class _FlockLossesScreenState extends ConsumerState<FlockLossesScreen> {
               return loss.type.toLowerCase().contains(query) ||
                   predatorSubtype.contains(query) ||
                   loss.quantity.toString().contains(query);
-            }).toList();
+            }).toList()
+              ..sort((a, b) => _sortNewestFirst
+                  ? b.date.compareTo(a.date)
+                  : a.date.compareTo(b.date));
 
             if (filteredLosses.isEmpty) {
               return const Center(
@@ -278,26 +290,50 @@ class _FlockLossesScreenState extends ConsumerState<FlockLossesScreen> {
                             ],
                           ],
                         ),
-                        trailing: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color:
-                                _getLossColor(loss.type).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            loss.type.toUpperCase(),
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall
-                                ?.copyWith(
-                                  color: _getLossColor(loss.type),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                          ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: _getLossColor(loss.type).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                loss.type.toUpperCase(),
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                      color: _getLossColor(loss.type),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                            ),
+                            PopupMenuButton<String>(
+                              onSelected: (value) async {
+                                if (value == 'edit') {
+                                  context.push(Routes.addFlockLoss, extra: loss);
+                                } else if (value == 'delete') {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: const Text('Delete Loss Record'),
+                                      content: const Text('Delete this flock loss record?'),
+                                      actions: [
+                                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                        TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete', style: TextStyle(color: Colors.red))),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirmed == true && mounted) {
+                                    await ref.read(flockLossRepositoryProvider).deleteLoss(loss.id);
+                                  }
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(value: 'edit', child: ListTile(leading: Icon(Icons.edit), title: Text('Edit'))),
+                                const PopupMenuItem(value: 'delete', child: ListTile(leading: Icon(Icons.delete, color: Colors.red), title: Text('Delete', style: TextStyle(color: Colors.red)))),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     )),
