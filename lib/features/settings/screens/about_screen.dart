@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/config/app_constants.dart';
 
 class AboutScreen extends ConsumerWidget {
   const AboutScreen({super.key});
@@ -57,7 +58,7 @@ class AboutScreen extends ConsumerWidget {
                               style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
                             ),
                             const SizedBox(height: 6),
-                            Text('Version 1.2.0', style: textTheme.bodyMedium?.copyWith(color: Colors.grey[600])),
+                            Text('Version ${AppConstants.appVersion}', style: textTheme.bodyMedium?.copyWith(color: Colors.grey[600])),
                             const SizedBox(height: 6),
                             Text(
                               'Built for homesteaders, backyard farmers, and small flock owners who want to track their egg production the easy way.',
