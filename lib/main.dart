@@ -6,6 +6,7 @@ import 'core/models/reminder_model.dart';
 import 'core/providers/database_providers.dart';
 import 'core/providers/notification_providers.dart';
 import 'core/providers/theme_providers.dart';
+import 'core/services/backup_scheduler_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +27,12 @@ class _ChickenTrackerAppState extends ConsumerState<ChickenTrackerApp> {
   void initState() {
     super.initState();
     Future.microtask(() async {
+      // Initialize reminders
       await ref.read(reminderNotificationServiceProvider).initialize();
+
+      // Initialize daily backup scheduler
+      final db = ref.read(databaseProvider);
+      await BackupSchedulerService.initialize(db);
     });
   }
 

@@ -9,6 +9,7 @@ import 'package:path/path.dart' as p;
 import '../../../core/providers/database_providers.dart';
 import '../../../core/providers/theme_providers.dart';
 import '../../../core/services/backup_service.dart';
+import '../../../core/services/backup_scheduler_service.dart';
 import '../../../core/services/csv_import_service.dart';
 
 enum _BackupSourceAction { saved, browse }
@@ -188,23 +189,66 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
                         itemBuilder: (context, index) {
                           final file = _backups[index];
                           final fileName = p.basename(file.path);
+                          final metadata =
+                              BackupSchedulerService.parseBackupFilename(file);
                           final isSelected = selectedPaths.contains(file.path);
 
                           return CheckboxListTile(
                             value: isSelected,
                             contentPadding: EdgeInsets.zero,
-                            secondary:
-                                const Icon(Icons.folder_copy_outlined),
+                            secondary: const Icon(Icons.folder_copy_outlined),
                             title: Text(fileName),
-                            subtitle: FutureBuilder<DateTime>(
-                              future: file.lastModified(),
-                              builder: (context, snapshot) {
-                                final modified = snapshot.data;
-                                final modifiedText = modified == null
-                                    ? file.path
-                                    : '${DateFormat('d MMM yyyy, HH:mm').format(modified)}\n${file.path}';
-                                return Text(modifiedText);
-                              },
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: metadata.isAutomatic
+                                            ? Colors.blue.withValues(alpha: 0.2)
+                                            : Colors.green
+                                                .withValues(alpha: 0.2),
+                                        borderRadius:
+                                            BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        metadata.type,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: metadata.isAutomatic
+                                              ? Colors.blue[700]
+                                              : Colors.green[700],
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        metadata.displayLabel,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  file.path,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall
+                                      ?.copyWith(
+                                        color: Colors.grey,
+                                      ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
                             isThreeLine: true,
                             onChanged: (value) {

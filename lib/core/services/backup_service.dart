@@ -22,12 +22,23 @@ class BackupService {
     return backupDir;
   }
 
-  static Future<File> createBackup(AppDatabase db) async {
+  static Future<File> createBackup(
+    AppDatabase db, {
+    String backupType = 'manual',
+  }) async {
     final backupDir = await _backupDirectory();
-    final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
+
+    // Format: chicken_tracker_{auto|manual}_YYYY-MM-DD_HHmmss.json
+    final typePrefix = backupType == 'automatic' ? 'auto' : 'manual';
+    final now = DateTime.now();
+    final dateStr =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final timeStr =
+        '${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}';
+
     final backupPath = p.join(
       backupDir.path,
-      'chicken_tracker_backup_$timestamp.json',
+      'chicken_tracker_${typePrefix}_${dateStr}_$timeStr.json',
     );
 
     final birdsData = await db.select(db.birds).get();
@@ -43,6 +54,7 @@ class BackupService {
         'app': 'chicken_tracker',
         'version': 1,
         'createdAt': DateTime.now().toIso8601String(),
+        'backupType': backupType,
       },
       'birds': birdsData.map((row) => row.toJson()).toList(),
       'dailyLogs': dailyLogsData.map((row) => row.toJson()).toList(),

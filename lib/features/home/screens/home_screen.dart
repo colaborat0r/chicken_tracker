@@ -348,12 +348,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       onPressed: () => context.push(Routes.logProduction),
                     ),
                     _ActionChip(
-                      label: 'View Flock',
-                      icon: Icons.pets,
-                      color: const Color(0xFFE08A24),
-                      onPressed: () => context.push(Routes.chickenList),
-                    ),
-                    _ActionChip(
                       label: 'Sales',
                       icon: Icons.receipt_long,
                       color: const Color(0xFF1565C0),
@@ -382,12 +376,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       icon: Icons.file_download_outlined,
                       color: const Color(0xFF455A64),
                       onPressed: () => context.push(Routes.reports),
-                    ),
-                    _ActionChip(
-                      label: 'Reminders',
-                      icon: Icons.alarm,
-                      color: const Color(0xFF2E7D32),
-                      onPressed: () => context.push(Routes.reminders),
                     ),
                     _ActionChip(
                       label: 'Tips / Guides',
