@@ -189,6 +189,16 @@ final thisMonthSalesTotalProvider = FutureProvider<double>((ref) async {
       .fold<double>(0.0, (sum, item) => sum + item.amount);
 });
 
+/// Provider for this month's egg total
+final thisMonthEggTotalProvider = FutureProvider<int>((ref) async {
+  final logs = await ref.watch(allDailyLogsProvider.future);
+  final now = DateTime.now();
+
+  return logs
+      .where((log) => log.date.year == now.year && log.date.month == now.month)
+      .fold<int>(0, (sum, log) => sum + log.totalEggs);
+});
+
 /// Provider for this month's profit/loss (sales - expenses)
 final thisMonthProfitLossProvider = FutureProvider<double>((ref) async {
   final sales = await ref.watch(thisMonthSalesTotalProvider.future);

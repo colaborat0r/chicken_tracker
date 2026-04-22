@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:chicken_tracker/features/home/screens/home_screen.dart';
+import 'package:chicken_tracker/features/home/screens/report_settings_screen.dart';
 import 'package:chicken_tracker/features/chickens/screens/add_chicken_screen.dart';
 import 'package:chicken_tracker/features/chickens/screens/add_multiple_chickens_screen.dart';
 import 'package:chicken_tracker/features/chickens/screens/chicken_list_screen.dart';
@@ -31,6 +32,7 @@ import 'package:chicken_tracker/core/models/reminder_model.dart';
 /// Route names for named navigation
 class Routes {
   static const String home = '/';
+  static const String reportSettings = '/report-settings';
   static const String addChicken = '/add-chicken';
   static const String addMultipleChickens = '/add-multiple-chickens';
   static const String chickenList = '/chickens';
@@ -65,6 +67,12 @@ final goRouter = GoRouter(
     GoRoute(
       path: Routes.home,
       builder: (context, state) => const HomeScreen(),
+    ),
+
+    // Report settings screen
+    GoRoute(
+      path: Routes.reportSettings,
+      builder: (context, state) => const ReportSettingsScreen(),
     ),
 
     // Add chicken screen

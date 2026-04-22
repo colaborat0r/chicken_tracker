@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../core/providers/database_providers.dart';
+import '../../../core/providers/farm_name_provider.dart';
 import '../../../core/providers/repository_providers.dart';
 import '../../../config/router.dart';
+import '../../../core/services/pdf_export_service.dart';
+import 'farm_report_dialog.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -24,9 +28,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Chicken Tracker',
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22),
+        titleSpacing: 0,
+        title: Consumer(
+          builder: (context, ref, _) {
+            final farmName = ref.watch(farmNameProvider);
+            return GestureDetector(
+              onTap: () => _showEditNameDialog(context, ref, farmName),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    farmName,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w800, fontSize: 22),
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.edit, size: 16, color: Colors.white54),
+                ],
+              ),
+            );
+          },
         ),
         elevation: 0,
       ),
@@ -228,6 +249,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             ListTile(
               leading:
+                  const Icon(Icons.settings_outlined, color: Colors.amber),
+              title: const Text('Farm Report Settings'),
+              subtitle: const Text('Choose metrics to display'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(Routes.reportSettings);
+              },
+            ),
+            ListTile(
+              leading:
                   const Icon(Icons.storage_outlined, color: Colors.blueGrey),
               title: const Text('Data Management'),
               subtitle: const Text('Backup, restore, export, reset'),
@@ -360,28 +391,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       onPressed: () => context.push(Routes.expenses),
                     ),
                     _ActionChip(
-                      label: 'History',
-                      icon: Icons.history,
-                      color: const Color(0xFF6A1B9A),
-                      onPressed: () => context.push(Routes.productionHistory),
-                    ),
-                    _ActionChip(
                       label: 'Analytics',
                       icon: Icons.bar_chart_outlined,
                       color: const Color(0xFF0D8F8A),
                       onPressed: () => context.push(Routes.analytics),
                     ),
                     _ActionChip(
-                      label: 'Reports',
-                      icon: Icons.file_download_outlined,
-                      color: const Color(0xFF455A64),
-                      onPressed: () => context.push(Routes.reports),
-                    ),
-                    _ActionChip(
                       label: 'Tips / Guides',
                       icon: Icons.menu_book,
                       color: const Color(0xFF1565C0),
                       onPressed: () => context.push(Routes.guidesHome),
+                    ),
+                    _ActionChip(
+                      label: 'Farm Report',
+                      icon: Icons.picture_as_pdf,
+                      color: const Color(0xFF8A5A2B),
+                      onPressed: () => _showFarmReportDialog(context),
                     ),
                   ],
                 ),
@@ -591,6 +616,127 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
     );
+  }
+
+  void _showEditNameDialog(
+      BuildContext context, WidgetRef ref, String current) {
+    final controller = TextEditingController(
+        text: current == 'Chicken Tracker' ? '' : current);
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Customize Name'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Give your farm a personal name. It will appear on the home screen and on Farm Report Cards.',
+              style: TextStyle(fontSize: 13, color: Colors.grey),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              maxLength: 40,
+              decoration: const InputDecoration(
+                hintText: 'e.g. Sunny Acres, Happy Hens Farm…',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              ref
+                  .read(farmNameProvider.notifier)
+                  .setName(controller.text);
+              Navigator.of(ctx).pop();
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showFarmReportDialog(BuildContext context) async {
+    if (!mounted) return;
+
+    // Show the dialog — user configures settings and photos
+    final result = await showFarmReportDialog(context);
+    if (result == null || !mounted) return; // cancelled
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Generating Farm Report Card…'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+
+    try {
+      final farmName = ref.read(farmNameProvider);
+      final now = DateTime.now();
+
+      final totalEggs = await ref.read(thisMonthEggTotalProvider.future);
+      final totalSales = await ref.read(thisMonthSalesTotalProvider.future);
+      final totalExpenses =
+          await ref.read(thisMonthExpensesTotalProvider.future);
+      final profitLoss = await ref.read(thisMonthProfitLossProvider.future);
+      final flockCount = await ref.read(flockCountProvider.future);
+      final feedPerEgg =
+          await ref.read(thisMonthFeedCostPerEggProvider.future);
+
+      final allLogs = await ref.read(allDailyLogsProvider.future);
+      final monthLogs = allLogs
+          .where(
+              (l) => l.date.year == now.year && l.date.month == now.month)
+          .toList()
+        ..sort((a, b) => a.date.compareTo(b.date));
+      final dailyEggs = monthLogs
+          .map((l) => DailyEggEntry(day: l.date.day, eggs: l.totalEggs))
+          .toList();
+
+      final chickens = await ref.read(allChickensProvider.future);
+      final layingCount = chickens.where((c) => c.status == 'laying').length;
+
+      final data = FarmReportData(
+        farmName: farmName,
+        monthLabel: DateFormat('MMMM yyyy').format(now),
+        totalEggs: totalEggs,
+        totalSales: totalSales,
+        totalExpenses: totalExpenses,
+        profitLoss: profitLoss,
+        flockCount: flockCount,
+        layingCount: layingCount,
+        feedPerEgg: feedPerEgg,
+        dailyEggs: dailyEggs,
+        settings: result.settings,
+        photos: result.photos,
+      );
+
+      final file = await PdfExportService.generateFarmReportCard(data);
+
+      if (!mounted) return;
+      // ignore: use_build_context_synchronously
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: '${data.farmName} — ${data.monthLabel} Farm Report',
+        subject: '${data.monthLabel} Farm Report',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error generating report: $e')),
+      );
+    }
   }
 }
 
@@ -898,7 +1044,7 @@ class _QuickAddButton extends StatelessWidget {
   }
 }
 
-class _HeroHeader extends StatelessWidget {
+class _HeroHeader extends StatefulWidget {
   final VoidCallback onPrimaryAction;
   final VoidCallback onSecondaryAction;
   final VoidCallback onTertiaryAction;
@@ -908,6 +1054,13 @@ class _HeroHeader extends StatelessWidget {
     required this.onSecondaryAction,
     required this.onTertiaryAction,
   });
+
+  @override
+  State<_HeroHeader> createState() => _HeroHeaderState();
+}
+
+class _HeroHeaderState extends State<_HeroHeader> {
+  bool _isExpanded = true;
 
   @override
   Widget build(BuildContext context) {
@@ -928,61 +1081,88 @@ class _HeroHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          // Header with title and expand/collapse button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(Icons.agriculture, color: Colors.white, size: 28),
-              SizedBox(width: 10),
-              Text(
-                'Farm Dashboard',
-                style: TextStyle(
+              const Expanded(
+                child: Row(
+                  children: [
+                    Icon(Icons.agriculture, color: Colors.white, size: 28),
+                    SizedBox(width: 10),
+                    Text(
+                      'Farm Dashboard',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  _isExpanded ? Icons.expand_less : Icons.expand_more,
                   color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
+                  size: 28,
                 ),
+                onPressed: () {
+                  setState(() {
+                    _isExpanded = !_isExpanded;
+                  });
+                },
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: _isExpanded ? 'Collapse' : 'Expand',
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Track flock health, eggs, sales, and expenses from one place.',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.92),
-              fontSize: 14,
+
+          // Content (description and buttons) - conditionally shown
+          if (_isExpanded) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Track flock health, eggs, sales, and expenses from one place.',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.92),
+                fontSize: 14,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              ElevatedButton.icon(
-                onPressed: onPrimaryAction,
-                icon: const Icon(Icons.add_circle_outline),
-                label: const Text('Log Eggs'),
-              ),
-              OutlinedButton.icon(
-                onPressed: onSecondaryAction,
-                icon: const Icon(Icons.receipt_long, color: Colors.white),
-                label: const Text('Add Sale',
-                    style: TextStyle(color: Colors.white)),
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.white.withValues(alpha: 0.7)),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: widget.onPrimaryAction,
+                  icon: const Icon(Icons.add_circle_outline),
+                  label: const Text('Log Eggs'),
                 ),
-              ),
-              OutlinedButton.icon(
-                onPressed: onTertiaryAction,
-                icon: const Icon(Icons.account_balance_wallet,
-                    color: Colors.white),
-                label: const Text(
-                  'Add Expense',
-                  style: TextStyle(color: Colors.white),
+                OutlinedButton.icon(
+                  onPressed: widget.onSecondaryAction,
+                  icon: const Icon(Icons.receipt_long, color: Colors.white),
+                  label: const Text('Add Sale',
+                      style: TextStyle(color: Colors.white)),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.white.withValues(alpha: 0.7)),
+                  ),
                 ),
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.white.withValues(alpha: 0.7)),
+                OutlinedButton.icon(
+                  onPressed: widget.onTertiaryAction,
+                  icon: const Icon(Icons.account_balance_wallet,
+                      color: Colors.white),
+                  label: const Text(
+                    'Add Expense',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.white.withValues(alpha: 0.7)),
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ],
       ),
     );
