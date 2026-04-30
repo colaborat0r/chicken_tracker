@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
@@ -10,6 +12,18 @@ import 'core/services/backup_scheduler_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Catch Flutter framework errors (widget build / layout errors)
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+  };
+
+  // Catch all other asynchronous Dart errors that escape to the platform layer
+  PlatformDispatcher.instance.onError = (error, stack) {
+    // Log to console in debug; in release this silently prevents the crash dialog
+    debugPrint('Unhandled error: $error\n$stack');
+    return true; // returning true tells Flutter we handled it
+  };
 
   runApp(const ProviderScope(child: ChickenTrackerApp()));
 }
@@ -27,12 +41,17 @@ class _ChickenTrackerAppState extends ConsumerState<ChickenTrackerApp> {
   void initState() {
     super.initState();
     Future.microtask(() async {
-      // Initialize reminders
-      await ref.read(reminderNotificationServiceProvider).initialize();
+      try {
+        // Initialize reminders
+        await ref.read(reminderNotificationServiceProvider).initialize();
 
-      // Initialize daily backup scheduler
-      final db = ref.read(databaseProvider);
-      await BackupSchedulerService.initialize(db);
+        // Initialize daily backup scheduler
+        final db = ref.read(databaseProvider);
+        await BackupSchedulerService.initialize(db);
+      } catch (e, stackTrace) {
+        // Log initialization errors without crashing the app
+        debugPrint('Initialization error: $e\n$stackTrace');
+      }
     });
   }
 

@@ -97,8 +97,17 @@ final goRouter = GoRouter(
     GoRoute(
       path: Routes.chickenDetail,
       builder: (context, state) {
-        final chicken = state.extra as ChickenModel;
-        return ChickenDetailScreen(chicken: chicken);
+        final extra = state.extra;
+        if (extra is! ChickenModel) {
+          // Guard against missing/wrong extra (e.g. deep link or state loss)
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => context.go(Routes.home),
+          );
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return ChickenDetailScreen(chicken: extra);
       },
     ),
 

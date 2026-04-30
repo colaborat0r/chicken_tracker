@@ -372,6 +372,47 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
     }
   }
 
+  Future<void> _loadSampleData() async {
+    final firstConfirm = await _confirmAction(
+      title: 'Load sample data?',
+      message: 'This will populate your app with demo data including:\n\n• 15 sample birds\n• 30 days of production logs\n• 7 sample sales\n• 12 expenses\n• 3 flock purchases\n• 2 flock losses\n\nYou can always reset this data later.',
+      confirmText: 'Load Sample Data',
+      destructive: false,
+    );
+    if (firstConfirm != true) return;
+
+    final db = ref.read(databaseProvider);
+    setState(() => _isWorking = true);
+    try {
+      await BackupService.loadSampleData(db);
+
+      // Invalidate all providers to refresh UI immediately
+      ref.invalidate(allChickensProvider);
+      ref.invalidate(activeChickensCountProvider);
+      ref.invalidate(flockCountProvider);
+      ref.invalidate(todayEggCountProvider);
+      ref.invalidate(weeklyEggTotalProvider);
+      ref.invalidate(thisMonthEggTotalProvider);
+      ref.invalidate(allDailyLogsProvider);
+      ref.invalidate(allSalesProvider);
+      ref.invalidate(thisMonthSalesTotalProvider);
+      ref.invalidate(allExpensesProvider);
+      ref.invalidate(thisMonthExpensesTotalProvider);
+      ref.invalidate(thisMonthProfitLossProvider);
+      ref.invalidate(thisMonthFeedCostPerEggProvider);
+      ref.invalidate(allFlockPurchasesProvider);
+      ref.invalidate(allFlockLossesProvider);
+      ref.invalidate(allRemindersProvider);
+      ref.invalidate(dueRemindersCountProvider);
+
+      _showMessage('✓ Sample data loaded successfully!');
+    } catch (e) {
+      _showMessage('Failed to load sample data: $e', isError: true);
+    } finally {
+      if (mounted) setState(() => _isWorking = false);
+    }
+  }
+
   Future<File?> _pickBackupFile() async {
     final action = await showModalBottomSheet<_BackupSourceAction>(
       context: context,
@@ -785,6 +826,16 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
                   ),
             ),
             const SizedBox(height: 8),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.download, color: Colors.blue),
+                title: const Text('Load Sample Data'),
+                subtitle: const Text(
+                    'Populate the app with demo data to explore features.'),
+                onTap: _loadSampleData,
+              ),
+            ),
+            const SizedBox(height: 12),
             Card(
               child: ListTile(
                 leading: Icon(

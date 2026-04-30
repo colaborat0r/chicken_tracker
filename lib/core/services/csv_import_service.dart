@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:csv/csv.dart';
 import 'package:drift/drift.dart' show Value;
+import 'package:intl/intl.dart';
 import '../database/app_database.dart';
 
 /// Service for importing data from CSV files
@@ -141,27 +142,26 @@ class CsvImportService {
   static DateTime? _parseDate(String dateStr) {
     if (dateStr.isEmpty) return null;
 
-    // Try basic parsing first
+    // Try ISO 8601 parsing first
     try {
       return DateTime.parse(dateStr);
-    } catch (e) {
+    } catch (_) {
       // Continue to other formats
     }
 
-    // Try various date formats
+    // Try various date formats using intl
     final formats = [
       'M/d/yyyy',
       'MM/dd/yyyy',
-      'yyyy-MM-dd',
       'd MMM yyyy',
       'MMM d, yyyy',
       'MMM dd, yyyy',
     ];
 
-    for (final _ in formats) {
+    for (final fmt in formats) {
       try {
-        return DateTime.parse(dateStr);
-      } catch (e) {
+        return DateFormat(fmt).parseStrict(dateStr);
+      } catch (_) {
         // Try next format
       }
     }

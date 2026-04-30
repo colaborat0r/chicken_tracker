@@ -6,8 +6,10 @@ import 'package:share_plus/share_plus.dart';
 import '../../../core/providers/database_providers.dart';
 import '../../../core/providers/farm_name_provider.dart';
 import '../../../core/providers/repository_providers.dart';
+import '../../../core/providers/first_launch_provider.dart';
 import '../../../config/router.dart';
 import '../../../core/services/pdf_export_service.dart';
+import '../../../core/widgets/first_launch_dialog.dart';
 import 'farm_report_dialog.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -25,6 +27,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final width = MediaQuery.sizeOf(context).width;
     final statsCrossAxisCount = width > 900 ? 4 : 2;
+
+    // Show first-launch dialog
+    ref.listen<bool>(firstLaunchProvider, (_, isFirstLaunch) {
+      if (isFirstLaunch) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (context.mounted) {
+            showDialog<void>(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => const FirstLaunchDialog(),
+            );
+          }
+        });
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -296,7 +313,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(height: 20),
                 const _SectionTitle(
                   title: 'Farm Snapshot',
-                  subtitle: 'Live totals from your current data',
+                  subtitle: '',
                 ),
                 const SizedBox(height: 12),
                 GridView.count(
@@ -365,7 +382,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(height: 24),
                 const _SectionTitle(
                   title: 'Quick Actions',
-                  subtitle: 'Tap a task to jump directly into your workflow',
+                  subtitle: '',
                 ),
                 const SizedBox(height: 12),
                 Wrap(
@@ -413,14 +430,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(height: 24),
                 const _SectionTitle(
                   title: "Today's Reminders",
-                  subtitle: 'Tasks due or overdue',
+                  subtitle: '',
                 ),
                 const SizedBox(height: 12),
                 const _DueRemindersCard(),
                 const SizedBox(height: 24),
                 const _SectionTitle(
                   title: 'Recent Activity',
-                  subtitle: 'Last five production logs',
+                  subtitle: '',
                 ),
                 const SizedBox(height: 12),
                 ref.watch(allDailyLogsProvider).when(
@@ -1186,11 +1203,13 @@ class _SectionTitle extends StatelessWidget {
                 fontWeight: FontWeight.w800,
               ),
         ),
-        const SizedBox(height: 2),
-        Text(
-          subtitle,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        if (subtitle.isNotEmpty) ...[
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
       ],
     );
   }

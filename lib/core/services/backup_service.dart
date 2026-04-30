@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/drift.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -103,11 +104,13 @@ class BackupService {
   }
 
   static Future<void> restoreFromBackup(AppDatabase db, File file) async {
+    print('[restoreFromBackup] Starting restore from ${file.path}');
     if (!await file.exists()) {
       throw Exception('Backup file not found.');
     }
 
     final content = await file.readAsString();
+    print('[restoreFromBackup] File content length: ${content.length}');
     final parsed = jsonDecode(content);
     if (parsed is! Map<String, dynamic>) {
       throw Exception('Invalid backup format.');
@@ -136,7 +139,10 @@ class BackupService {
         .whereType<Map<String, dynamic>>()
         .toList();
 
+    print('[restoreFromBackup] Data counts: birds=${birdsData.length}, logs=${dailyLogsData.length}, sales=${salesData.length}, expenses=${expensesData.length}');
+
     await db.transaction(() async {
+      print('[restoreFromBackup] Starting transaction');
       await db.delete(db.dailyLogs).go();
       await db.delete(db.sales).go();
       await db.delete(db.expenses).go();
@@ -155,6 +161,7 @@ class BackupService {
                 hatchDate: row.hatchDate,
                 status: Value(row.status),
                 notes: Value(row.notes),
+                photoPath: Value(row.photoPath),
               ),
             );
       }
@@ -244,26 +251,122 @@ class BackupService {
         }
       }
     });
+    print('[restoreFromBackup] Transaction completed successfully');
   }
 
   static Future<void> resetAllData(AppDatabase db) async {
-    await db.transaction(() async {
-      await db.delete(db.dailyLogs).go();
-      await db.delete(db.sales).go();
-      await db.delete(db.expenses).go();
-      await db.delete(db.flockPurchases).go();
-      await db.delete(db.flockLosses).go();
-      await db.delete(db.settings).go();
-      await db.delete(db.birds).go();
+    print('[resetAllData] Starting database reset...');
+    try {
+      await db.transaction(() async {
+        print('[resetAllData] Deleting dailyLogs...');
+        await db.delete(db.dailyLogs).go();
+        print('[resetAllData] ✓ dailyLogs deleted');
+        
+        print('[resetAllData] Deleting sales...');
+        await db.delete(db.sales).go();
+        print('[resetAllData] ✓ sales deleted');
+        
+        print('[resetAllData] Deleting expenses...');
+        await db.delete(db.expenses).go();
+        print('[resetAllData] ✓ expenses deleted');
+        
+        print('[resetAllData] Deleting flockPurchases...');
+        await db.delete(db.flockPurchases).go();
+        print('[resetAllData] ✓ flockPurchases deleted');
+        
+        print('[resetAllData] Deleting flockLosses...');
+        await db.delete(db.flockLosses).go();
+        print('[resetAllData] ✓ flockLosses deleted');
+        
+        print('[resetAllData] Deleting settings...');
+        await db.delete(db.settings).go();
+        print('[resetAllData] ✓ settings deleted');
+        
+        print('[resetAllData] Deleting birds...');
+        await db.delete(db.birds).go();
+        print('[resetAllData] ✓ birds deleted');
 
-      await db.into(db.settings).insert(
-        SettingsCompanion.insert(
-              id: const Value(1),
-              currency: const Value('USD'),
-              weightUnit: const Value('lbs'),
-              darkMode: const Value(true),
-            ),
-          );
-    });
+        print('[resetAllData] Inserting default settings...');
+        await db.into(db.settings).insert(
+          SettingsCompanion.insert(
+            id: const Value(1),
+            currency: const Value('USD'),
+            weightUnit: const Value('lbs'),
+            darkMode: const Value(true),
+          ),
+        );
+        print('[resetAllData] ✓ Default settings inserted');
+      });
+      print('[resetAllData] Transaction completed successfully!');
+    } catch (e, stackTrace) {
+      print('[resetAllData] ERROR during reset: $e');
+      print('[resetAllData] StackTrace: $stackTrace');
+      rethrow;
+    }
+  }
+
+  /// Load sample data from assets for demo purposes
+  static Future<void> loadSampleData(AppDatabase db) async {
+    print('[BackupService] Starting loadSampleData()');
+    try {
+      const assetPath = 'assets/Sample Data.json';
+      print('[BackupService] Loading asset: $assetPath');
+      
+      late String jsonString;
+      try {
+        jsonString = await rootBundle.loadString(assetPath);
+        print('[BackupService] Asset loaded successfully, length: ${jsonString.length}');
+      } catch (e) {
+        print('[BackupService] FAILED to load asset: $e');
+        throw Exception(
+          'Failed to load $assetPath: $e\n'
+          'Make sure the asset is registered in pubspec.yaml under the "assets" section.'
+        );
+      }
+      
+      if (jsonString.isEmpty) {
+        print('[BackupService] ERROR: Asset is empty');
+        throw Exception('Asset $assetPath exists but is empty');
+      }
+      
+      print('[BackupService] Creating temporary file');
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File(p.join(tempDir.path, 'sample_data_temp.json'));
+      print('[BackupService] Writing JSON to temp file: ${tempFile.path}');
+      
+      try {
+        await tempFile.writeAsString(jsonString);
+        print('[BackupService] Temp file written successfully');
+      } catch (e) {
+        print('[BackupService] FAILED to write temp file: $e');
+        throw Exception('Failed to write temp file: $e');
+      }
+      
+      try {
+        print('[BackupService] Calling restoreFromBackup()');
+        await restoreFromBackup(db, tempFile);
+        print('[BackupService] restoreFromBackup() completed successfully');
+      } catch (e) {
+        print('[BackupService] ERROR in restoreFromBackup(): $e');
+        throw Exception('restoreFromBackup failed: $e');
+      } finally {
+        print('[BackupService] Cleaning up temp file');
+        if (await tempFile.exists()) {
+          try {
+            await tempFile.delete();
+            print('[BackupService] Temp file deleted successfully');
+          } catch (e) {
+            print('[BackupService] Failed to delete temp file: $e');
+          }
+        } else {
+          print('[BackupService] Temp file does not exist (already deleted?)');
+        }
+      }
+      
+      print('[BackupService] loadSampleData() completed successfully');
+    } catch (e) {
+      print('[BackupService] ERROR in loadSampleData(): $e');
+      rethrow;
+    }
   }
 }

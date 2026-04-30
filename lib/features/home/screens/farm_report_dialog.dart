@@ -124,7 +124,7 @@ class _FarmReportDialogState extends ConsumerState<FarmReportDialog> {
                           const SizedBox(height: 2),
                           Text(
                             'A shareable one-page PDF snapshot of your flock '
-                            'and egg production this month.',
+                            'and egg production.',
                             style: theme.textTheme.bodySmall
                                 ?.copyWith(color: Colors.white70),
                           ),
@@ -141,15 +141,9 @@ class _FarmReportDialogState extends ConsumerState<FarmReportDialog> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ── Metrics section ──────────────────────────────────
-                    Text('Monthly Snapshot Metrics',
+                    Text('Choose which stats appear on the report.',
                         style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.bold, color: brown)),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Choose which stats appear on the report.',
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: Colors.grey[600]),
-                    ),
                     const SizedBox(height: 8),
                     _metricTile('🥚 Total Eggs', _totalEggs,
                         (v) => setState(() => _totalEggs = v!)),

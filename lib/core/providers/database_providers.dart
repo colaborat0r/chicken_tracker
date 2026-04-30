@@ -6,7 +6,9 @@ import '../repositories/reminder_repository.dart';
 
 /// Provider for the AppDatabase instance (singleton)
 final databaseProvider = Provider<AppDatabase>((ref) {
-  return AppDatabase();
+  final db = AppDatabase();
+  ref.onDispose(() => db.close());
+  return db;
 });
 
 /// Provider for all chickens as a stream
@@ -23,6 +25,7 @@ final allChickensProvider = StreamProvider<List<ChickenModel>>((ref) async* {
               hatchDate: bird.hatchDate,
               status: bird.status,
               notes: bird.notes,
+              photoPath: bird.photoPath,
             ))
         .toList();
   });
@@ -289,6 +292,7 @@ final chickenByIdProvider =
     hatchDate: bird.hatchDate,
     status: bird.status,
     notes: bird.notes,
+    photoPath: bird.photoPath,
   );
 });
 

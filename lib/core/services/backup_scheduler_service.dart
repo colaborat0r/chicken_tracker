@@ -8,10 +8,22 @@ class BackupSchedulerService {
   BackupSchedulerService._();
 
   static const String _lastBackupDateKey = 'last_automatic_backup_date';
+  static const String _firstLaunchKey = 'chicken_tracker_first_launch';
 
   /// Initialize and trigger daily automatic backup if needed
   static Future<void> initialize(AppDatabase db) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final isFirstLaunch = !prefs.containsKey(_firstLaunchKey);
+
+      print('[BackupScheduler] isFirstLaunch = $isFirstLaunch');
+
+      // Skip backup creation on first launch to avoid restoring old data
+      if (isFirstLaunch) {
+        print('[BackupScheduler] Skipping automatic backup on first launch');
+        return;
+      }
+
       await _performDailyBackupIfNeeded(db);
     } catch (e) {
       // Silently handle backup initialization errors
@@ -53,8 +65,7 @@ class BackupSchedulerService {
       // Enforce retention policy (keep only 2 automatic backups)
       await _enforceRetentionPolicy();
     } catch (e) {
-      // Silently handle backup creation errors
-      rethrow;
+      // Silently handle backup creation errors — do not rethrow so startup is unaffected
     }
   }
 
@@ -65,14 +76,22 @@ class BackupSchedulerService {
       final automaticBackups = allBackups
           .whereType<File>()
           .where((f) => f.path.contains('_auto_'))
-          .toList()
-        ..sort((a, b) => b.path.compareTo(a.path)); // Newest first
+          .toList();
+
+      if (automaticBackups.length <= 2) {
+        return; // Nothing to delete
+      }
+
+      // Sort by modification time (newest first)
+      automaticBackups.sort((a, b) {
+        final aTime = a.lastModifiedSync().millisecondsSinceEpoch;
+        final bTime = b.lastModifiedSync().millisecondsSinceEpoch;
+        return bTime.compareTo(aTime); // Descending (newest first)
+      });
 
       // Delete backups beyond the 2 most recent
-      if (automaticBackups.length > 2) {
-        final toDelete = automaticBackups.sublist(2);
-        await BackupService.deleteBackups(toDelete.cast<File>());
-      }
+      final toDelete = automaticBackups.sublist(2);
+      await BackupService.deleteBackups(toDelete.cast<File>());
     } catch (e) {
       // Silently handle retention policy errors
     }

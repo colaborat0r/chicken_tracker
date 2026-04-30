@@ -1,0 +1,612 @@
+{
+  "metadata": {
+    "app": "chicken_tracker",
+    "version": 1,
+    "createdAt": "2026-04-23T00:00:00.000Z",
+    "backupType": "manual"
+  },
+  "birds": [
+    {
+      "id": 1,
+      "breed": "Rhode Island Red",
+      "eggColor": "Brown",
+      "hatchDate": "2024-03-15T00:00:00.000Z",
+      "status": "laying",
+      "notes": "Excellent layer, very friendly"
+    },
+    {
+      "id": 2,
+      "breed": "Leghorn",
+      "eggColor": "White",
+      "hatchDate": "2024-02-10T00:00:00.000Z",
+      "status": "laying",
+      "notes": "High production hen"
+    },
+    {
+      "id": 3,
+      "breed": "Wyandotte",
+      "eggColor": "Brown",
+      "hatchDate": "2024-04-01T00:00:00.000Z",
+      "status": "laying",
+      "notes": "Broody tendencies"
+    },
+    {
+      "id": 4,
+      "breed": "Bantam",
+      "eggColor": "Brown",
+      "hatchDate": "2024-05-20T00:00:00.000Z",
+      "status": "laying",
+      "notes": "Small breed, good for pets"
+    },
+    {
+      "id": 5,
+      "breed": "Orpington",
+      "eggColor": "Brown",
+      "hatchDate": "2024-01-12T00:00:00.000Z",
+      "status": "laying",
+      "notes": "Dual purpose, friendly bird"
+    },
+    {
+      "id": 6,
+      "breed": "Sussex",
+      "eggColor": "Brown",
+      "hatchDate": "2024-06-15T00:00:00.000Z",
+      "status": "laying",
+      "notes": "Good forager"
+    },
+    {
+      "id": 7,
+      "breed": "Isa Brown",
+      "eggColor": "Brown",
+      "hatchDate": "2024-03-01T00:00:00.000Z",
+      "status": "laying",
+      "notes": "Production layer"
+    },
+    {
+      "id": 8,
+      "breed": "Plymouth Rock",
+      "eggColor": "Brown",
+      "hatchDate": "2024-07-10T00:00:00.000Z",
+      "status": "growing",
+      "notes": "Will start laying in a few weeks"
+    },
+    {
+      "id": 9,
+      "breed": "Cochin",
+      "eggColor": "Brown",
+      "hatchDate": "2024-08-05T00:00:00.000Z",
+      "status": "growing",
+      "notes": "Broody breed, good mother"
+    },
+    {
+      "id": 10,
+      "breed": "Buff Orpington",
+      "eggColor": "Brown",
+      "hatchDate": "2024-02-28T00:00:00.000Z",
+      "status": "laying",
+      "notes": "Calm and broody"
+    },
+    {
+      "id": 11,
+      "breed": "Rhode Island Red",
+      "eggColor": "Brown",
+      "hatchDate": "2023-12-01T00:00:00.000Z",
+      "status": "sold",
+      "notes": "Sold to neighbor on March 20"
+    },
+    {
+      "id": 12,
+      "breed": "Leghorn",
+      "eggColor": "White",
+      "hatchDate": "2023-11-15T00:00:00.000Z",
+      "status": "deceased",
+      "notes": "Passed away from natural causes"
+    },
+    {
+      "id": 13,
+      "breed": "Wyandotte",
+      "eggColor": "Brown",
+      "hatchDate": "2024-05-01T00:00:00.000Z",
+      "status": "selling",
+      "notes": null
+    },
+    {
+      "id": 14,
+      "breed": "Bantam Cochin",
+      "eggColor": "Brown",
+      "hatchDate": "2024-09-01T00:00:00.000Z",
+      "status": "growing",
+      "notes": "From recent hatch"
+    },
+    {
+      "id": 15,
+      "breed": "Easter Egger",
+      "eggColor": "Colored",
+      "hatchDate": "2024-04-20T00:00:00.000Z",
+      "status": "laying",
+      "notes": "Lays blue-green eggs"
+    }
+  ],
+  "dailyLogs": [
+    {
+      "id": 1,
+      "date": "2026-03-25T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 6,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": null
+    },
+    {
+      "id": 2,
+      "date": "2026-03-26T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 7,
+      "eggsColored": 1,
+      "eggsWhite": 0,
+      "notes": "Good day"
+    },
+    {
+      "id": 3,
+      "date": "2026-03-27T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 5,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": "Cool morning"
+    },
+    {
+      "id": 4,
+      "date": "2026-03-28T00:00:00.000Z",
+      "layingHens": 7,
+      "eggsBrown": 5,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": "One hen going broody"
+    },
+    {
+      "id": 5,
+      "date": "2026-03-29T00:00:00.000Z",
+      "layingHens": 7,
+      "eggsBrown": 4,
+      "eggsColored": 1,
+      "eggsWhite": 0,
+      "notes": "Broody hen taking break"
+    },
+    {
+      "id": 6,
+      "date": "2026-03-30T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 6,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": null
+    },
+    {
+      "id": 7,
+      "date": "2026-03-31T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 7,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": "Great week"
+    },
+    {
+      "id": 8,
+      "date": "2026-04-01T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 6,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": null
+    },
+    {
+      "id": 9,
+      "date": "2026-04-02T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 5,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": "Rainy day"
+    },
+    {
+      "id": 10,
+      "date": "2026-04-03T00:00:00.000Z",
+      "layingHens": 7,
+      "eggsBrown": 4,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": "Stress from storm"
+    },
+    {
+      "id": 11,
+      "date": "2026-04-04T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 6,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": null
+    },
+    {
+      "id": 12,
+      "date": "2026-04-05T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 7,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": "Back to normal"
+    },
+    {
+      "id": 13,
+      "date": "2026-04-06T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 6,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": null
+    },
+    {
+      "id": 14,
+      "date": "2026-04-07T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 8,
+      "eggsColored": 1,
+      "eggsWhite": 0,
+      "notes": "Excellent day!"
+    },
+    {
+      "id": 15,
+      "date": "2026-04-08T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 6,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": null
+    },
+    {
+      "id": 16,
+      "date": "2026-04-09T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 5,
+      "eggsColored": 0,
+      "eggsWhite": 1,
+      "notes": "Easter Egger taking break"
+    },
+    {
+      "id": 17,
+      "date": "2026-04-10T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 6,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": null
+    },
+    {
+      "id": 18,
+      "date": "2026-04-11T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 7,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": "Good production"
+    },
+    {
+      "id": 19,
+      "date": "2026-04-12T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 6,
+      "eggsColored": 1,
+      "eggsWhite": 0,
+      "notes": null
+    },
+    {
+      "id": 20,
+      "date": "2026-04-13T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 5,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": "Week starting"
+    },
+    {
+      "id": 21,
+      "date": "2026-04-14T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 7,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": null
+    },
+    {
+      "id": 22,
+      "date": "2026-04-15T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 6,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": "Average production"
+    },
+    {
+      "id": 23,
+      "date": "2026-04-16T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 6,
+      "eggsColored": 0,
+      "eggsWhite": 1,
+      "notes": "Colored layer resting"
+    },
+    {
+      "id": 24,
+      "date": "2026-04-17T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 5,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": null
+    },
+    {
+      "id": 25,
+      "date": "2026-04-18T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 7,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": "Great week ahead"
+    },
+    {
+      "id": 26,
+      "date": "2026-04-19T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 6,
+      "eggsColored": 1,
+      "eggsWhite": 0,
+      "notes": null
+    },
+    {
+      "id": 27,
+      "date": "2026-04-20T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 6,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": "Consistent production"
+    },
+    {
+      "id": 28,
+      "date": "2026-04-21T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 7,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": null
+    },
+    {
+      "id": 29,
+      "date": "2026-04-22T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 5,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": "One hen not feeling well"
+    },
+    {
+      "id": 30,
+      "date": "2026-04-23T00:00:00.000Z",
+      "layingHens": 8,
+      "eggsBrown": 6,
+      "eggsColored": 1,
+      "eggsWhite": 1,
+      "notes": "Back to normal"
+    }
+  ],
+  "sales": [
+    {
+      "id": 1,
+      "date": "2026-03-28T00:00:00.000Z",
+      "type": "eggs",
+      "quantity": 18,
+      "amount": 45.0,
+      "customerName": "Jane Doe"
+    },
+    {
+      "id": 2,
+      "date": "2026-04-01T00:00:00.000Z",
+      "type": "eggs",
+      "quantity": 24,
+      "amount": 60.0,
+      "customerName": "John Smith"
+    },
+    {
+      "id": 3,
+      "date": "2026-04-04T00:00:00.000Z",
+      "type": "eggs",
+      "quantity": 12,
+      "amount": 30.0,
+      "customerName": "Local Farm Store"
+    },
+    {
+      "id": 4,
+      "date": "2026-04-08T00:00:00.000Z",
+      "type": "chickens",
+      "quantity": 1,
+      "amount": 25.0,
+      "customerName": "Farm down the road"
+    },
+    {
+      "id": 5,
+      "date": "2026-04-12T00:00:00.000Z",
+      "type": "eggs",
+      "quantity": 30,
+      "amount": 75.0,
+      "customerName": "Farmers Market Vendor"
+    },
+    {
+      "id": 6,
+      "date": "2026-04-15T00:00:00.000Z",
+      "type": "eggs",
+      "quantity": 12,
+      "amount": 30.0,
+      "customerName": "Jane Doe"
+    },
+    {
+      "id": 7,
+      "date": "2026-04-20T00:00:00.000Z",
+      "type": "eggs",
+      "quantity": 24,
+      "amount": 60.0,
+      "customerName": "John Smith"
+    }
+  ],
+  "expenses": [
+    {
+      "id": 1,
+      "date": "2026-03-25T00:00:00.000Z",
+      "category": "feed",
+      "amount": 35.0,
+      "description": "Layer pellets - 50 lbs",
+      "pounds": 50.0
+    },
+    {
+      "id": 2,
+      "date": "2026-03-28T00:00:00.000Z",
+      "category": "bedding",
+      "amount": 18.0,
+      "description": "Pine shavings for coop",
+      "pounds": null
+    },
+    {
+      "id": 3,
+      "date": "2026-03-30T00:00:00.000Z",
+      "category": "medicine",
+      "amount": 12.50,
+      "description": "Probiotics for flock",
+      "pounds": null
+    },
+    {
+      "id": 4,
+      "date": "2026-04-02T00:00:00.000Z",
+      "category": "feed",
+      "amount": 35.0,
+      "description": "Layer pellets - 50 lbs",
+      "pounds": 50.0
+    },
+    {
+      "id": 5,
+      "date": "2026-04-05T00:00:00.000Z",
+      "category": "other",
+      "amount": 8.99,
+      "description": "Water waterer maintenance",
+      "pounds": null
+    },
+    {
+      "id": 6,
+      "date": "2026-04-08T00:00:00.000Z",
+      "category": "maintenance",
+      "amount": 25.0,
+      "description": "Coop door repair",
+      "pounds": null
+    },
+    {
+      "id": 7,
+      "date": "2026-04-10T00:00:00.000Z",
+      "category": "feed",
+      "amount": 35.0,
+      "description": "Layer pellets - 50 lbs",
+      "pounds": 50.0
+    },
+    {
+      "id": 8,
+      "date": "2026-04-13T00:00:00.000Z",
+      "category": "bedding",
+      "amount": 18.0,
+      "description": "Pine shavings for nesting boxes",
+      "pounds": null
+    },
+    {
+      "id": 9,
+      "date": "2026-04-15T00:00:00.000Z",
+      "category": "medicine",
+      "amount": 15.0,
+      "description": "Vitamin supplement",
+      "pounds": null
+    },
+    {
+      "id": 10,
+      "date": "2026-04-18T00:00:00.000Z",
+      "category": "feed",
+      "amount": 35.0,
+      "description": "Layer pellets - 50 lbs",
+      "pounds": 50.0
+    },
+    {
+      "id": 11,
+      "date": "2026-04-20T00:00:00.000Z",
+      "category": "other",
+      "amount": 5.0,
+      "description": "Cleaning supplies",
+      "pounds": null
+    },
+    {
+      "id": 12,
+      "date": "2026-04-22T00:00:00.000Z",
+      "category": "feed",
+      "amount": 35.0,
+      "description": "Layer pellets - 50 lbs",
+      "pounds": 50.0
+    }
+  ],
+  "flockPurchases": [
+    {
+      "id": 1,
+      "date": "2026-02-15T00:00:00.000Z",
+      "type": "live_chicks",
+      "quantity": 10,
+      "cost": 40.0,
+      "supplier": "Local hatchery",
+      "hatchedCount": null
+    },
+    {
+      "id": 2,
+      "date": "2026-03-10T00:00:00.000Z",
+      "type": "hatching_eggs",
+      "quantity": 24,
+      "cost": 36.0,
+      "supplier": "Premium breeder",
+      "hatchedCount": 18
+    },
+    {
+      "id": 3,
+      "date": "2026-04-01T00:00:00.000Z",
+      "type": "live_chicks",
+      "quantity": 5,
+      "cost": 20.0,
+      "supplier": "Local hatchery",
+      "hatchedCount": null
+    }
+  ],
+  "flockLosses": [
+    {
+      "id": 1,
+      "date": "2026-03-15T00:00:00.000Z",
+      "type": "predator",
+      "quantity": 1,
+      "predatorSubtype": "raccoon"
+    },
+    {
+      "id": 2,
+      "date": "2026-04-18T00:00:00.000Z",
+      "type": "natural_causes",
+      "quantity": 1,
+      "predatorSubtype": null
+    }
+  ],
+  "settings": [
+    {
+      "id": 1,
+      "currency": "USD",
+      "weightUnit": "lbs",
+      "darkMode": true
+    }
+  ]
+}
+

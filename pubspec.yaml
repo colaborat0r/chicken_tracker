@@ -77,3 +77,5 @@ flutter:
   assets:
     - assets/icons/
     - assets/guides/
+    - assets/farmreportheader.jpg
+    - assets/Sample Data.json

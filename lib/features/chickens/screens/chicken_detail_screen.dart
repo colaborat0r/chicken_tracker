@@ -148,7 +148,9 @@ class _ChickenDetailScreenState extends ConsumerState<ChickenDetailScreen> {
       );
 
       if (result != null && result.files.isNotEmpty) {
-        final file = File(result.files.first.path!);
+        final path = result.files.first.path;
+        if (path == null) return; // path can be null on some Android devices
+        final file = File(path);
         final imageService = ref.read(imageStorageServiceProvider);
         final savedPath = await imageService.saveImageToAppDirectory(file);
         setState(() => _photoPath = savedPath);

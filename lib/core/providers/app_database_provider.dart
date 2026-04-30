@@ -1,13 +1,4 @@
-// lib/core/providers/app_database_provider.dart
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../database/app_database.dart';
-
-part 'app_database_provider.g.dart';
-
-@riverpod
-AppDatabase appDatabase(Ref ref) {
-  final db = AppDatabase();
-  ref.onDispose(() => db.close());
-  return db;
-}
+// This file is intentionally left as a stub.
+// The canonical AppDatabase provider is `databaseProvider` in database_providers.dart.
+// Do NOT use a separate @riverpod-generated provider here — it creates a second
+// SQLite connection and auto-disposes it mid-use, which can corrupt state.
