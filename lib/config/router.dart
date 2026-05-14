@@ -14,6 +14,7 @@ import 'package:chicken_tracker/features/sales/screens/sales_screen.dart';
 import 'package:chicken_tracker/features/sales/screens/add_sale_screen.dart';
 import 'package:chicken_tracker/features/expenses/screens/expenses_screen.dart';
 import 'package:chicken_tracker/features/expenses/screens/add_expense_screen.dart';
+import 'package:chicken_tracker/features/expenses/screens/category_expenses_screen.dart';
 import 'package:chicken_tracker/features/flock_purchases/screens/flock_purchases_screen.dart';
 import 'package:chicken_tracker/features/flock_purchases/screens/add_flock_purchase_screen.dart';
 import 'package:chicken_tracker/features/flock_losses/screens/flock_losses_screen.dart';
@@ -45,6 +46,7 @@ class Routes {
   static const String addSale = '/add-sale';
   static const String expenses = '/expenses';
   static const String addExpense = '/add-expense';
+  static const String categoryExpenses = '/expenses/category/:category';
   static const String flockPurchases = '/flock-purchases';
   static const String addFlockPurchase = '/add-flock-purchase';
   static const String flockLosses = '/flock-losses';
@@ -167,6 +169,15 @@ final goRouter = GoRouter(
       builder: (context, state) {
         final extra = state.extra;
         return AddExpenseScreen(expenseToEdit: extra is ExpenseModel ? extra : null);
+      },
+    ),
+
+    // Category expenses screen
+    GoRoute(
+      path: Routes.categoryExpenses,
+      builder: (context, state) {
+        final category = state.pathParameters['category'] ?? '';
+        return CategoryExpensesScreen(category: category);
       },
     ),
 
