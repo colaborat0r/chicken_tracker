@@ -1,24 +1,89 @@
-### Chicken & Egg Production Tracker
+# 🐔 Chicken Tracker
 
-**Version 1.0.0** 
+**Version 1.2.2** — Offline-first egg production & flock management for homesteaders
 
-Built for homesteaders, backyard farmers, and small flock owners who want to track their egg production the easy way.
+Built for backyard farmers and small flock owners who want a simple, powerful way to track their chickens and eggs — no internet required.
 
-**What This App Does**
+---
 
-It helps you log daily egg collection, manage your flock, track feed and costs, and see clear charts of your hens’ productivity, all offline, right on your phone.
-Just open the app, tap, and keep your homestead running smoothly.
+## 📲 Install on Android
 
-**Key Features**
+1. Download **[chicken-tracker-v1.2.2.apk](https://github.com/colaborat0r/chicken_tracker/releases/download/v1.2.2/chicken-tracker-v1.2.2.apk)** from the latest release
+2. On your Android device, go to **Settings → Apps → Special app access → Install unknown apps**
+3. Allow installs from your browser or file manager
+4. Open the downloaded `.apk` file and tap **Install**
+5. Launch **Chicken Tracker** from your home screen
 
-•	Quick daily egg logging (by total or per hen)
-•	Complete flock management (breeds, ages, notes, and status)
-•	Feed, expense, and cost tracking
-•	Beautiful production charts and yearly trends
-•	Reminders for feeding, cleaning, and health checks
-•	Full export to CSV or PDF for your records
-•	Works completely offline — perfect for the barn or field
+> **Note:** Android may show a warning because the app is not from the Play Store — this is normal for sideloaded apps. The app is open-source and safe to install.
 
-**Feedback & Support**
+All releases are available on the [Releases page](https://github.com/colaborat0r/chicken_tracker/releases).
 
-We’re constantly improving the app based on feedback from real chicken keepers like you. Have ideas, found a bug, or want a new feature? Tap Send Feedback below or email: thehost22000@yahoo.com
+---
+
+## ✨ Features
+
+| Category | What you can do |
+|---|---|
+| 🥚 **Daily Logging** | Log egg counts by total or per hen, with color breakdown (brown / white / colored) |
+| 🐔 **Flock Management** | Track breeds, hatch dates, age, status, and notes for every bird |
+| 💰 **Sales Tracking** | Record egg and chicken sales with customer info and revenue summaries |
+| 💸 **Expense Tracking** | Log feed, supplies, vet costs and other expenses by category |
+| 🛒 **Flock Purchases** | Track chick and hatching egg purchases, suppliers, and hatch rates |
+| ⚠️ **Flock Losses** | Record losses by type (predator, illness, etc.) |
+| 📊 **Charts & Analytics** | Production trends, sales vs. expenses, yearly and monthly views |
+| 📄 **Farm Report Card** | One-page branded PDF snapshot of your farm — shareable monthly summary |
+| 📤 **Reports & Exports** | Export Production, Sales, Expenses, Purchases, and Losses as styled PDF or CSV |
+| 🔔 **Reminders** | Notifications for feeding, cleaning, and health check schedules |
+| 🌙 **Dark Mode** | Dark-first UI designed for barn and field use |
+| ✈️ **Fully Offline** | All data stored locally on-device — no account or internet needed |
+
+---
+
+## 📄 PDF Exports
+
+All PDF reports (Farm Report Card and the five data reports) share a consistent branded style:
+- Farm banner header image with your farm name and report title
+- Summary stat cards with key metrics
+- Styled tables with brown headers and alternating row shading
+- Matching warm cream footer
+
+The farm name on reports defaults to **Chicken Tracker** and can be customized from the Home screen.
+
+---
+
+## 🛠️ Build from source
+
+**Requirements:** Flutter 3.24+, Android SDK
+
+```bash
+git clone https://github.com/colaborat0r/chicken_tracker.git
+cd chicken_tracker
+flutter pub get
+flutter run                        # debug run
+flutter build apk --release        # build release APK
+```
+
+After any database schema change, regenerate the Drift code:
+
+```bash
+flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+---
+
+## 💬 Feedback & Support
+
+Found a bug or have a feature idea? Open an [issue](https://github.com/colaborat0r/chicken_tracker/issues) or email: **thehost22000@yahoo.com**
+
+---
+
+## 📜 Changelog
+
+See [Releases](https://github.com/colaborat0r/chicken_tracker/releases) for the full changelog.
+
+| Version | Highlights |
+|---|---|
+| **1.2.2** | Reports & Exports PDFs match Farm Report Card branding; farm name on all PDF banners |
+| **1.2.1** | Stability improvements, Android crash fixes |
+| **1.2.0** | Farm Report Card PDF with photos; optional metrics; farm name customization |
+| **1.0.0** | Initial release |
