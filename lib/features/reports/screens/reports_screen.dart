@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/models/report_model.dart';
 import '../../../core/providers/database_providers.dart';
+import '../../../core/providers/farm_name_provider.dart';
 import '../../../core/services/pdf_export_service.dart';
 import '../../../core/services/csv_export_service.dart';
 import '../../../core/widgets/app_ui_components.dart';
@@ -309,8 +310,10 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
       if (report == null) throw Exception('Failed to generate report');
 
-      final file = await PdfExportService.generatePdf(report);
+      final farmName = ref.read(farmNameProvider);
+      final file = await PdfExportService.generatePdf(report, farmName: farmName);
 
+      if (!mounted) return;
       setState(() => _exportStatus = 'Sharing...');
 
       await Share.shareXFiles(
@@ -319,6 +322,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             '$reportTitle - ${DateFormat('MMM d, yyyy').format(_selectedStartDate!)}',
       );
 
+      if (!mounted) return;
       setState(() => _exportStatus = 'PDF exported successfully!');
       await Future.delayed(const Duration(seconds: 2));
     } catch (e) {
@@ -381,6 +385,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
       final file = await CsvExportService.generateCsv(report);
 
+      if (!mounted) return;
       setState(() => _exportStatus = 'Sharing...');
 
       await Share.shareXFiles(
@@ -389,6 +394,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             '$reportTitle - ${DateFormat('MMM d, yyyy').format(_selectedStartDate!)}',
       );
 
+      if (!mounted) return;
       setState(() => _exportStatus = 'CSV exported successfully!');
       await Future.delayed(const Duration(seconds: 2));
     } catch (e) {

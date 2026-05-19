@@ -74,68 +74,79 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
     final controller = TextEditingController(
       text: _monthlyBudget > 0 ? _monthlyBudget.toStringAsFixed(2) : '',
     );
-    await showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Monthly Budget'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Set a monthly spending limit. Leave blank to disable.'),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'Budget Amount',
-                prefixText: '\$',
-                border: OutlineInputBorder(),
+    try {
+      await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Monthly Budget'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Set a monthly spending limit. Leave blank to disable.'),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: 'Budget Amount',
+                  prefixText: '\$',
+                  border: OutlineInputBorder(),
+                ),
+                autofocus: true,
               ),
-              autofocus: true,
+            ],
+          ),
+          actions: [
+            if (_monthlyBudget > 0)
+              TextButton(
+                onPressed: () async {
+                  await _saveBudget(0.0);
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                child:
+                    const Text('Clear', style: TextStyle(color: Colors.red)),
+              ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final v = double.tryParse(controller.text.trim());
+                if (v != null && v > 0) await _saveBudget(v);
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+              child: const Text('Save'),
             ),
           ],
         ),
-        actions: [
-          if (_monthlyBudget > 0)
-            TextButton(
-              onPressed: () async {
-                await _saveBudget(0.0);
-                if (ctx.mounted) Navigator.pop(ctx);
-              },
-              child:
-                  const Text('Clear', style: TextStyle(color: Colors.red)),
-            ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              final v = double.tryParse(controller.text.trim());
-              if (v != null && v > 0) await _saveBudget(v);
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
+      );
+    } finally {
+      controller.dispose();
+    }
   }
 
   Future<void> _exportCsv(List<ExpenseModel> expenses) async {
-    final rows = <List<dynamic>>[
-      ['Date', 'Category', 'Description', 'Amount', 'Pounds'],
-      ...expenses.map((e) => [
-            DateFormat('yyyy-MM-dd').format(e.date),
-            e.category,
-            e.description ?? '',
-            e.amount.toStringAsFixed(2),
-            e.pounds?.toString() ?? '',
-          ]),
-    ];
-    final csv = const ListToCsvConverter().convert(rows);
-    await Share.share(csv, subject: 'Expenses Export');
+    try {
+      final rows = <List<dynamic>>[
+        ['Date', 'Category', 'Description', 'Amount', 'Pounds'],
+        ...expenses.map((e) => [
+              DateFormat('yyyy-MM-dd').format(e.date),
+              e.category,
+              e.description ?? '',
+              e.amount.toStringAsFixed(2),
+              e.pounds?.toString() ?? '',
+            ]),
+      ];
+      final csv = const ListToCsvConverter().convert(rows);
+      await Share.share(csv, subject: 'Expenses Export');
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Export failed: $e')),
+      );
+    }
   }
 
   @override
@@ -353,12 +364,13 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                   crossAxisSpacing: 12,
                   children: categoryTotals.entries.map((entry) {
                     final category = entry.key;
+                    if (category.isEmpty) return const SizedBox.shrink();
                     final total = entry.value;
                     final count = categoryExpenses[category]!.length;
 
                     return InkWell(
-                      onTap: () =>
-                          context.push('/expenses/category/$category'),
+                      onTap: () => context.push(
+                          '/expenses/category/${Uri.encodeComponent(category)}'),
                       child: Card(
                         child: Padding(
                           padding: const EdgeInsets.all(12),
@@ -602,8 +614,9 @@ class _CategoryFilterRow extends StatelessWidget {
           ...categories.map((cat) => Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: FilterChip(
-                  label: Text(
-                      cat[0].toUpperCase() + cat.substring(1).toLowerCase()),
+                  label: Text(cat.isEmpty
+                      ? '(unknown)'
+                      : cat[0].toUpperCase() + cat.substring(1).toLowerCase()),
                   selected: selected == cat,
                   onSelected: (_) =>
                       onSelected(selected == cat ? null : cat),

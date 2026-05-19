@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/providers/database_providers.dart';
 import '../../../core/providers/farm_name_provider.dart';
 import '../../../core/providers/repository_providers.dart';
@@ -284,6 +285,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 context.push(Routes.dataManagement);
               },
             ),
+            const Divider(),
+            _KofiDrawerTile(),
           ],
         ),
       ),
@@ -390,7 +393,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   runSpacing: 10,
                   children: [
                     _ActionChip(
-                      label: 'Log Production',
+                      label: 'Production',
                       icon: Icons.add_circle_outline,
                       color: const Color(0xFF2E7D32),
                       onPressed: () => context.push(Routes.logProduction),
@@ -690,6 +693,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final result = await showFarmReportDialog(context);
     if (result == null || !mounted) return; // cancelled
 
+    // ignore: use_build_context_synchronously
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Generating Farm Report Card…'),
@@ -1269,3 +1273,71 @@ class _SectionReveal extends StatelessWidget {
     );
   }
 }
+
+class _KofiDrawerTile extends StatelessWidget {
+  static final Uri _kofiUri = Uri.parse('https://ko-fi.com/chicktrack');
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () async {
+          if (!await launchUrl(_kofiUri, mode: LaunchMode.externalApplication)) {
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Could not open Ko-fi page.')),
+            );
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFF5E5B), Color(0xFFFF914D)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Row(
+            children: [
+              const Text('☕', style: TextStyle(fontSize: 22)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Support the App',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'A little support goes a long way!',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.open_in_new,
+                color: Colors.white.withValues(alpha: 0.8),
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+

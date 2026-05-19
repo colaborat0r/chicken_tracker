@@ -60,7 +60,12 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
 
       if (result == null || result.files.isEmpty) return;
 
-      final file = File(result.files.first.path!);
+      final selectedPath = result.files.first.path;
+      if (selectedPath == null || selectedPath.isEmpty) {
+        _showMessage('Could not access the selected file.', isError: true);
+        return;
+      }
+      final file = File(selectedPath);
       final fileName = p.basename(file.path);
 
       // Show import type selection
@@ -692,6 +697,7 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
   }
 
   void _showMessage(String message, {bool isError = false}) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),

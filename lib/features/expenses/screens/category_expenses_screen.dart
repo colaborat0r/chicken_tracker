@@ -151,9 +151,9 @@ class _CategoryExpensesScreenState extends ConsumerState<CategoryExpensesScreen>
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
+                    const Text(
                       'Try adjusting your filters or add a new expense.',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.grey,
                       ),
                       textAlign: TextAlign.center,

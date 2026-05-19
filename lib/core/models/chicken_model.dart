@@ -133,7 +133,7 @@ class SaleModel {
   });
 
   /// Get unit price (per egg or per chicken)
-  double get unitPrice => amount / quantity;
+  double get unitPrice => quantity == 0 ? 0.0 : amount / quantity;
 
   SaleModel copyWith({
     int? id,
@@ -219,7 +219,7 @@ class FlockPurchaseModel {
   });
 
   /// Get cost per unit
-  double get costPerUnit => cost / quantity;
+  double get costPerUnit => quantity == 0 ? 0.0 : cost / quantity;
 
   /// Get hatch rate percentage (for hatching eggs)
   double? get hatchRate {

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/backup_service.dart';
@@ -21,24 +22,24 @@ class FirstLaunchNotifier extends StateNotifier<bool> {
     final prefs = await SharedPreferences.getInstance();
     final isFirstLaunch = !prefs.containsKey(_key);
     
-    print('[FirstLaunch] isFirstLaunch = $isFirstLaunch');
-    
+    debugPrint('[FirstLaunch] isFirstLaunch = $isFirstLaunch');
+
     state = isFirstLaunch;
     if (isFirstLaunch) {
-      print('[FirstLaunch] Running first launch database reset...');
+      debugPrint('[FirstLaunch] Running first launch database reset...');
       try {
         // Use the existing database instance from the provider
         final db = _ref.read(databaseProvider);
-        print('[FirstLaunch] Resetting database...');
+        debugPrint('[FirstLaunch] Resetting database...');
         await BackupService.resetAllData(db);
-        print('[FirstLaunch] ✓ Database reset complete');
+        debugPrint('[FirstLaunch] ✓ Database reset complete');
       } catch (e, stackTrace) {
-        print('[FirstLaunch] ERROR resetting database: $e');
-        print('[FirstLaunch] StackTrace: $stackTrace');
+        debugPrint('[FirstLaunch] ERROR resetting database: $e');
+        debugPrint('[FirstLaunch] StackTrace: $stackTrace');
       }
       
       await prefs.setBool(_key, false);
-      print('[FirstLaunch] ✓ First launch complete');
+      debugPrint('[FirstLaunch] ✓ First launch complete');
     }
   }
 

@@ -27,6 +27,9 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = false;
   List<String> _customCategories = [];
+  // Incremented to force the DropdownButtonFormField to recreate itself,
+  // ensuring the displayed value stays in sync with _selectedCategory.
+  int _categoryDropdownVersion = 0;
 
   bool get _isEdit => widget.expenseToEdit != null;
 
@@ -112,16 +115,29 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       ),
     );
     if (result != null && result.isNotEmpty) {
+      // Prevent the sentinel value from being saved as a real category.
       final normalized = result.toLowerCase();
+      if (normalized == '__add_custom__') return;
+      if (!mounted) return;
       if (!_allCategories.contains(normalized)) {
         setState(() {
           _customCategories = [..._customCategories, normalized];
           _selectedCategory = normalized;
+          _categoryDropdownVersion++;
         });
         await _saveCustomCategories();
       } else {
-        setState(() => _selectedCategory = normalized);
+        if (!mounted) return;
+        setState(() {
+          _selectedCategory = normalized;
+          _categoryDropdownVersion++;
+        });
       }
+    } else {
+      // Dialog was cancelled — reset the dropdown so it no longer shows
+      // '__add_custom__' as the selected value.
+      if (!mounted) return;
+      setState(() => _categoryDropdownVersion++);
     }
   }
 
@@ -233,18 +249,20 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                     ),
                     const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
-                      key: ValueKey(_selectedCategory),
+                      key: ValueKey('$_selectedCategory-$_categoryDropdownVersion'),
                       initialValue: _allCategories.contains(_selectedCategory)
                           ? _selectedCategory
                           : _allCategories.first,
                       decoration: const InputDecoration(
                           labelText: 'Category',
                           border: OutlineInputBorder()),
-                      items: [
+                        items: [
                         ..._allCategories.map((cat) => DropdownMenuItem(
                               value: cat,
-                              child: Text(cat[0].toUpperCase() +
-                                  cat.substring(1).toLowerCase()),
+                              child: Text(cat.isEmpty
+                                  ? '(unknown)'
+                                  : cat[0].toUpperCase() +
+                                      cat.substring(1).toLowerCase()),
                             )),
                         const DropdownMenuItem(
                           value: '__add_custom__',

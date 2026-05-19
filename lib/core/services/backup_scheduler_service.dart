@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../database/app_database.dart';
@@ -16,11 +17,11 @@ class BackupSchedulerService {
       final prefs = await SharedPreferences.getInstance();
       final isFirstLaunch = !prefs.containsKey(_firstLaunchKey);
 
-      print('[BackupScheduler] isFirstLaunch = $isFirstLaunch');
+      debugPrint('[BackupScheduler] isFirstLaunch = $isFirstLaunch');
 
       // Skip backup creation on first launch to avoid restoring old data
       if (isFirstLaunch) {
-        print('[BackupScheduler] Skipping automatic backup on first launch');
+        debugPrint('[BackupScheduler] Skipping automatic backup on first launch');
         return;
       }
 

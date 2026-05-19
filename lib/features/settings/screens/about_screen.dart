@@ -117,6 +117,8 @@ class AboutScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 24),
+                  const _KofiSupportSection(),
                 ],
               ),
             ),
@@ -160,6 +162,87 @@ class _FeatureBullet extends StatelessWidget {
         children: [
           const Padding(padding: EdgeInsets.only(top: 2), child: Text('\u2022 ')),
           Expanded(child: Text(text)),
+        ],
+      ),
+    );
+  }
+}
+
+class _KofiSupportSection extends StatelessWidget {
+  static final Uri _kofiUri = Uri.parse('https://ko-fi.com/chicktrack');
+
+  const _KofiSupportSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFF5E5B), Color(0xFFFF914D)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('☕', style: TextStyle(fontSize: 28)),
+              const SizedBox(width: 10),
+              Text(
+                'Support the App',
+                style: textTheme.titleMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'A little support goes a long way! If you\'d like to help me keep creating, you can do so at ko-fi.com/chicktrack',
+            style: textTheme.bodyMedium?.copyWith(
+              color: Colors.white.withValues(alpha: 0.92),
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 14),
+          ElevatedButton.icon(
+            onPressed: () async {
+              if (!await launchUrl(_kofiUri,
+                  mode: LaunchMode.externalApplication)) {
+                // ignore: use_build_context_synchronously
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Could not open Ko-fi page.')),
+                );
+              }
+            },
+            icon: const Text('☕', style: TextStyle(fontSize: 16)),
+            label: const Text('Buy Me a Coffee'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFFFF5E5B),
+              textStyle: const TextStyle(fontWeight: FontWeight.w700),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+          const SizedBox(height: 8),
+          SelectableText(
+            'https://ko-fi.com/chicktrack',
+            style: textTheme.bodySmall?.copyWith(
+              color: Colors.white.withValues(alpha: 0.75),
+              decoration: TextDecoration.underline,
+              decorationColor: Colors.white54,
+            ),
+          ),
         ],
       ),
     );

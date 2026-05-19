@@ -14,10 +14,12 @@ DateTime _getWeekStart(DateTime date) {
   return date.subtract(Duration(days: dayOfWeek - 1));
 }
 
-/// Helper function to get the last day of a month
+/// Helper function to get the last day of a month (correct leap year handling)
 int _getLastDayOfMonth(int year, int month) {
   if (month == DateTime.february) {
-    return (year % 4 == 0) ? 29 : 28;
+    final isLeap =
+        (year % 4 == 0) && (year % 100 != 0 || year % 400 == 0);
+    return isLeap ? 29 : 28;
   }
   const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
   return daysInMonth[month - 1];

@@ -1,5 +1,4 @@
-import 'dart:ui';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
@@ -13,16 +12,23 @@ import 'core/services/backup_scheduler_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Catch Flutter framework errors (widget build / layout errors)
+  // Catch Flutter framework errors (widget build / layout errors).
+  // In release mode, log silently rather than showing the red error screen.
   FlutterError.onError = (FlutterErrorDetails details) {
-    FlutterError.presentError(details);
+    if (kDebugMode) {
+      FlutterError.presentError(details);
+    } else {
+      debugPrint('[FlutterError] ${details.exceptionAsString()}');
+      debugPrintStack(stackTrace: details.stack);
+    }
   };
 
-  // Catch all other asynchronous Dart errors that escape to the platform layer
+  // Catch all other asynchronous Dart errors that escape to the platform layer.
+  // Returning true tells Flutter we handled it, preventing a hard crash dialog.
   PlatformDispatcher.instance.onError = (error, stack) {
-    // Log to console in debug; in release this silently prevents the crash dialog
-    debugPrint('Unhandled error: $error\n$stack');
-    return true; // returning true tells Flutter we handled it
+    debugPrint('[PlatformError] $error');
+    debugPrintStack(stackTrace: stack);
+    return true;
   };
 
   runApp(const ProviderScope(child: ChickenTrackerApp()));
@@ -59,9 +65,13 @@ class _ChickenTrackerAppState extends ConsumerState<ChickenTrackerApp> {
   Widget build(BuildContext context) {
     ref.listen<AsyncValue<List<ReminderModel>>>(allRemindersProvider, (_, next) {
       next.whenData((reminders) {
-        ref.read(reminderNotificationServiceProvider).resyncActiveReminders(
-              reminders,
-            );
+        try {
+          ref.read(reminderNotificationServiceProvider).resyncActiveReminders(
+                reminders,
+              );
+        } catch (e) {
+          debugPrint('[Reminders] resync error: $e');
+        }
       });
     });
 
