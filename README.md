@@ -1,5 +1,7 @@
 # 🐔 Chicken Tracker
 
+[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
+
 **Version 1.2.2** — Offline-first egg production & flock management for homesteaders
 
 Built for backyard farmers and small flock owners who want a simple, powerful way to track their chickens and eggs — no internet required.
@@ -87,3 +89,16 @@ See [Releases](https://github.com/colaborat0r/chicken_tracker/releases) for the 
 | **1.2.1** | Stability improvements, Android crash fixes |
 | **1.2.0** | Farm Report Card PDF with photos; optional metrics; farm name customization |
 | **1.0.0** | Initial release |
+
+---
+
+## 📄 License
+
+This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International** license.
+
+- ✅ Free to use, share, and adapt for personal/non-commercial use
+- ✅ Must give credit to the original project
+- ❌ Cannot be used for commercial purposes
+
+See the [LICENSE](LICENSE) file or [creativecommons.org/licenses/by-nc/4.0](https://creativecommons.org/licenses/by-nc/4.0/) for full details.
+
