@@ -1,5 +1,9 @@
 # 🐔 Chicken Tracker
 
+<p align="center">
+  <img src="assets/icons/app_icon.png" alt="Chicken Tracker Icon" width="120"/>
+</p>
+
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
 
 **Version 1.2.2** — Offline-first egg production & flock management for homesteaders

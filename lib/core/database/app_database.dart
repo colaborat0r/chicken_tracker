@@ -114,6 +114,26 @@ class ReadGuides extends Table {
   Set<Column> get primaryKey => {guideId};
 }
 
+// 11. Care Logs (flock care journal notes)
+class CareLogs extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  DateTimeColumn get date => dateTime()();
+  TextColumn get title => text().withDefault(const Constant('Care Note'))();
+  TextColumn get notes => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+}
+
+// 12. Care Log Photos
+class CareLogPhotos extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get careLogId =>
+      integer().references(CareLogs, #id, onDelete: KeyAction.cascade)();
+  TextColumn get filePath => text()();
+  TextColumn get galleryUri => text().nullable()();
+  TextColumn get caption => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+}
+
 @DriftDatabase(
   tables: [
     Birds,
@@ -126,13 +146,15 @@ class ReadGuides extends Table {
     Reminders,
     SavedGuides,
     ReadGuides,
+    CareLogs,
+    CareLogPhotos,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -146,6 +168,10 @@ class AppDatabase extends _$AppDatabase {
       if (from < 4) {
         await m.createTable(savedGuides);
         await m.createTable(readGuides);
+      }
+      if (from < 5) {
+        await m.createTable(careLogs);
+        await m.createTable(careLogPhotos);
       }
     },
   );
@@ -336,4 +362,48 @@ class AppDatabase extends _$AppDatabase {
        ));
      }
    }
+
+  // ====================== CARE LOGS DAO ======================
+  Stream<List<CareLog>> watchAllCareLogs() =>
+      (select(careLogs)
+            ..orderBy([
+              (l) => OrderingTerm(expression: l.date, mode: OrderingMode.desc),
+              (l) => OrderingTerm(expression: l.createdAt, mode: OrderingMode.desc),
+            ]))
+          .watch();
+
+  Future<CareLog?> getCareLogById(int id) =>
+      (select(careLogs)..where((l) => l.id.equals(id))).getSingleOrNull();
+
+  Future<int> addCareLog(CareLogsCompanion log) => into(careLogs).insert(log);
+
+  Future<void> updateCareLog(CareLog log) => update(careLogs).replace(log);
+
+  Future<void> deleteCareLog(int id) =>
+      (delete(careLogs)..where((l) => l.id.equals(id))).go();
+
+  Future<List<CareLogPhoto>> getPhotosForCareLog(int careLogId) =>
+      (select(careLogPhotos)
+            ..where((p) => p.careLogId.equals(careLogId))
+            ..orderBy([(p) => OrderingTerm(expression: p.createdAt)]))
+          .get();
+
+  Future<List<CareLogPhoto>> getAllCareLogPhotos() =>
+      (select(careLogPhotos)
+            ..orderBy([
+              (p) => OrderingTerm(expression: p.createdAt, mode: OrderingMode.desc),
+            ]))
+          .get();
+
+  Future<int> addCareLogPhoto(CareLogPhotosCompanion photo) =>
+      into(careLogPhotos).insert(photo);
+
+  Future<void> deleteCareLogPhoto(int id) =>
+      (delete(careLogPhotos)..where((p) => p.id.equals(id))).go();
+
+  Future<void> updateCareLogPhoto(CareLogPhoto photo) =>
+      update(careLogPhotos).replace(photo);
+
+  Future<CareLogPhoto?> getCareLogPhotoById(int id) =>
+      (select(careLogPhotos)..where((p) => p.id.equals(id))).getSingleOrNull();
 }

@@ -66,5 +66,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Chicken Tracker needs camera access to attach photos to care notes.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Chicken Tracker needs photo library access to attach and save care log photos.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Chicken Tracker saves care log photos to your photo gallery.</string>
 </dict>
 </plist>

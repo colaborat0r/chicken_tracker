@@ -3323,6 +3323,646 @@ class ReadGuidesCompanion extends UpdateCompanion<ReadGuide> {
   }
 }
 
+class $CareLogsTable extends CareLogs with TableInfo<$CareLogsTable, CareLog> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CareLogsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+      'date', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('Care Note'));
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+      'notes', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, date, title, notes, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'care_logs';
+  @override
+  VerificationContext validateIntegrity(Insertable<CareLog> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+          _dateMeta, date.isAcceptableOrUnknown(data['date']!, _dateMeta));
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CareLog map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CareLog(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      date: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}date'])!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      notes: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}notes']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $CareLogsTable createAlias(String alias) {
+    return $CareLogsTable(attachedDatabase, alias);
+  }
+}
+
+class CareLog extends DataClass implements Insertable<CareLog> {
+  final int id;
+  final DateTime date;
+  final String title;
+  final String? notes;
+  final DateTime createdAt;
+  const CareLog(
+      {required this.id,
+      required this.date,
+      required this.title,
+      this.notes,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['date'] = Variable<DateTime>(date);
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  CareLogsCompanion toCompanion(bool nullToAbsent) {
+    return CareLogsCompanion(
+      id: Value(id),
+      date: Value(date),
+      title: Value(title),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory CareLog.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CareLog(
+      id: serializer.fromJson<int>(json['id']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      title: serializer.fromJson<String>(json['title']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'date': serializer.toJson<DateTime>(date),
+      'title': serializer.toJson<String>(title),
+      'notes': serializer.toJson<String?>(notes),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  CareLog copyWith(
+          {int? id,
+          DateTime? date,
+          String? title,
+          Value<String?> notes = const Value.absent(),
+          DateTime? createdAt}) =>
+      CareLog(
+        id: id ?? this.id,
+        date: date ?? this.date,
+        title: title ?? this.title,
+        notes: notes.present ? notes.value : this.notes,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  CareLog copyWithCompanion(CareLogsCompanion data) {
+    return CareLog(
+      id: data.id.present ? data.id.value : this.id,
+      date: data.date.present ? data.date.value : this.date,
+      title: data.title.present ? data.title.value : this.title,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CareLog(')
+          ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('title: $title, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, date, title, notes, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CareLog &&
+          other.id == this.id &&
+          other.date == this.date &&
+          other.title == this.title &&
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt);
+}
+
+class CareLogsCompanion extends UpdateCompanion<CareLog> {
+  final Value<int> id;
+  final Value<DateTime> date;
+  final Value<String> title;
+  final Value<String?> notes;
+  final Value<DateTime> createdAt;
+  const CareLogsCompanion({
+    this.id = const Value.absent(),
+    this.date = const Value.absent(),
+    this.title = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  CareLogsCompanion.insert({
+    this.id = const Value.absent(),
+    required DateTime date,
+    this.title = const Value.absent(),
+    this.notes = const Value.absent(),
+    required DateTime createdAt,
+  })  : date = Value(date),
+        createdAt = Value(createdAt);
+  static Insertable<CareLog> custom({
+    Expression<int>? id,
+    Expression<DateTime>? date,
+    Expression<String>? title,
+    Expression<String>? notes,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (date != null) 'date': date,
+      if (title != null) 'title': title,
+      if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  CareLogsCompanion copyWith(
+      {Value<int>? id,
+      Value<DateTime>? date,
+      Value<String>? title,
+      Value<String?>? notes,
+      Value<DateTime>? createdAt}) {
+    return CareLogsCompanion(
+      id: id ?? this.id,
+      date: date ?? this.date,
+      title: title ?? this.title,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CareLogsCompanion(')
+          ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('title: $title, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CareLogPhotosTable extends CareLogPhotos
+    with TableInfo<$CareLogPhotosTable, CareLogPhoto> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CareLogPhotosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _careLogIdMeta =
+      const VerificationMeta('careLogId');
+  @override
+  late final GeneratedColumn<int> careLogId = GeneratedColumn<int>(
+      'care_log_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES care_logs (id) ON DELETE CASCADE'));
+  static const VerificationMeta _filePathMeta =
+      const VerificationMeta('filePath');
+  @override
+  late final GeneratedColumn<String> filePath = GeneratedColumn<String>(
+      'file_path', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _galleryUriMeta =
+      const VerificationMeta('galleryUri');
+  @override
+  late final GeneratedColumn<String> galleryUri = GeneratedColumn<String>(
+      'gallery_uri', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _captionMeta =
+      const VerificationMeta('caption');
+  @override
+  late final GeneratedColumn<String> caption = GeneratedColumn<String>(
+      'caption', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, careLogId, filePath, galleryUri, caption, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'care_log_photos';
+  @override
+  VerificationContext validateIntegrity(Insertable<CareLogPhoto> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('care_log_id')) {
+      context.handle(
+          _careLogIdMeta,
+          careLogId.isAcceptableOrUnknown(
+              data['care_log_id']!, _careLogIdMeta));
+    } else if (isInserting) {
+      context.missing(_careLogIdMeta);
+    }
+    if (data.containsKey('file_path')) {
+      context.handle(_filePathMeta,
+          filePath.isAcceptableOrUnknown(data['file_path']!, _filePathMeta));
+    } else if (isInserting) {
+      context.missing(_filePathMeta);
+    }
+    if (data.containsKey('gallery_uri')) {
+      context.handle(
+          _galleryUriMeta,
+          galleryUri.isAcceptableOrUnknown(
+              data['gallery_uri']!, _galleryUriMeta));
+    }
+    if (data.containsKey('caption')) {
+      context.handle(_captionMeta,
+          caption.isAcceptableOrUnknown(data['caption']!, _captionMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CareLogPhoto map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CareLogPhoto(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      careLogId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}care_log_id'])!,
+      filePath: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}file_path'])!,
+      galleryUri: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}gallery_uri']),
+      caption: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}caption']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $CareLogPhotosTable createAlias(String alias) {
+    return $CareLogPhotosTable(attachedDatabase, alias);
+  }
+}
+
+class CareLogPhoto extends DataClass implements Insertable<CareLogPhoto> {
+  final int id;
+  final int careLogId;
+  final String filePath;
+  final String? galleryUri;
+  final String? caption;
+  final DateTime createdAt;
+  const CareLogPhoto(
+      {required this.id,
+      required this.careLogId,
+      required this.filePath,
+      this.galleryUri,
+      this.caption,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['care_log_id'] = Variable<int>(careLogId);
+    map['file_path'] = Variable<String>(filePath);
+    if (!nullToAbsent || galleryUri != null) {
+      map['gallery_uri'] = Variable<String>(galleryUri);
+    }
+    if (!nullToAbsent || caption != null) {
+      map['caption'] = Variable<String>(caption);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  CareLogPhotosCompanion toCompanion(bool nullToAbsent) {
+    return CareLogPhotosCompanion(
+      id: Value(id),
+      careLogId: Value(careLogId),
+      filePath: Value(filePath),
+      galleryUri: galleryUri == null && nullToAbsent
+          ? const Value.absent()
+          : Value(galleryUri),
+      caption: caption == null && nullToAbsent
+          ? const Value.absent()
+          : Value(caption),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory CareLogPhoto.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CareLogPhoto(
+      id: serializer.fromJson<int>(json['id']),
+      careLogId: serializer.fromJson<int>(json['careLogId']),
+      filePath: serializer.fromJson<String>(json['filePath']),
+      galleryUri: serializer.fromJson<String?>(json['galleryUri']),
+      caption: serializer.fromJson<String?>(json['caption']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'careLogId': serializer.toJson<int>(careLogId),
+      'filePath': serializer.toJson<String>(filePath),
+      'galleryUri': serializer.toJson<String?>(galleryUri),
+      'caption': serializer.toJson<String?>(caption),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  CareLogPhoto copyWith(
+          {int? id,
+          int? careLogId,
+          String? filePath,
+          Value<String?> galleryUri = const Value.absent(),
+          Value<String?> caption = const Value.absent(),
+          DateTime? createdAt}) =>
+      CareLogPhoto(
+        id: id ?? this.id,
+        careLogId: careLogId ?? this.careLogId,
+        filePath: filePath ?? this.filePath,
+        galleryUri: galleryUri.present ? galleryUri.value : this.galleryUri,
+        caption: caption.present ? caption.value : this.caption,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  CareLogPhoto copyWithCompanion(CareLogPhotosCompanion data) {
+    return CareLogPhoto(
+      id: data.id.present ? data.id.value : this.id,
+      careLogId: data.careLogId.present ? data.careLogId.value : this.careLogId,
+      filePath: data.filePath.present ? data.filePath.value : this.filePath,
+      galleryUri:
+          data.galleryUri.present ? data.galleryUri.value : this.galleryUri,
+      caption: data.caption.present ? data.caption.value : this.caption,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CareLogPhoto(')
+          ..write('id: $id, ')
+          ..write('careLogId: $careLogId, ')
+          ..write('filePath: $filePath, ')
+          ..write('galleryUri: $galleryUri, ')
+          ..write('caption: $caption, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, careLogId, filePath, galleryUri, caption, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CareLogPhoto &&
+          other.id == this.id &&
+          other.careLogId == this.careLogId &&
+          other.filePath == this.filePath &&
+          other.galleryUri == this.galleryUri &&
+          other.caption == this.caption &&
+          other.createdAt == this.createdAt);
+}
+
+class CareLogPhotosCompanion extends UpdateCompanion<CareLogPhoto> {
+  final Value<int> id;
+  final Value<int> careLogId;
+  final Value<String> filePath;
+  final Value<String?> galleryUri;
+  final Value<String?> caption;
+  final Value<DateTime> createdAt;
+  const CareLogPhotosCompanion({
+    this.id = const Value.absent(),
+    this.careLogId = const Value.absent(),
+    this.filePath = const Value.absent(),
+    this.galleryUri = const Value.absent(),
+    this.caption = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  CareLogPhotosCompanion.insert({
+    this.id = const Value.absent(),
+    required int careLogId,
+    required String filePath,
+    this.galleryUri = const Value.absent(),
+    this.caption = const Value.absent(),
+    required DateTime createdAt,
+  })  : careLogId = Value(careLogId),
+        filePath = Value(filePath),
+        createdAt = Value(createdAt);
+  static Insertable<CareLogPhoto> custom({
+    Expression<int>? id,
+    Expression<int>? careLogId,
+    Expression<String>? filePath,
+    Expression<String>? galleryUri,
+    Expression<String>? caption,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (careLogId != null) 'care_log_id': careLogId,
+      if (filePath != null) 'file_path': filePath,
+      if (galleryUri != null) 'gallery_uri': galleryUri,
+      if (caption != null) 'caption': caption,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  CareLogPhotosCompanion copyWith(
+      {Value<int>? id,
+      Value<int>? careLogId,
+      Value<String>? filePath,
+      Value<String?>? galleryUri,
+      Value<String?>? caption,
+      Value<DateTime>? createdAt}) {
+    return CareLogPhotosCompanion(
+      id: id ?? this.id,
+      careLogId: careLogId ?? this.careLogId,
+      filePath: filePath ?? this.filePath,
+      galleryUri: galleryUri ?? this.galleryUri,
+      caption: caption ?? this.caption,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (careLogId.present) {
+      map['care_log_id'] = Variable<int>(careLogId.value);
+    }
+    if (filePath.present) {
+      map['file_path'] = Variable<String>(filePath.value);
+    }
+    if (galleryUri.present) {
+      map['gallery_uri'] = Variable<String>(galleryUri.value);
+    }
+    if (caption.present) {
+      map['caption'] = Variable<String>(caption.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CareLogPhotosCompanion(')
+          ..write('id: $id, ')
+          ..write('careLogId: $careLogId, ')
+          ..write('filePath: $filePath, ')
+          ..write('galleryUri: $galleryUri, ')
+          ..write('caption: $caption, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3336,6 +3976,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $RemindersTable reminders = $RemindersTable(this);
   late final $SavedGuidesTable savedGuides = $SavedGuidesTable(this);
   late final $ReadGuidesTable readGuides = $ReadGuidesTable(this);
+  late final $CareLogsTable careLogs = $CareLogsTable(this);
+  late final $CareLogPhotosTable careLogPhotos = $CareLogPhotosTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3350,8 +3992,22 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         settings,
         reminders,
         savedGuides,
-        readGuides
+        readGuides,
+        careLogs,
+        careLogPhotos
       ];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
+        [
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('care_logs',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('care_log_photos', kind: UpdateKind.delete),
+            ],
+          ),
+        ],
+      );
 }
 
 typedef $$BirdsTableCreateCompanionBuilder = BirdsCompanion Function({
@@ -5095,6 +5751,538 @@ typedef $$ReadGuidesTableProcessedTableManager = ProcessedTableManager<
     (ReadGuide, BaseReferences<_$AppDatabase, $ReadGuidesTable, ReadGuide>),
     ReadGuide,
     PrefetchHooks Function()>;
+typedef $$CareLogsTableCreateCompanionBuilder = CareLogsCompanion Function({
+  Value<int> id,
+  required DateTime date,
+  Value<String> title,
+  Value<String?> notes,
+  required DateTime createdAt,
+});
+typedef $$CareLogsTableUpdateCompanionBuilder = CareLogsCompanion Function({
+  Value<int> id,
+  Value<DateTime> date,
+  Value<String> title,
+  Value<String?> notes,
+  Value<DateTime> createdAt,
+});
+
+final class $$CareLogsTableReferences
+    extends BaseReferences<_$AppDatabase, $CareLogsTable, CareLog> {
+  $$CareLogsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$CareLogPhotosTable, List<CareLogPhoto>>
+      _careLogPhotosRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.careLogPhotos,
+              aliasName: $_aliasNameGenerator(
+                  db.careLogs.id, db.careLogPhotos.careLogId));
+
+  $$CareLogPhotosTableProcessedTableManager get careLogPhotosRefs {
+    final manager = $$CareLogPhotosTableTableManager($_db, $_db.careLogPhotos)
+        .filter((f) => f.careLogId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_careLogPhotosRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
+class $$CareLogsTableFilterComposer
+    extends Composer<_$AppDatabase, $CareLogsTable> {
+  $$CareLogsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+      column: $table.date, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  Expression<bool> careLogPhotosRefs(
+      Expression<bool> Function($$CareLogPhotosTableFilterComposer f) f) {
+    final $$CareLogPhotosTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.careLogPhotos,
+        getReferencedColumn: (t) => t.careLogId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CareLogPhotosTableFilterComposer(
+              $db: $db,
+              $table: $db.careLogPhotos,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$CareLogsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CareLogsTable> {
+  $$CareLogsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+      column: $table.date, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$CareLogsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CareLogsTable> {
+  $$CareLogsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  Expression<T> careLogPhotosRefs<T extends Object>(
+      Expression<T> Function($$CareLogPhotosTableAnnotationComposer a) f) {
+    final $$CareLogPhotosTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.careLogPhotos,
+        getReferencedColumn: (t) => t.careLogId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CareLogPhotosTableAnnotationComposer(
+              $db: $db,
+              $table: $db.careLogPhotos,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$CareLogsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $CareLogsTable,
+    CareLog,
+    $$CareLogsTableFilterComposer,
+    $$CareLogsTableOrderingComposer,
+    $$CareLogsTableAnnotationComposer,
+    $$CareLogsTableCreateCompanionBuilder,
+    $$CareLogsTableUpdateCompanionBuilder,
+    (CareLog, $$CareLogsTableReferences),
+    CareLog,
+    PrefetchHooks Function({bool careLogPhotosRefs})> {
+  $$CareLogsTableTableManager(_$AppDatabase db, $CareLogsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CareLogsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CareLogsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CareLogsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<DateTime> date = const Value.absent(),
+            Value<String> title = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              CareLogsCompanion(
+            id: id,
+            date: date,
+            title: title,
+            notes: notes,
+            createdAt: createdAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required DateTime date,
+            Value<String> title = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            required DateTime createdAt,
+          }) =>
+              CareLogsCompanion.insert(
+            id: id,
+            date: date,
+            title: title,
+            notes: notes,
+            createdAt: createdAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), $$CareLogsTableReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: ({careLogPhotosRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (careLogPhotosRefs) db.careLogPhotos
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (careLogPhotosRefs)
+                    await $_getPrefetchedData<CareLog, $CareLogsTable,
+                            CareLogPhoto>(
+                        currentTable: table,
+                        referencedTable: $$CareLogsTableReferences
+                            ._careLogPhotosRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$CareLogsTableReferences(db, table, p0)
+                                .careLogPhotosRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.careLogId == item.id),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$CareLogsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $CareLogsTable,
+    CareLog,
+    $$CareLogsTableFilterComposer,
+    $$CareLogsTableOrderingComposer,
+    $$CareLogsTableAnnotationComposer,
+    $$CareLogsTableCreateCompanionBuilder,
+    $$CareLogsTableUpdateCompanionBuilder,
+    (CareLog, $$CareLogsTableReferences),
+    CareLog,
+    PrefetchHooks Function({bool careLogPhotosRefs})>;
+typedef $$CareLogPhotosTableCreateCompanionBuilder = CareLogPhotosCompanion
+    Function({
+  Value<int> id,
+  required int careLogId,
+  required String filePath,
+  Value<String?> galleryUri,
+  Value<String?> caption,
+  required DateTime createdAt,
+});
+typedef $$CareLogPhotosTableUpdateCompanionBuilder = CareLogPhotosCompanion
+    Function({
+  Value<int> id,
+  Value<int> careLogId,
+  Value<String> filePath,
+  Value<String?> galleryUri,
+  Value<String?> caption,
+  Value<DateTime> createdAt,
+});
+
+final class $$CareLogPhotosTableReferences
+    extends BaseReferences<_$AppDatabase, $CareLogPhotosTable, CareLogPhoto> {
+  $$CareLogPhotosTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $CareLogsTable _careLogIdTable(_$AppDatabase db) =>
+      db.careLogs.createAlias(
+          $_aliasNameGenerator(db.careLogPhotos.careLogId, db.careLogs.id));
+
+  $$CareLogsTableProcessedTableManager get careLogId {
+    final $_column = $_itemColumn<int>('care_log_id')!;
+
+    final manager = $$CareLogsTableTableManager($_db, $_db.careLogs)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_careLogIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$CareLogPhotosTableFilterComposer
+    extends Composer<_$AppDatabase, $CareLogPhotosTable> {
+  $$CareLogPhotosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get filePath => $composableBuilder(
+      column: $table.filePath, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get galleryUri => $composableBuilder(
+      column: $table.galleryUri, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get caption => $composableBuilder(
+      column: $table.caption, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  $$CareLogsTableFilterComposer get careLogId {
+    final $$CareLogsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.careLogId,
+        referencedTable: $db.careLogs,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CareLogsTableFilterComposer(
+              $db: $db,
+              $table: $db.careLogs,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$CareLogPhotosTableOrderingComposer
+    extends Composer<_$AppDatabase, $CareLogPhotosTable> {
+  $$CareLogPhotosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get filePath => $composableBuilder(
+      column: $table.filePath, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get galleryUri => $composableBuilder(
+      column: $table.galleryUri, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get caption => $composableBuilder(
+      column: $table.caption, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  $$CareLogsTableOrderingComposer get careLogId {
+    final $$CareLogsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.careLogId,
+        referencedTable: $db.careLogs,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CareLogsTableOrderingComposer(
+              $db: $db,
+              $table: $db.careLogs,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$CareLogPhotosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CareLogPhotosTable> {
+  $$CareLogPhotosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get filePath =>
+      $composableBuilder(column: $table.filePath, builder: (column) => column);
+
+  GeneratedColumn<String> get galleryUri => $composableBuilder(
+      column: $table.galleryUri, builder: (column) => column);
+
+  GeneratedColumn<String> get caption =>
+      $composableBuilder(column: $table.caption, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$CareLogsTableAnnotationComposer get careLogId {
+    final $$CareLogsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.careLogId,
+        referencedTable: $db.careLogs,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CareLogsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.careLogs,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$CareLogPhotosTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $CareLogPhotosTable,
+    CareLogPhoto,
+    $$CareLogPhotosTableFilterComposer,
+    $$CareLogPhotosTableOrderingComposer,
+    $$CareLogPhotosTableAnnotationComposer,
+    $$CareLogPhotosTableCreateCompanionBuilder,
+    $$CareLogPhotosTableUpdateCompanionBuilder,
+    (CareLogPhoto, $$CareLogPhotosTableReferences),
+    CareLogPhoto,
+    PrefetchHooks Function({bool careLogId})> {
+  $$CareLogPhotosTableTableManager(_$AppDatabase db, $CareLogPhotosTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CareLogPhotosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CareLogPhotosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CareLogPhotosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<int> careLogId = const Value.absent(),
+            Value<String> filePath = const Value.absent(),
+            Value<String?> galleryUri = const Value.absent(),
+            Value<String?> caption = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              CareLogPhotosCompanion(
+            id: id,
+            careLogId: careLogId,
+            filePath: filePath,
+            galleryUri: galleryUri,
+            caption: caption,
+            createdAt: createdAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required int careLogId,
+            required String filePath,
+            Value<String?> galleryUri = const Value.absent(),
+            Value<String?> caption = const Value.absent(),
+            required DateTime createdAt,
+          }) =>
+              CareLogPhotosCompanion.insert(
+            id: id,
+            careLogId: careLogId,
+            filePath: filePath,
+            galleryUri: galleryUri,
+            caption: caption,
+            createdAt: createdAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$CareLogPhotosTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({careLogId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (careLogId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.careLogId,
+                    referencedTable:
+                        $$CareLogPhotosTableReferences._careLogIdTable(db),
+                    referencedColumn:
+                        $$CareLogPhotosTableReferences._careLogIdTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$CareLogPhotosTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $CareLogPhotosTable,
+    CareLogPhoto,
+    $$CareLogPhotosTableFilterComposer,
+    $$CareLogPhotosTableOrderingComposer,
+    $$CareLogPhotosTableAnnotationComposer,
+    $$CareLogPhotosTableCreateCompanionBuilder,
+    $$CareLogPhotosTableUpdateCompanionBuilder,
+    (CareLogPhoto, $$CareLogPhotosTableReferences),
+    CareLogPhoto,
+    PrefetchHooks Function({bool careLogId})>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5119,4 +6307,8 @@ class $AppDatabaseManager {
       $$SavedGuidesTableTableManager(_db, _db.savedGuides);
   $$ReadGuidesTableTableManager get readGuides =>
       $$ReadGuidesTableTableManager(_db, _db.readGuides);
+  $$CareLogsTableTableManager get careLogs =>
+      $$CareLogsTableTableManager(_db, _db.careLogs);
+  $$CareLogPhotosTableTableManager get careLogPhotos =>
+      $$CareLogPhotosTableTableManager(_db, _db.careLogPhotos);
 }

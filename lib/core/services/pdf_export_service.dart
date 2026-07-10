@@ -136,9 +136,9 @@ class PdfExportService {
     required List<List<String>> rows,
   }) {
     return pw.Table(
-      border: pw.TableBorder(
-        horizontalInside: const pw.BorderSide(color: _borderColor, width: 0.5),
-        bottom: const pw.BorderSide(color: _borderColor, width: 0.5),
+      border: const pw.TableBorder(
+        horizontalInside: pw.BorderSide(color: _borderColor, width: 0.5),
+        bottom: pw.BorderSide(color: _borderColor, width: 0.5),
       ),
       children: [
         pw.TableRow(

@@ -248,6 +248,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.note_add_outlined, color: Color(0xFF558B2F)),
+              title: const Text('Log Notes'),
+              subtitle: const Text('Record care observations and photos'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(Routes.addCareLog);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.notes_outlined, color: Color(0xFF689F38)),
+              title: const Text('View Logs'),
+              subtitle: const Text('Browse care notes and photo gallery'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(Routes.careLogs);
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.menu_book, color: Color(0xFF1565C0)),
               title: const Text('Tips / Guides'),
               subtitle: const Text('Offline farming guides and checklists'),
