@@ -123,6 +123,7 @@ class SaleModel {
   final String unit; // 'dozens', 'crates', 'units'
   final double amount;
   final String? customerName;
+  final bool isPaid;
 
   SaleModel({
     required this.id,
@@ -132,10 +133,38 @@ class SaleModel {
     required this.unit,
     required this.amount,
     this.customerName,
+    this.isPaid = true,
   });
 
   /// Get unit price (per unit defined by quantity/unit)
   double get unitPrice => quantity == 0 ? 0.0 : amount / quantity;
+
+  /// Get total quantity in individual units (for eggs: individual eggs, for chickens: birds)
+  double get totalIndividualQuantity {
+    if (type == 'eggs') {
+      switch (unit) {
+        case 'dozens':
+          return quantity * 12;
+        case 'crates':
+          return quantity * 30;
+        case 'individual':
+          return quantity;
+        default:
+          return quantity; // Default to individual if unknown
+      }
+    }
+    // For chickens, 'units' is already individual
+    return quantity;
+  }
+
+  /// Get a human-readable description of the quantity
+  /// E.g. "2 crates (60 eggs)" or "2 dozens (24 eggs)"
+  String get quantityDescription {
+    if (type == 'eggs' && unit != 'individual') {
+      return '$quantity $unit (${totalIndividualQuantity.toInt()} eggs)';
+    }
+    return '$quantity $unit';
+  }
 
   SaleModel copyWith({
     int? id,
@@ -145,6 +174,7 @@ class SaleModel {
     String? unit,
     double? amount,
     String? customerName,
+    bool? isPaid,
   }) {
     return SaleModel(
       id: id ?? this.id,
@@ -154,6 +184,7 @@ class SaleModel {
       unit: unit ?? this.unit,
       amount: amount ?? this.amount,
       customerName: customerName ?? this.customerName,
+      isPaid: isPaid ?? this.isPaid,
     );
   }
 }

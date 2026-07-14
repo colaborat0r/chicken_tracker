@@ -384,6 +384,7 @@ class SalesRepository {
     required String unit,
     required double amount,
     String? customerName,
+    bool isPaid = true,
     DateTime? date,
   }) {
     return database.addSale(SalesCompanion(
@@ -393,6 +394,7 @@ class SalesRepository {
       unit: Value(unit),
       amount: Value(amount),
       customerName: Value(customerName),
+      isPaid: Value(isPaid),
     ));
   }
 
@@ -406,6 +408,7 @@ class SalesRepository {
       unit: sale.unit,
       amount: sale.amount,
       customerName: sale.customerName,
+      isPaid: sale.isPaid,
     ));
   }
 
@@ -424,6 +427,7 @@ class SalesRepository {
               unit: sale.unit,
               amount: sale.amount,
               customerName: sale.customerName,
+              isPaid: sale.isPaid,
             ))
         .toList();
   }

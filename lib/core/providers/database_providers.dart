@@ -138,6 +138,7 @@ final allSalesProvider = StreamProvider<List<SaleModel>>((ref) async* {
               unit: sale.unit,
               amount: sale.amount,
               customerName: sale.customerName,
+              isPaid: sale.isPaid,
             ))
         .toList();
   });

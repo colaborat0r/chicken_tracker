@@ -795,9 +795,18 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, Sale> {
   late final GeneratedColumn<String> customerName = GeneratedColumn<String>(
       'customer_name', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _isPaidMeta = const VerificationMeta('isPaid');
+  @override
+  late final GeneratedColumn<bool> isPaid = GeneratedColumn<bool>(
+      'is_paid', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_paid" IN (0, 1))'),
+      defaultValue: const Constant(true));
   @override
   List<GeneratedColumn> get $columns =>
-      [id, date, type, quantity, unit, amount, customerName];
+      [id, date, type, quantity, unit, amount, customerName, isPaid];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -845,6 +854,10 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, Sale> {
           customerName.isAcceptableOrUnknown(
               data['customer_name']!, _customerNameMeta));
     }
+    if (data.containsKey('is_paid')) {
+      context.handle(_isPaidMeta,
+          isPaid.isAcceptableOrUnknown(data['is_paid']!, _isPaidMeta));
+    }
     return context;
   }
 
@@ -868,6 +881,8 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, Sale> {
           .read(DriftSqlType.double, data['${effectivePrefix}amount'])!,
       customerName: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}customer_name']),
+      isPaid: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_paid'])!,
     );
   }
 
@@ -885,6 +900,7 @@ class Sale extends DataClass implements Insertable<Sale> {
   final String unit;
   final double amount;
   final String? customerName;
+  final bool isPaid;
   const Sale(
       {required this.id,
       required this.date,
@@ -892,7 +908,8 @@ class Sale extends DataClass implements Insertable<Sale> {
       required this.quantity,
       required this.unit,
       required this.amount,
-      this.customerName});
+      this.customerName,
+      required this.isPaid});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -905,6 +922,7 @@ class Sale extends DataClass implements Insertable<Sale> {
     if (!nullToAbsent || customerName != null) {
       map['customer_name'] = Variable<String>(customerName);
     }
+    map['is_paid'] = Variable<bool>(isPaid);
     return map;
   }
 
@@ -919,6 +937,7 @@ class Sale extends DataClass implements Insertable<Sale> {
       customerName: customerName == null && nullToAbsent
           ? const Value.absent()
           : Value(customerName),
+      isPaid: Value(isPaid),
     );
   }
 
@@ -933,6 +952,7 @@ class Sale extends DataClass implements Insertable<Sale> {
       unit: serializer.fromJson<String>(json['unit']),
       amount: serializer.fromJson<double>(json['amount']),
       customerName: serializer.fromJson<String?>(json['customerName']),
+      isPaid: serializer.fromJson<bool>(json['isPaid']),
     );
   }
   @override
@@ -946,6 +966,7 @@ class Sale extends DataClass implements Insertable<Sale> {
       'unit': serializer.toJson<String>(unit),
       'amount': serializer.toJson<double>(amount),
       'customerName': serializer.toJson<String?>(customerName),
+      'isPaid': serializer.toJson<bool>(isPaid),
     };
   }
 
@@ -956,7 +977,8 @@ class Sale extends DataClass implements Insertable<Sale> {
           double? quantity,
           String? unit,
           double? amount,
-          Value<String?> customerName = const Value.absent()}) =>
+          Value<String?> customerName = const Value.absent(),
+          bool? isPaid}) =>
       Sale(
         id: id ?? this.id,
         date: date ?? this.date,
@@ -966,6 +988,7 @@ class Sale extends DataClass implements Insertable<Sale> {
         amount: amount ?? this.amount,
         customerName:
             customerName.present ? customerName.value : this.customerName,
+        isPaid: isPaid ?? this.isPaid,
       );
   Sale copyWithCompanion(SalesCompanion data) {
     return Sale(
@@ -978,6 +1001,7 @@ class Sale extends DataClass implements Insertable<Sale> {
       customerName: data.customerName.present
           ? data.customerName.value
           : this.customerName,
+      isPaid: data.isPaid.present ? data.isPaid.value : this.isPaid,
     );
   }
 
@@ -990,14 +1014,15 @@ class Sale extends DataClass implements Insertable<Sale> {
           ..write('quantity: $quantity, ')
           ..write('unit: $unit, ')
           ..write('amount: $amount, ')
-          ..write('customerName: $customerName')
+          ..write('customerName: $customerName, ')
+          ..write('isPaid: $isPaid')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      Object.hash(id, date, type, quantity, unit, amount, customerName);
+      Object.hash(id, date, type, quantity, unit, amount, customerName, isPaid);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1008,7 +1033,8 @@ class Sale extends DataClass implements Insertable<Sale> {
           other.quantity == this.quantity &&
           other.unit == this.unit &&
           other.amount == this.amount &&
-          other.customerName == this.customerName);
+          other.customerName == this.customerName &&
+          other.isPaid == this.isPaid);
 }
 
 class SalesCompanion extends UpdateCompanion<Sale> {
@@ -1019,6 +1045,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
   final Value<String> unit;
   final Value<double> amount;
   final Value<String?> customerName;
+  final Value<bool> isPaid;
   const SalesCompanion({
     this.id = const Value.absent(),
     this.date = const Value.absent(),
@@ -1027,6 +1054,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
     this.unit = const Value.absent(),
     this.amount = const Value.absent(),
     this.customerName = const Value.absent(),
+    this.isPaid = const Value.absent(),
   });
   SalesCompanion.insert({
     this.id = const Value.absent(),
@@ -1036,6 +1064,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
     this.unit = const Value.absent(),
     required double amount,
     this.customerName = const Value.absent(),
+    this.isPaid = const Value.absent(),
   })  : date = Value(date),
         type = Value(type),
         quantity = Value(quantity),
@@ -1048,6 +1077,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
     Expression<String>? unit,
     Expression<double>? amount,
     Expression<String>? customerName,
+    Expression<bool>? isPaid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1057,6 +1087,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
       if (unit != null) 'unit': unit,
       if (amount != null) 'amount': amount,
       if (customerName != null) 'customer_name': customerName,
+      if (isPaid != null) 'is_paid': isPaid,
     });
   }
 
@@ -1067,7 +1098,8 @@ class SalesCompanion extends UpdateCompanion<Sale> {
       Value<double>? quantity,
       Value<String>? unit,
       Value<double>? amount,
-      Value<String?>? customerName}) {
+      Value<String?>? customerName,
+      Value<bool>? isPaid}) {
     return SalesCompanion(
       id: id ?? this.id,
       date: date ?? this.date,
@@ -1076,6 +1108,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
       unit: unit ?? this.unit,
       amount: amount ?? this.amount,
       customerName: customerName ?? this.customerName,
+      isPaid: isPaid ?? this.isPaid,
     );
   }
 
@@ -1103,6 +1136,9 @@ class SalesCompanion extends UpdateCompanion<Sale> {
     if (customerName.present) {
       map['customer_name'] = Variable<String>(customerName.value);
     }
+    if (isPaid.present) {
+      map['is_paid'] = Variable<bool>(isPaid.value);
+    }
     return map;
   }
 
@@ -1115,7 +1151,8 @@ class SalesCompanion extends UpdateCompanion<Sale> {
           ..write('quantity: $quantity, ')
           ..write('unit: $unit, ')
           ..write('amount: $amount, ')
-          ..write('customerName: $customerName')
+          ..write('customerName: $customerName, ')
+          ..write('isPaid: $isPaid')
           ..write(')'))
         .toString();
   }
@@ -4430,6 +4467,7 @@ typedef $$SalesTableCreateCompanionBuilder = SalesCompanion Function({
   Value<String> unit,
   required double amount,
   Value<String?> customerName,
+  Value<bool> isPaid,
 });
 typedef $$SalesTableUpdateCompanionBuilder = SalesCompanion Function({
   Value<int> id,
@@ -4439,6 +4477,7 @@ typedef $$SalesTableUpdateCompanionBuilder = SalesCompanion Function({
   Value<String> unit,
   Value<double> amount,
   Value<String?> customerName,
+  Value<bool> isPaid,
 });
 
 class $$SalesTableFilterComposer extends Composer<_$AppDatabase, $SalesTable> {
@@ -4469,6 +4508,9 @@ class $$SalesTableFilterComposer extends Composer<_$AppDatabase, $SalesTable> {
 
   ColumnFilters<String> get customerName => $composableBuilder(
       column: $table.customerName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isPaid => $composableBuilder(
+      column: $table.isPaid, builder: (column) => ColumnFilters(column));
 }
 
 class $$SalesTableOrderingComposer
@@ -4501,6 +4543,9 @@ class $$SalesTableOrderingComposer
   ColumnOrderings<String> get customerName => $composableBuilder(
       column: $table.customerName,
       builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isPaid => $composableBuilder(
+      column: $table.isPaid, builder: (column) => ColumnOrderings(column));
 }
 
 class $$SalesTableAnnotationComposer
@@ -4532,6 +4577,9 @@ class $$SalesTableAnnotationComposer
 
   GeneratedColumn<String> get customerName => $composableBuilder(
       column: $table.customerName, builder: (column) => column);
+
+  GeneratedColumn<bool> get isPaid =>
+      $composableBuilder(column: $table.isPaid, builder: (column) => column);
 }
 
 class $$SalesTableTableManager extends RootTableManager<
@@ -4564,6 +4612,7 @@ class $$SalesTableTableManager extends RootTableManager<
             Value<String> unit = const Value.absent(),
             Value<double> amount = const Value.absent(),
             Value<String?> customerName = const Value.absent(),
+            Value<bool> isPaid = const Value.absent(),
           }) =>
               SalesCompanion(
             id: id,
@@ -4573,6 +4622,7 @@ class $$SalesTableTableManager extends RootTableManager<
             unit: unit,
             amount: amount,
             customerName: customerName,
+            isPaid: isPaid,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -4582,6 +4632,7 @@ class $$SalesTableTableManager extends RootTableManager<
             Value<String> unit = const Value.absent(),
             required double amount,
             Value<String?> customerName = const Value.absent(),
+            Value<bool> isPaid = const Value.absent(),
           }) =>
               SalesCompanion.insert(
             id: id,
@@ -4591,6 +4642,7 @@ class $$SalesTableTableManager extends RootTableManager<
             unit: unit,
             amount: amount,
             customerName: customerName,
+            isPaid: isPaid,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

@@ -41,6 +41,7 @@ class Sales extends Table {
   TextColumn get unit => text().withDefault(const Constant('dozens'))(); // dozens, crates, units
   RealColumn get amount => real()();
   TextColumn get customerName => text().nullable()();
+  BoolColumn get isPaid => boolean().withDefault(const Constant(true))();
 }
 
 // 4. Expenses
@@ -155,7 +156,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -180,6 +181,9 @@ class AppDatabase extends _$AppDatabase {
         await m.alterTable(TableMigration(sales, columnTransformer: {
           sales.quantity: sales.quantity.cast<double>(),
         }, newColumns: [sales.unit]));
+      }
+      if (from < 7) {
+        await m.addColumn(sales, sales.isPaid);
       }
     },
   );

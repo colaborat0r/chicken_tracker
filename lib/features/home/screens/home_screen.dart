@@ -568,7 +568,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             final sale = activity.sale!;
                             leading = const Icon(Icons.receipt_long, color: Color(0xFF0E7A4F));
                             title = 'Sale: ${NumberFormat.currency(symbol: '\$').format(sale.amount)}';
-                            subtitle = '$formattedDate • ${sale.type}';
+                            subtitle = '$formattedDate • ${sale.type} • ${sale.isPaid ? 'Paid' : 'Pending'}';
                             if (sale.customerName != null && sale.customerName!.isNotEmpty) {
                               subtitle += ' • ${sale.customerName}';
                             }

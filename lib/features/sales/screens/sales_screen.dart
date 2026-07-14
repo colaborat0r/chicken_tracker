@@ -157,7 +157,7 @@ class _SalesScreenState extends ConsumerState<SalesScreen> {
                 filteredSales.fold<double>(0, (sum, sale) => sum + sale.amount);
             final eggsSold = filteredSales
                 .where((sale) => sale.type == 'eggs')
-                .fold<double>(0, (sum, sale) => sum + sale.quantity);
+                .fold<double>(0, (sum, sale) => sum + sale.totalIndividualQuantity);
             final chickensSold = filteredSales
                 .where((sale) => sale.type == 'chickens')
                 .fold<double>(0, (sum, sale) => sum + sale.quantity);
@@ -285,7 +285,7 @@ class _SalesScreenState extends ConsumerState<SalesScreen> {
                                     : const Color(0xFF6D4C41),
                               ),
                               title: Text(
-                                '${sale.quantity % 1 == 0 ? sale.quantity.toInt() : sale.quantity} ${sale.unit} of ${sale.type} sold',
+                                sale.quantityDescription,
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodyLarge
@@ -306,11 +306,8 @@ class _SalesScreenState extends ConsumerState<SalesScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Builder(builder: (context) {
-                                    final isPending = (sale.customerName ?? '')
-                                        .toLowerCase()
-                                        .contains('pending');
                                     final statusColor =
-                                        isPending ? Colors.amber : Colors.green;
+                                        sale.isPaid ? Colors.green : Colors.amber;
 
                                     return Column(
                                       mainAxisSize: MainAxisSize.min,
@@ -337,7 +334,7 @@ class _SalesScreenState extends ConsumerState<SalesScreen> {
                                             borderRadius: BorderRadius.circular(10),
                                           ),
                                           child: Text(
-                                            isPending ? 'Pending' : 'Paid',
+                                            sale.isPaid ? 'Paid' : 'Pending',
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .labelSmall

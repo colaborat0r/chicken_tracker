@@ -22,6 +22,7 @@ class _AddSaleScreenState extends ConsumerState<AddSaleScreen> {
   String _selectedType = 'eggs';
   String _selectedUnit = 'dozens';
   DateTime _selectedDate = DateTime.now();
+  bool _isPaid = true;
   bool _isLoading = false;
 
   bool get _isEdit => widget.saleToEdit != null;
@@ -37,6 +38,7 @@ class _AddSaleScreenState extends ConsumerState<AddSaleScreen> {
       _selectedType = s.type;
       _selectedUnit = s.unit;
       _selectedDate = s.date;
+      _isPaid = s.isPaid;
     } else {
       _quantityController = TextEditingController();
       _amountController = TextEditingController();
@@ -84,6 +86,7 @@ class _AddSaleScreenState extends ConsumerState<AddSaleScreen> {
           unit: _selectedUnit,
           amount: amount,
           customerName: customer,
+          isPaid: _isPaid,
         ));
       } else {
         FormMemoryService.lastSaleType = _selectedType;
@@ -96,6 +99,7 @@ class _AddSaleScreenState extends ConsumerState<AddSaleScreen> {
           amount: amount,
           customerName: customer,
           date: _selectedDate,
+          isPaid: _isPaid,
         );
       }
 
@@ -191,6 +195,18 @@ class _AddSaleScreenState extends ConsumerState<AddSaleScreen> {
                     TextFormField(
                       controller: _customerController,
                       decoration: const InputDecoration(labelText: 'Customer (optional)', border: OutlineInputBorder()),
+                    ),
+                    const SizedBox(height: 16),
+                    SwitchListTile(
+                      title: const Text('Sale Paid'),
+                      subtitle: Text(_isPaid ? 'Payment received' : 'Payment pending'),
+                      value: _isPaid,
+                      onChanged: (val) => setState(() => _isPaid = val),
+                      secondary: Icon(
+                        _isPaid ? Icons.check_circle : Icons.pending_actions,
+                        color: _isPaid ? Colors.green : Colors.orange,
+                      ),
+                      contentPadding: EdgeInsets.zero,
                     ),
                   ],
                 ),
