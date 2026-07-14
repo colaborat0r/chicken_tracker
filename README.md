@@ -4,9 +4,10 @@
   <img src="assets/icons/app_icon.png" alt="Chicken Tracker Icon" width="120"/>
 </p>
 
+[![Latest Release](https://img.shields.io/github/v/release/colaborat0r/chicken_tracker)](https://github.com/colaborat0r/chicken_tracker/releases/latest)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
 
-**Version 1.2.2** — Offline-first egg production & flock management for homesteaders
+**Offline-first egg production & flock management for homesteaders**
 
 Built for backyard farmers and small flock owners who want a simple, powerful way to track their chickens and eggs — no internet required.
 
@@ -14,7 +15,7 @@ Built for backyard farmers and small flock owners who want a simple, powerful wa
 
 ## 📲 Install on Android
 
-1. Download **[chicken-tracker-v1.2.2.apk](https://github.com/colaborat0r/chicken_tracker/releases/download/v1.2.2/chicken-tracker-v1.2.2.apk)** from the latest release
+1. Download the **[Latest app-release.apk](https://github.com/colaborat0r/chicken_tracker/releases/latest/download/app-release.apk)**
 2. On your Android device, go to **Settings → Apps → Special app access → Install unknown apps**
 3. Allow installs from your browser or file manager
 4. Open the downloaded `.apk` file and tap **Install**
@@ -85,10 +86,11 @@ Found a bug or have a feature idea? Open an [issue](https://github.com/colaborat
 
 ## 📜 Changelog
 
-See [Releases](https://github.com/colaborat0r/chicken_tracker/releases) for the full changelog.
+See [Releases](https://github.com/colaborat0r/chicken_tracker/releases) for the full changelog and latest updates.
 
 | Version | Highlights |
 |---|---|
+| **1.2.3** | Combined activity feed; Egg unit conversions (Crates/Dozens); Sale payment status tracking |
 | **1.2.2** | Reports & Exports PDFs match Farm Report Card branding; farm name on all PDF banners |
 | **1.2.1** | Stability improvements, Android crash fixes |
 | **1.2.0** | Farm Report Card PDF with photos; optional metrics; farm name customization |
