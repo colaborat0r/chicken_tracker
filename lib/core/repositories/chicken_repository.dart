@@ -380,7 +380,8 @@ class SalesRepository {
   /// Record a sale
   Future<int> recordSale({
     required String type,
-    required int quantity,
+    required double quantity,
+    required String unit,
     required double amount,
     String? customerName,
     DateTime? date,
@@ -389,6 +390,7 @@ class SalesRepository {
       date: Value(date ?? DateTime.now()),
       type: Value(type),
       quantity: Value(quantity),
+      unit: Value(unit),
       amount: Value(amount),
       customerName: Value(customerName),
     ));
@@ -401,6 +403,7 @@ class SalesRepository {
       date: sale.date,
       type: sale.type,
       quantity: sale.quantity,
+      unit: sale.unit,
       amount: sale.amount,
       customerName: sale.customerName,
     ));
@@ -418,6 +421,7 @@ class SalesRepository {
               date: sale.date,
               type: sale.type,
               quantity: sale.quantity,
+              unit: sale.unit,
               amount: sale.amount,
               customerName: sale.customerName,
             ))

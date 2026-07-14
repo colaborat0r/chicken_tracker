@@ -20,6 +20,7 @@ class _AddSaleScreenState extends ConsumerState<AddSaleScreen> {
   late TextEditingController _amountController;
   late TextEditingController _customerController;
   String _selectedType = 'eggs';
+  String _selectedUnit = 'dozens';
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = false;
 
@@ -34,12 +35,14 @@ class _AddSaleScreenState extends ConsumerState<AddSaleScreen> {
       _amountController = TextEditingController(text: s.amount.toStringAsFixed(2));
       _customerController = TextEditingController(text: s.customerName ?? '');
       _selectedType = s.type;
+      _selectedUnit = s.unit;
       _selectedDate = s.date;
     } else {
       _quantityController = TextEditingController();
       _amountController = TextEditingController();
       _customerController = TextEditingController(text: FormMemoryService.lastSaleCustomer);
       _selectedType = FormMemoryService.lastSaleType;
+      _selectedUnit = FormMemoryService.lastSaleUnit;
     }
   }
 
@@ -69,22 +72,28 @@ class _AddSaleScreenState extends ConsumerState<AddSaleScreen> {
     try {
       final repo = ref.read(salesRepositoryProvider);
       final customer = _customerController.text.trim().isEmpty ? null : _customerController.text.trim();
+      final quantity = double.parse(_quantityController.text.trim());
+      final amount = double.parse(_amountController.text.trim());
+
       if (_isEdit) {
         await repo.updateSale(SaleModel(
           id: widget.saleToEdit!.id,
           date: _selectedDate,
           type: _selectedType,
-          quantity: int.parse(_quantityController.text.trim()),
-          amount: double.parse(_amountController.text.trim()),
+          quantity: quantity,
+          unit: _selectedUnit,
+          amount: amount,
           customerName: customer,
         ));
       } else {
         FormMemoryService.lastSaleType = _selectedType;
         FormMemoryService.lastSaleCustomer = _customerController.text.trim();
+        FormMemoryService.lastSaleUnit = _selectedUnit;
         await repo.recordSale(
           type: _selectedType,
-          quantity: int.parse(_quantityController.text.trim()),
-          amount: double.parse(_amountController.text.trim()),
+          quantity: quantity,
+          unit: _selectedUnit,
+          amount: amount,
           customerName: customer,
           date: _selectedDate,
         );
@@ -153,7 +162,17 @@ class _AddSaleScreenState extends ConsumerState<AddSaleScreen> {
                         DropdownMenuItem(value: 'eggs', child: Text('Eggs')),
                         DropdownMenuItem(value: 'chickens', child: Text('Chickens')),
                       ],
-                      onChanged: (value) => setState(() => _selectedType = value ?? 'eggs'),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() {
+                          _selectedType = value;
+                          if (_selectedType == 'chickens') {
+                            _selectedUnit = 'units';
+                          } else {
+                            _selectedUnit = 'dozens';
+                          }
+                        });
+                      },
                     ),
                     const SizedBox(height: 10),
                     Align(
@@ -181,18 +200,48 @@ class _AddSaleScreenState extends ConsumerState<AddSaleScreen> {
                 title: 'Quantity & Amount',
                 child: Column(
                   children: [
-                    TextFormField(
-                      controller: _quantityController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: _selectedType == 'eggs' ? 'Quantity (dozens)' : 'Quantity',
-                        border: const OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        final parsed = int.tryParse(value?.trim() ?? '');
-                        if (parsed == null || parsed <= 0) return 'Quantity must be greater than 0';
-                        return null;
-                      },
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: TextFormField(
+                            controller: _quantityController,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            decoration: const InputDecoration(
+                              labelText: 'Quantity',
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: (value) {
+                              final parsed = double.tryParse(value?.trim() ?? '');
+                              if (parsed == null || parsed <= 0) return 'Required';
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          flex: 2,
+                          child: DropdownButtonFormField<String>(
+                            key: ValueKey(_selectedType),
+                            initialValue: _selectedUnit,
+                            decoration: const InputDecoration(
+                              labelText: 'Unit',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: _selectedType == 'eggs'
+                                ? const [
+                                    DropdownMenuItem(value: 'dozens', child: Text('Dozens')),
+                                    DropdownMenuItem(value: 'crates', child: Text('Crates')),
+                                    DropdownMenuItem(value: 'individual', child: Text('Each')),
+                                  ]
+                                : const [
+                                    DropdownMenuItem(value: 'units', child: Text('Birds')),
+                                  ],
+                            onChanged: (value) => setState(() => _selectedUnit = value ?? 'dozens'),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     TextFormField(

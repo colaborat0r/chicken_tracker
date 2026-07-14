@@ -774,9 +774,16 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, Sale> {
   static const VerificationMeta _quantityMeta =
       const VerificationMeta('quantity');
   @override
-  late final GeneratedColumn<int> quantity = GeneratedColumn<int>(
+  late final GeneratedColumn<double> quantity = GeneratedColumn<double>(
       'quantity', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _unitMeta = const VerificationMeta('unit');
+  @override
+  late final GeneratedColumn<String> unit = GeneratedColumn<String>(
+      'unit', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('dozens'));
   static const VerificationMeta _amountMeta = const VerificationMeta('amount');
   @override
   late final GeneratedColumn<double> amount = GeneratedColumn<double>(
@@ -790,7 +797,7 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, Sale> {
       type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, date, type, quantity, amount, customerName];
+      [id, date, type, quantity, unit, amount, customerName];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -822,6 +829,10 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, Sale> {
     } else if (isInserting) {
       context.missing(_quantityMeta);
     }
+    if (data.containsKey('unit')) {
+      context.handle(
+          _unitMeta, unit.isAcceptableOrUnknown(data['unit']!, _unitMeta));
+    }
     if (data.containsKey('amount')) {
       context.handle(_amountMeta,
           amount.isAcceptableOrUnknown(data['amount']!, _amountMeta));
@@ -850,7 +861,9 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, Sale> {
       type: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}type'])!,
       quantity: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}quantity'])!,
+          .read(DriftSqlType.double, data['${effectivePrefix}quantity'])!,
+      unit: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}unit'])!,
       amount: attachedDatabase.typeMapping
           .read(DriftSqlType.double, data['${effectivePrefix}amount'])!,
       customerName: attachedDatabase.typeMapping
@@ -868,7 +881,8 @@ class Sale extends DataClass implements Insertable<Sale> {
   final int id;
   final DateTime date;
   final String type;
-  final int quantity;
+  final double quantity;
+  final String unit;
   final double amount;
   final String? customerName;
   const Sale(
@@ -876,6 +890,7 @@ class Sale extends DataClass implements Insertable<Sale> {
       required this.date,
       required this.type,
       required this.quantity,
+      required this.unit,
       required this.amount,
       this.customerName});
   @override
@@ -884,7 +899,8 @@ class Sale extends DataClass implements Insertable<Sale> {
     map['id'] = Variable<int>(id);
     map['date'] = Variable<DateTime>(date);
     map['type'] = Variable<String>(type);
-    map['quantity'] = Variable<int>(quantity);
+    map['quantity'] = Variable<double>(quantity);
+    map['unit'] = Variable<String>(unit);
     map['amount'] = Variable<double>(amount);
     if (!nullToAbsent || customerName != null) {
       map['customer_name'] = Variable<String>(customerName);
@@ -898,6 +914,7 @@ class Sale extends DataClass implements Insertable<Sale> {
       date: Value(date),
       type: Value(type),
       quantity: Value(quantity),
+      unit: Value(unit),
       amount: Value(amount),
       customerName: customerName == null && nullToAbsent
           ? const Value.absent()
@@ -912,7 +929,8 @@ class Sale extends DataClass implements Insertable<Sale> {
       id: serializer.fromJson<int>(json['id']),
       date: serializer.fromJson<DateTime>(json['date']),
       type: serializer.fromJson<String>(json['type']),
-      quantity: serializer.fromJson<int>(json['quantity']),
+      quantity: serializer.fromJson<double>(json['quantity']),
+      unit: serializer.fromJson<String>(json['unit']),
       amount: serializer.fromJson<double>(json['amount']),
       customerName: serializer.fromJson<String?>(json['customerName']),
     );
@@ -924,7 +942,8 @@ class Sale extends DataClass implements Insertable<Sale> {
       'id': serializer.toJson<int>(id),
       'date': serializer.toJson<DateTime>(date),
       'type': serializer.toJson<String>(type),
-      'quantity': serializer.toJson<int>(quantity),
+      'quantity': serializer.toJson<double>(quantity),
+      'unit': serializer.toJson<String>(unit),
       'amount': serializer.toJson<double>(amount),
       'customerName': serializer.toJson<String?>(customerName),
     };
@@ -934,7 +953,8 @@ class Sale extends DataClass implements Insertable<Sale> {
           {int? id,
           DateTime? date,
           String? type,
-          int? quantity,
+          double? quantity,
+          String? unit,
           double? amount,
           Value<String?> customerName = const Value.absent()}) =>
       Sale(
@@ -942,6 +962,7 @@ class Sale extends DataClass implements Insertable<Sale> {
         date: date ?? this.date,
         type: type ?? this.type,
         quantity: quantity ?? this.quantity,
+        unit: unit ?? this.unit,
         amount: amount ?? this.amount,
         customerName:
             customerName.present ? customerName.value : this.customerName,
@@ -952,6 +973,7 @@ class Sale extends DataClass implements Insertable<Sale> {
       date: data.date.present ? data.date.value : this.date,
       type: data.type.present ? data.type.value : this.type,
       quantity: data.quantity.present ? data.quantity.value : this.quantity,
+      unit: data.unit.present ? data.unit.value : this.unit,
       amount: data.amount.present ? data.amount.value : this.amount,
       customerName: data.customerName.present
           ? data.customerName.value
@@ -966,6 +988,7 @@ class Sale extends DataClass implements Insertable<Sale> {
           ..write('date: $date, ')
           ..write('type: $type, ')
           ..write('quantity: $quantity, ')
+          ..write('unit: $unit, ')
           ..write('amount: $amount, ')
           ..write('customerName: $customerName')
           ..write(')'))
@@ -974,7 +997,7 @@ class Sale extends DataClass implements Insertable<Sale> {
 
   @override
   int get hashCode =>
-      Object.hash(id, date, type, quantity, amount, customerName);
+      Object.hash(id, date, type, quantity, unit, amount, customerName);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -983,6 +1006,7 @@ class Sale extends DataClass implements Insertable<Sale> {
           other.date == this.date &&
           other.type == this.type &&
           other.quantity == this.quantity &&
+          other.unit == this.unit &&
           other.amount == this.amount &&
           other.customerName == this.customerName);
 }
@@ -991,7 +1015,8 @@ class SalesCompanion extends UpdateCompanion<Sale> {
   final Value<int> id;
   final Value<DateTime> date;
   final Value<String> type;
-  final Value<int> quantity;
+  final Value<double> quantity;
+  final Value<String> unit;
   final Value<double> amount;
   final Value<String?> customerName;
   const SalesCompanion({
@@ -999,6 +1024,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
     this.date = const Value.absent(),
     this.type = const Value.absent(),
     this.quantity = const Value.absent(),
+    this.unit = const Value.absent(),
     this.amount = const Value.absent(),
     this.customerName = const Value.absent(),
   });
@@ -1006,7 +1032,8 @@ class SalesCompanion extends UpdateCompanion<Sale> {
     this.id = const Value.absent(),
     required DateTime date,
     required String type,
-    required int quantity,
+    required double quantity,
+    this.unit = const Value.absent(),
     required double amount,
     this.customerName = const Value.absent(),
   })  : date = Value(date),
@@ -1017,7 +1044,8 @@ class SalesCompanion extends UpdateCompanion<Sale> {
     Expression<int>? id,
     Expression<DateTime>? date,
     Expression<String>? type,
-    Expression<int>? quantity,
+    Expression<double>? quantity,
+    Expression<String>? unit,
     Expression<double>? amount,
     Expression<String>? customerName,
   }) {
@@ -1026,6 +1054,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
       if (date != null) 'date': date,
       if (type != null) 'type': type,
       if (quantity != null) 'quantity': quantity,
+      if (unit != null) 'unit': unit,
       if (amount != null) 'amount': amount,
       if (customerName != null) 'customer_name': customerName,
     });
@@ -1035,7 +1064,8 @@ class SalesCompanion extends UpdateCompanion<Sale> {
       {Value<int>? id,
       Value<DateTime>? date,
       Value<String>? type,
-      Value<int>? quantity,
+      Value<double>? quantity,
+      Value<String>? unit,
       Value<double>? amount,
       Value<String?>? customerName}) {
     return SalesCompanion(
@@ -1043,6 +1073,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
       date: date ?? this.date,
       type: type ?? this.type,
       quantity: quantity ?? this.quantity,
+      unit: unit ?? this.unit,
       amount: amount ?? this.amount,
       customerName: customerName ?? this.customerName,
     );
@@ -1061,7 +1092,10 @@ class SalesCompanion extends UpdateCompanion<Sale> {
       map['type'] = Variable<String>(type.value);
     }
     if (quantity.present) {
-      map['quantity'] = Variable<int>(quantity.value);
+      map['quantity'] = Variable<double>(quantity.value);
+    }
+    if (unit.present) {
+      map['unit'] = Variable<String>(unit.value);
     }
     if (amount.present) {
       map['amount'] = Variable<double>(amount.value);
@@ -1079,6 +1113,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
           ..write('date: $date, ')
           ..write('type: $type, ')
           ..write('quantity: $quantity, ')
+          ..write('unit: $unit, ')
           ..write('amount: $amount, ')
           ..write('customerName: $customerName')
           ..write(')'))
@@ -4391,7 +4426,8 @@ typedef $$SalesTableCreateCompanionBuilder = SalesCompanion Function({
   Value<int> id,
   required DateTime date,
   required String type,
-  required int quantity,
+  required double quantity,
+  Value<String> unit,
   required double amount,
   Value<String?> customerName,
 });
@@ -4399,7 +4435,8 @@ typedef $$SalesTableUpdateCompanionBuilder = SalesCompanion Function({
   Value<int> id,
   Value<DateTime> date,
   Value<String> type,
-  Value<int> quantity,
+  Value<double> quantity,
+  Value<String> unit,
   Value<double> amount,
   Value<String?> customerName,
 });
@@ -4421,8 +4458,11 @@ class $$SalesTableFilterComposer extends Composer<_$AppDatabase, $SalesTable> {
   ColumnFilters<String> get type => $composableBuilder(
       column: $table.type, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get quantity => $composableBuilder(
+  ColumnFilters<double> get quantity => $composableBuilder(
       column: $table.quantity, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get unit => $composableBuilder(
+      column: $table.unit, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<double> get amount => $composableBuilder(
       column: $table.amount, builder: (column) => ColumnFilters(column));
@@ -4449,8 +4489,11 @@ class $$SalesTableOrderingComposer
   ColumnOrderings<String> get type => $composableBuilder(
       column: $table.type, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get quantity => $composableBuilder(
+  ColumnOrderings<double> get quantity => $composableBuilder(
       column: $table.quantity, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get unit => $composableBuilder(
+      column: $table.unit, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<double> get amount => $composableBuilder(
       column: $table.amount, builder: (column) => ColumnOrderings(column));
@@ -4478,8 +4521,11 @@ class $$SalesTableAnnotationComposer
   GeneratedColumn<String> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
 
-  GeneratedColumn<int> get quantity =>
+  GeneratedColumn<double> get quantity =>
       $composableBuilder(column: $table.quantity, builder: (column) => column);
+
+  GeneratedColumn<String> get unit =>
+      $composableBuilder(column: $table.unit, builder: (column) => column);
 
   GeneratedColumn<double> get amount =>
       $composableBuilder(column: $table.amount, builder: (column) => column);
@@ -4514,7 +4560,8 @@ class $$SalesTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             Value<DateTime> date = const Value.absent(),
             Value<String> type = const Value.absent(),
-            Value<int> quantity = const Value.absent(),
+            Value<double> quantity = const Value.absent(),
+            Value<String> unit = const Value.absent(),
             Value<double> amount = const Value.absent(),
             Value<String?> customerName = const Value.absent(),
           }) =>
@@ -4523,6 +4570,7 @@ class $$SalesTableTableManager extends RootTableManager<
             date: date,
             type: type,
             quantity: quantity,
+            unit: unit,
             amount: amount,
             customerName: customerName,
           ),
@@ -4530,7 +4578,8 @@ class $$SalesTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             required DateTime date,
             required String type,
-            required int quantity,
+            required double quantity,
+            Value<String> unit = const Value.absent(),
             required double amount,
             Value<String?> customerName = const Value.absent(),
           }) =>
@@ -4539,6 +4588,7 @@ class $$SalesTableTableManager extends RootTableManager<
             date: date,
             type: type,
             quantity: quantity,
+            unit: unit,
             amount: amount,
             customerName: customerName,
           ),

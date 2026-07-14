@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/models/activity_model.dart';
 import '../../../core/providers/database_providers.dart';
 import '../../../core/providers/farm_name_provider.dart';
 import '../../../core/providers/repository_providers.dart';
@@ -461,92 +462,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   subtitle: '',
                 ),
                 const SizedBox(height: 12),
-                ref.watch(allDailyLogsProvider).when(
-                      data: (logs) {
-                        if (logs.isEmpty) {
-                          return Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              color:
-                                  isDark ? Colors.grey[900] : Colors.grey[100],
-                            ),
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.history,
-                                  size: 48,
-                                  color: Colors.grey[600],
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'No activity yet',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(
-                                        color: Colors.grey[600],
-                                      ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Start tracking by adding chickens or logging production',
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(
-                                        color: Colors.grey[500],
-                                      ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
+                Consumer(
+                  builder: (context, ref, _) {
+                    final activities = ref.watch(recentActivityProvider);
+                    final isLoading = ref.watch(allDailyLogsProvider).isLoading ||
+                        ref.watch(allSalesProvider).isLoading ||
+                        ref.watch(allExpensesProvider).isLoading;
 
-                        final recentLogs = logs.take(5).toList();
-                        return Column(
-                          children: recentLogs.map((log) {
-                            final date = log.date;
-                            final formattedDate =
-                                '${date.month}/${date.day}/${date.year}';
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              child: ListTile(
-                                leading: Icon(
-                                  Icons.egg,
-                                  color: Colors.amber[600],
-                                ),
-                                title: Text(
-                                  '${log.totalEggs} eggs logged',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                ),
-                                subtitle: Text(
-                                  '$formattedDate • ${log.layingHens} hens active',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                                trailing: Text(
-                                  '${log.eggsPerHen.toStringAsFixed(2)}/hen',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall
-                                      ?.copyWith(
-                                        color: const Color(0xFF2A78B9),
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        );
-                      },
-                      loading: () => Container(
+                    if (isLoading && activities.isEmpty) {
+                      return Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -574,8 +498,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ],
                         ),
-                      ),
-                      error: (err, st) => Container(
+                      );
+                    }
+
+                    if (activities.isEmpty) {
+                      return Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -585,24 +512,116 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: Column(
                           children: [
                             Icon(
-                              Icons.error_outline,
+                              Icons.history,
                               size: 48,
-                              color: Colors.red[400],
+                              color: Colors.grey[600],
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'Error loading activity',
+                              'No activity yet',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium
                                   ?.copyWith(
-                                    color: Colors.red[400],
+                                    color: Colors.grey[600],
+                                  ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Start tracking by adding chickens, logging production, sales or expenses',
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: Colors.grey[500],
                                   ),
                             ),
                           ],
                         ),
-                      ),
-                    ),
+                      );
+                    }
+
+                    final activitiesToDisplay = activities.take(5).toList();
+                    return Column(
+                      children: activitiesToDisplay.map((activity) {
+                        final date = activity.date;
+                        final formattedDate =
+                            '${date.month}/${date.day}/${date.year}';
+
+                        Widget? leading;
+                        String title = '';
+                        String subtitle = '';
+                        String? trailing;
+                        VoidCallback? onTap;
+
+                        switch (activity.type) {
+                          case ActivityType.production:
+                            final log = activity.production!;
+                            leading = Icon(Icons.egg, color: Colors.amber[600]);
+                            title = '${log.totalEggs} eggs logged';
+                            subtitle = '$formattedDate • ${log.layingHens} hens active';
+                            trailing = '${log.eggsPerHen.toStringAsFixed(2)}/hen';
+                            onTap = () => context.push(Routes.productionHistory);
+                            break;
+                          case ActivityType.sale:
+                            final sale = activity.sale!;
+                            leading = const Icon(Icons.receipt_long, color: Color(0xFF0E7A4F));
+                            title = 'Sale: ${NumberFormat.currency(symbol: '\$').format(sale.amount)}';
+                            subtitle = '$formattedDate • ${sale.type}';
+                            if (sale.customerName != null && sale.customerName!.isNotEmpty) {
+                              subtitle += ' • ${sale.customerName}';
+                            }
+                            onTap = () => context.push(Routes.sales);
+                            break;
+                          case ActivityType.expense:
+                            final expense = activity.expense!;
+                            leading = const Icon(Icons.account_balance_wallet, color: Color(0xFFC5392A));
+                            title = 'Expense: ${NumberFormat.currency(symbol: '\$').format(expense.amount)}';
+                            subtitle = '$formattedDate • ${expense.category}';
+                            if (expense.description != null && expense.description!.isNotEmpty) {
+                              subtitle += ' • ${expense.description}';
+                            }
+                            onTap = () => context.push(Routes.expenses);
+                            break;
+                        }
+
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          child: ListTile(
+                            onTap: onTap,
+                            leading: leading,
+                            title: Text(
+                              title,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                            ),
+                            subtitle: Text(
+                              subtitle,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            trailing: trailing != null
+                                ? Text(
+                                    trailing,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall
+                                        ?.copyWith(
+                                          color: const Color(0xFF2A78B9),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  )
+                                : const Icon(Icons.chevron_right, size: 16, color: Colors.grey),
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  },
+                ),
               ],
             ),
           ),

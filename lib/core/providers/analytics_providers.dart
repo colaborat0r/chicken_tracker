@@ -196,9 +196,8 @@ final last12MonthsProvider = FutureProvider<List<MonthlyProductionSummary>>((ref
   final List<MonthlyProductionSummary> months = [];
   final now = DateTime.now();
   
-  for (int i = 11; i >= 0; i--) {
-    var monthDate = now;
-    monthDate = DateTime(monthDate.year, monthDate.month - i, 1);
+  for (int i = 0; i < 12; i++) {
+    var monthDate = DateTime(now.year, now.month - i, 1);
     final summary = await ref.watch(monthlyProductionProvider(monthDate).future);
     months.add(summary);
   }

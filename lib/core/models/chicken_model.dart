@@ -119,7 +119,8 @@ class SaleModel {
   final int id;
   final DateTime date;
   final String type; // 'eggs' or 'chickens'
-  final int quantity;
+  final double quantity;
+  final String unit; // 'dozens', 'crates', 'units'
   final double amount;
   final String? customerName;
 
@@ -128,18 +129,20 @@ class SaleModel {
     required this.date,
     required this.type,
     required this.quantity,
+    required this.unit,
     required this.amount,
     this.customerName,
   });
 
-  /// Get unit price (per egg or per chicken)
+  /// Get unit price (per unit defined by quantity/unit)
   double get unitPrice => quantity == 0 ? 0.0 : amount / quantity;
 
   SaleModel copyWith({
     int? id,
     DateTime? date,
     String? type,
-    int? quantity,
+    double? quantity,
+    String? unit,
     double? amount,
     String? customerName,
   }) {
@@ -148,6 +151,7 @@ class SaleModel {
       date: date ?? this.date,
       type: type ?? this.type,
       quantity: quantity ?? this.quantity,
+      unit: unit ?? this.unit,
       amount: amount ?? this.amount,
       customerName: customerName ?? this.customerName,
     );

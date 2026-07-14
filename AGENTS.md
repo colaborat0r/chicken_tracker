@@ -23,9 +23,9 @@ Offline-first Flutter app for homesteaders tracking chicken flocks, egg producti
 - **Theming**: Defaults to dark mode for farm use. Brown seed color (`0xFF8B4513`).
 
 ## Development Workflow
+- **Mandatory**: After every major code change or feature implementation, run `flutter analyze` and fix any identified issues (warnings, hints, or errors).
 - **Code Generation**: `flutter pub run build_runner build` (Drift, Riverpod annotations)
 - **Icons**: `flutter pub run flutter_launcher_icons:main` (updates app icons across platforms)
-- **Linting**: `flutter analyze`
 - **Testing**: `flutter test`
 - **Running**: `flutter run` or `./scripts/run-android-emulator.ps1` (PowerShell script for emulator setup)
 

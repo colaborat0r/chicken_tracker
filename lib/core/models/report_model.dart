@@ -185,7 +185,8 @@ class MonthlyBreakdown {
 class SalesReportLineItem {
   final DateTime date;
   final String type;
-  final int quantity;
+  final double quantity;
+  final String unit;
   final double amount;
   final double unitPrice;
   final String? customerName;
@@ -194,6 +195,7 @@ class SalesReportLineItem {
     required this.date,
     required this.type,
     required this.quantity,
+    required this.unit,
     required this.amount,
     required this.unitPrice,
     this.customerName,
@@ -209,8 +211,8 @@ class SalesReport {
   final List<SalesReportLineItem> lineItems;
   final String title;
   final double totalRevenue;
-  final int totalEggsSold;
-  final int totalChickensSold;
+  final double totalEggsSold;
+  final double totalChickensSold;
 
   SalesReport({
     required this.startDate,

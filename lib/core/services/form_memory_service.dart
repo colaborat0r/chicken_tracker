@@ -3,6 +3,7 @@ class FormMemoryService {
 
   static String lastSaleType = 'eggs';
   static String lastSaleCustomer = '';
+  static String lastSaleUnit = 'dozens';
 
   static String lastExpenseCategory = 'feed';
   static String lastExpenseDescription = '';

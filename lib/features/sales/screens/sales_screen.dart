@@ -157,10 +157,10 @@ class _SalesScreenState extends ConsumerState<SalesScreen> {
                 filteredSales.fold<double>(0, (sum, sale) => sum + sale.amount);
             final eggsSold = filteredSales
                 .where((sale) => sale.type == 'eggs')
-                .fold<int>(0, (sum, sale) => sum + sale.quantity);
+                .fold<double>(0, (sum, sale) => sum + sale.quantity);
             final chickensSold = filteredSales
                 .where((sale) => sale.type == 'chickens')
-                .fold<int>(0, (sum, sale) => sum + sale.quantity);
+                .fold<double>(0, (sum, sale) => sum + sale.quantity);
 
             // Group sales by month
             final groupedSales = <String, List<dynamic>>{};
@@ -201,7 +201,7 @@ class _SalesScreenState extends ConsumerState<SalesScreen> {
                     Expanded(
                       child: _MiniStatCard(
                         label: 'Eggs Sold',
-                        value: '$eggsSold',
+                        value: eggsSold % 1 == 0 ? eggsSold.toInt().toString() : eggsSold.toStringAsFixed(1),
                         icon: Icons.egg,
                         color: const Color(0xFFB88700),
                       ),
@@ -210,7 +210,7 @@ class _SalesScreenState extends ConsumerState<SalesScreen> {
                     Expanded(
                       child: _MiniStatCard(
                         label: 'Chickens Sold',
-                        value: '$chickensSold',
+                        value: chickensSold % 1 == 0 ? chickensSold.toInt().toString() : chickensSold.toStringAsFixed(1),
                         icon: Icons.pets,
                         color: const Color(0xFF5D4037),
                       ),
@@ -285,7 +285,7 @@ class _SalesScreenState extends ConsumerState<SalesScreen> {
                                     : const Color(0xFF6D4C41),
                               ),
                               title: Text(
-                                '${sale.quantity} ${sale.type}${sale.quantity != 1 ? 's' : ''} sold',
+                                '${sale.quantity % 1 == 0 ? sale.quantity.toInt() : sale.quantity} ${sale.unit} of ${sale.type} sold',
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodyLarge

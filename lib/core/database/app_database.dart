@@ -37,7 +37,8 @@ class Sales extends Table {
   IntColumn get id => integer().autoIncrement()();
   DateTimeColumn get date => dateTime()();
   TextColumn get type => text()(); // 'eggs' or 'chickens'
-  IntColumn get quantity => integer()(); // dozens for eggs
+  RealColumn get quantity => real()(); // dozens for eggs, or based on unit
+  TextColumn get unit => text().withDefault(const Constant('dozens'))(); // dozens, crates, units
   RealColumn get amount => real()();
   TextColumn get customerName => text().nullable()();
 }
@@ -154,7 +155,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -172,6 +173,13 @@ class AppDatabase extends _$AppDatabase {
       if (from < 5) {
         await m.createTable(careLogs);
         await m.createTable(careLogPhotos);
+      }
+      if (from < 6) {
+        // Upgrade Sales table: quantity from Int to Real, add unit
+        // ignore: experimental_member_use
+        await m.alterTable(TableMigration(sales, columnTransformer: {
+          sales.quantity: sales.quantity.cast<double>(),
+        }, newColumns: [sales.unit]));
       }
     },
   );

@@ -1,7 +1,9 @@
+import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../database/app_database.dart';
 import '../models/chicken_model.dart';
 import '../models/reminder_model.dart';
+import '../models/activity_model.dart';
 import '../repositories/reminder_repository.dart';
 
 /// Provider for the AppDatabase instance (singleton)
@@ -52,7 +54,10 @@ final allDailyLogsProvider =
     StreamProvider<List<DailyProductionModel>>((ref) async* {
   final db = ref.watch(databaseProvider);
 
-  yield* db.select(db.dailyLogs).watch().map((logs) {
+  yield* (db.select(db.dailyLogs)
+        ..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc)]))
+      .watch()
+      .map((logs) {
     return logs
         .map((log) => DailyProductionModel(
               id: log.id,
@@ -120,13 +125,17 @@ final weeklyEggTotalProvider = FutureProvider<int>((ref) async {
 final allSalesProvider = StreamProvider<List<SaleModel>>((ref) async* {
   final db = ref.watch(databaseProvider);
 
-  yield* db.select(db.sales).watch().map((sales) {
+  yield* (db.select(db.sales)
+        ..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc)]))
+      .watch()
+      .map((sales) {
     return sales
         .map((sale) => SaleModel(
               id: sale.id,
               date: sale.date,
               type: sale.type,
               quantity: sale.quantity,
+              unit: sale.unit,
               amount: sale.amount,
               customerName: sale.customerName,
             ))
@@ -138,7 +147,10 @@ final allSalesProvider = StreamProvider<List<SaleModel>>((ref) async* {
 final allExpensesProvider = StreamProvider<List<ExpenseModel>>((ref) async* {
   final db = ref.watch(databaseProvider);
 
-  yield* db.select(db.expenses).watch().map((expenses) {
+  yield* (db.select(db.expenses)
+        ..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc)]))
+      .watch()
+      .map((expenses) {
     return expenses
         .map((expense) => ExpenseModel(
               id: expense.id,
@@ -313,4 +325,25 @@ final dueRemindersCountProvider = Provider<int>((ref) {
         list.where((r) => r.isActive && r.isDueOrOverdue).length,
     orElse: () => 0,
   );
+});
+
+/// Provider for a combined list of recent activities (production, sales, expenses)
+final recentActivityProvider = Provider<List<RecentActivityItem>>((ref) {
+  final logs = ref.watch(allDailyLogsProvider).value ?? [];
+  final sales = ref.watch(allSalesProvider).value ?? [];
+  final expenses = ref.watch(allExpensesProvider).value ?? [];
+
+  final List<RecentActivityItem> combined = [
+    ...logs.map((e) =>
+        RecentActivityItem(date: e.date, type: ActivityType.production, data: e)),
+    ...sales.map((e) =>
+        RecentActivityItem(date: e.date, type: ActivityType.sale, data: e)),
+    ...expenses.map((e) =>
+        RecentActivityItem(date: e.date, type: ActivityType.expense, data: e)),
+  ];
+
+  // Sort by date descending
+  combined.sort((a, b) => b.date.compareTo(a.date));
+
+  return combined;
 });

@@ -119,6 +119,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
               date: sale.date,
               type: sale.type,
               quantity: sale.quantity,
+              unit: sale.unit,
               amount: sale.amount,
               unitPrice: sale.unitPrice,
               customerName: sale.customerName,
@@ -133,10 +134,10 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       totalRevenue: filteredSales.fold(0.0, (sum, sale) => sum + sale.amount),
       totalEggsSold: filteredSales
           .where((sale) => sale.type == 'eggs')
-          .fold(0, (sum, sale) => sum + sale.quantity),
+          .fold(0.0, (sum, sale) => sum + sale.quantity),
       totalChickensSold: filteredSales
           .where((sale) => sale.type == 'chickens')
-          .fold(0, (sum, sale) => sum + sale.quantity),
+          .fold(0.0, (sum, sale) => sum + sale.quantity),
     );
   }
 
