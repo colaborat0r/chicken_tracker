@@ -4,6 +4,8 @@ import 'notification_providers.dart';
 import '../repositories/chicken_repository.dart';
 import '../repositories/reminder_repository.dart';
 import '../repositories/care_log_repository.dart';
+import '../repositories/customer_repository.dart';
+import '../repositories/order_repository.dart';
 import '../services/image_storage_service.dart';
 import '../models/care_log_model.dart';
 import '../../features/guides/repositories/guides_repository.dart';
@@ -92,4 +94,29 @@ final careLogGalleryProvider =
 final guidesRepositoryProvider = Provider<GuidesRepository>((ref) {
   final db = ref.watch(databaseProvider);
   return GuidesRepository(db);
+});
+
+// ====================== NEW CRM / ORDERS PROVIDERS ======================
+
+/// Repository provider for customers (simple CRM)
+final customerRepositoryProvider = Provider<CustomerRepository>((ref) {
+  final db = ref.watch(databaseProvider);
+  return CustomerRepository(db);
+});
+
+/// Repository provider for multi-line orders
+final orderRepositoryProvider = Provider<OrderRepository>((ref) {
+  final db = ref.watch(databaseProvider);
+  final customerRepo = ref.watch(customerRepositoryProvider);
+  return OrderRepository(db, customerRepo);
+});
+
+/// Stream of all customers
+final allCustomersProvider = StreamProvider((ref) {
+  return ref.watch(customerRepositoryProvider).watchAllCustomers();
+});
+
+/// Stream of all orders with details
+final allOrdersProvider = StreamProvider((ref) {
+  return ref.watch(orderRepositoryProvider).watchAllOrders();
 });
