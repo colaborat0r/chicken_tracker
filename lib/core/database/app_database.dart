@@ -136,6 +136,52 @@ class CareLogPhotos extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
+// ====================== NEW CRM / ORDERS TABLES ======================
+
+// 13. Customers (simple CRM)
+class Customers extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get phone => text().nullable()();
+  TextColumn get email => text().nullable()();
+  TextColumn get address => text().nullable()();
+  TextColumn get notes => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get lastOrderDate => dateTime().nullable()();
+  RealColumn get totalSpent => real().withDefault(const Constant(0.0))();
+}
+
+// 14. Orders (header – supports multi-line items + delivery date)
+class Orders extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get customerId =>
+      integer().nullable().references(Customers, #id, onDelete: KeyAction.setNull)();
+  DateTimeColumn get orderDate => dateTime()();
+  DateTimeColumn get deliveryDate => dateTime().nullable()();
+  TextColumn get status =>
+      text().withDefault(const Constant('confirmed'))(); // draft, confirmed, paid, delivered, cancelled
+  TextColumn get invoiceNumber => text().nullable()();
+  TextColumn get notes => text().nullable()();
+  RealColumn get subtotal => real().withDefault(const Constant(0.0))();
+  RealColumn get totalAmount => real().withDefault(const Constant(0.0))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+}
+
+// 15. Order line items (multi-line support)
+class OrderItems extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get orderId =>
+      integer().references(Orders, #id, onDelete: KeyAction.cascade)();
+  TextColumn get type => text()(); // eggs, chickens, other
+  TextColumn get description => text()();
+  RealColumn get quantity => real()();
+  TextColumn get unit => text()(); // dozens, crates, individual, birds, units
+  RealColumn get unitPrice => real()();
+  RealColumn get lineTotal => real()();
+  TextColumn get notes => text().nullable()();
+}
+
 @DriftDatabase(
   tables: [
     Birds,
@@ -150,13 +196,16 @@ class CareLogPhotos extends Table {
     ReadGuides,
     CareLogs,
     CareLogPhotos,
+    Customers,
+    Orders,
+    OrderItems,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -184,6 +233,11 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 7) {
         await m.addColumn(sales, sales.isPaid);
+      }
+      if (from < 8) {
+        await m.createTable(customers);
+        await m.createTable(orders);
+        await m.createTable(orderItems);
       }
     },
   );
