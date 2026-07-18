@@ -23,6 +23,7 @@ class CustomerRepository {
           notes: Value(_nullIfEmpty(notes)),
           createdAt: Value(DateTime.now()),
           totalSpent: const Value(0.0),
+          unpaidBalance: const Value(0.0),
         ));
   }
 
@@ -37,6 +38,7 @@ class CustomerRepository {
           createdAt: customer.createdAt,
           lastOrderDate: customer.lastOrderDate,
           totalSpent: customer.totalSpent,
+          unpaidBalance: customer.unpaidBalance,
         ));
   }
 
@@ -50,39 +52,65 @@ class CustomerRepository {
     final rows = await (database.select(database.customers)
           ..orderBy([(c) => OrderingTerm(expression: c.name)]))
         .get();
-    return rows.map(_map).toList();
+    return rows.map(mapCustomer).toList();
   }
 
   Future<CustomerModel?> getCustomerById(int id) async {
     final row = await (database.select(database.customers)
           ..where((c) => c.id.equals(id)))
         .getSingleOrNull();
-    return row == null ? null : _map(row);
+    return row == null ? null : mapCustomer(row);
   }
 
   Stream<List<CustomerModel>> watchAllCustomers() {
     return (database.select(database.customers)
           ..orderBy([(c) => OrderingTerm(expression: c.name)]))
         .watch()
-        .map((rows) => rows.map(_map).toList());
+        .map((rows) => rows.map(mapCustomer).toList());
   }
 
-  /// Update lastOrderDate + totalSpent after an order is paid/delivered
-  Future<void> recordOrderForCustomer({
-    required int customerId,
-    required DateTime orderDate,
-    required double amount,
-  }) async {
-    final existing = await getCustomerById(customerId);
-    if (existing == null) return;
+  /// Recalculates totalSpent, unpaidBalance and lastOrderDate by scanning all orders
+  Future<void> syncCustomerTotals(int customerId) async {
+    final orders = await database.getOrdersForCustomer(customerId);
+    
+    // Include all orders that are NOT cancelled
+    final validOrders = orders.where((o) => o.status != 'cancelled').toList();
+    
+    double totalSpent = 0.0;
+    double unpaidBalance = 0.0;
+    DateTime? lastOrderDate;
 
-    await updateCustomer(existing.copyWith(
-      lastOrderDate: orderDate,
-      totalSpent: existing.totalSpent + amount,
+    for (final order in validOrders) {
+      totalSpent += order.totalAmount;
+      if (!order.isPaid) {
+        unpaidBalance += order.totalAmount;
+      }
+      
+      if (lastOrderDate == null || order.orderDate.isAfter(lastOrderDate)) {
+        lastOrderDate = order.orderDate;
+      }
+    }
+
+    final customer = await getCustomerById(customerId);
+    if (customer == null) return;
+
+    await updateCustomer(customer.copyWith(
+      totalSpent: totalSpent,
+      unpaidBalance: unpaidBalance,
+      lastOrderDate: lastOrderDate,
     ));
   }
 
-  CustomerModel _map(Customer row) => CustomerModel(
+  /// One-time sync for all customers (useful for migrations or fixing data)
+  Future<int> syncAllCustomers() async {
+    final all = await getAllCustomers();
+    for (final customer in all) {
+      await syncCustomerTotals(customer.id);
+    }
+    return all.length;
+  }
+
+  CustomerModel mapCustomer(Customer row) => CustomerModel(
         id: row.id,
         name: row.name,
         phone: row.phone,
@@ -92,6 +120,7 @@ class CustomerRepository {
         createdAt: row.createdAt,
         lastOrderDate: row.lastOrderDate,
         totalSpent: row.totalSpent,
+        unpaidBalance: row.unpaidBalance,
       );
 
   String? _nullIfEmpty(String? value) {

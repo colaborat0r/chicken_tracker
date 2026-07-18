@@ -5,6 +5,8 @@ import 'core/theme/app_theme.dart';
 import 'config/router.dart';
 import 'core/models/reminder_model.dart';
 import 'core/providers/database_providers.dart';
+import 'core/providers/database_instance_provider.dart';
+import 'core/providers/repository_providers.dart';
 import 'core/providers/notification_providers.dart';
 import 'core/providers/theme_providers.dart';
 import 'core/services/backup_scheduler_service.dart';
@@ -54,6 +56,15 @@ class _ChickenTrackerAppState extends ConsumerState<ChickenTrackerApp> {
         // Initialize daily backup scheduler
         final db = ref.read(databaseProvider);
         await BackupSchedulerService.initialize(db);
+
+        // Auto-update growing birds to laying status
+        final updatedCount = await ref.read(chickenRepositoryProvider).autoUpdateGrowingBirds();
+        if (updatedCount > 0) {
+          debugPrint('[Flock] Auto-updated $updatedCount growing birds to laying status.');
+        }
+
+        // Sync all customer totals to fix any inconsistent balances
+        await ref.read(customerRepositoryProvider).syncAllCustomers();
       } catch (e, stackTrace) {
         // Log initialization errors without crashing the app
         debugPrint('Initialization error: $e\n$stackTrace');

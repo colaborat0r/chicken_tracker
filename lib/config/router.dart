@@ -10,7 +10,6 @@ import 'package:chicken_tracker/features/production/screens/log_production_scree
 import 'package:chicken_tracker/features/production/screens/production_history_screen.dart';
 import 'package:chicken_tracker/features/production/screens/analytics_dashboard_screen.dart';
 import 'package:chicken_tracker/features/reports/screens/reports_screen.dart';
-import 'package:chicken_tracker/features/sales/screens/sales_screen.dart';
 import 'package:chicken_tracker/features/sales/screens/add_sale_screen.dart';
 import 'package:chicken_tracker/features/expenses/screens/expenses_screen.dart';
 import 'package:chicken_tracker/features/expenses/screens/add_expense_screen.dart';
@@ -30,6 +29,12 @@ import 'package:chicken_tracker/features/guides/screens/saved_guides_screen.dart
 import 'package:chicken_tracker/features/care_logs/screens/care_logs_screen.dart';
 import 'package:chicken_tracker/features/care_logs/screens/add_care_log_screen.dart';
 import 'package:chicken_tracker/features/care_logs/screens/care_log_gallery_screen.dart';
+import 'package:chicken_tracker/features/home/screens/main_screen.dart';
+import 'package:chicken_tracker/features/sales/screens/sales_crm_hub_screen.dart';
+import 'package:chicken_tracker/features/sales/screens/order_detail_screen.dart';
+import 'package:chicken_tracker/features/sales/screens/create_order_screen.dart';
+import 'package:chicken_tracker/features/sales/screens/add_customer_screen.dart';
+import 'package:chicken_tracker/features/sales/screens/customer_detail_screen.dart';
 import 'package:chicken_tracker/core/models/chicken_model.dart';
 import 'package:chicken_tracker/core/models/reminder_model.dart';
 import 'package:chicken_tracker/core/models/care_log_model.dart';
@@ -46,7 +51,6 @@ class Routes {
   static const String productionHistory = '/production-history';
   static const String analytics = '/analytics';
   static const String reports = '/reports';
-  static const String sales = '/sales';
   static const String addSale = '/add-sale';
   static const String expenses = '/expenses';
   static const String addExpense = '/add-expense';
@@ -66,49 +70,115 @@ class Routes {
   static const String careLogs = '/care-logs';
   static const String addCareLog = '/add-care-log';
   static const String careLogGallery = '/care-log-gallery';
+
+  // CRM & Orders
+  static const String crmHub = '/crm';
+  static const String orderDetail = '/orders/:id';
+  static const String createOrder = '/create-order';
+  static const String addCustomer = '/add-customer';
+  static const String customerDetail = '/customers/:id';
 }
 
 /// GoRouter configuration for the app
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+final _homeNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'home');
+final _productionNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'production');
+final _flockNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'flock');
+final _crmNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'crm');
+final _expensesNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'expenses');
+
 final goRouter = GoRouter(
   initialLocation: Routes.home,
+  navigatorKey: _rootNavigatorKey,
   routes: [
-    // Home screen
-    GoRoute(
-      path: Routes.home,
-      builder: (context, state) => const HomeScreen(),
+    // StatefulShellRoute for Bottom Navigation
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) {
+        return MainScreen(navigationShell: navigationShell);
+      },
+      branches: [
+        // Home Branch
+        StatefulShellBranch(
+          navigatorKey: _homeNavigatorKey,
+          routes: [
+            GoRoute(
+              path: Routes.home,
+              builder: (context, state) => const HomeScreen(),
+            ),
+          ],
+        ),
+        // Production Branch
+        StatefulShellBranch(
+          navigatorKey: _productionNavigatorKey,
+          routes: [
+            GoRoute(
+              path: Routes.productionHistory,
+              builder: (context, state) => const ProductionHistoryScreen(),
+            ),
+          ],
+        ),
+        // Flock Branch
+        StatefulShellBranch(
+          navigatorKey: _flockNavigatorKey,
+          routes: [
+            GoRoute(
+              path: Routes.chickenList,
+              builder: (context, state) => const ChickenListScreen(),
+            ),
+          ],
+        ),
+        // CRM Branch
+        StatefulShellBranch(
+          navigatorKey: _crmNavigatorKey,
+          routes: [
+            GoRoute(
+              path: Routes.crmHub,
+              builder: (context, state) => const SalesCrmHubScreen(),
+            ),
+          ],
+        ),
+        // Expenses Branch
+        StatefulShellBranch(
+          navigatorKey: _expensesNavigatorKey,
+          routes: [
+            GoRoute(
+              path: Routes.expenses,
+              builder: (context, state) => const ExpensesScreen(),
+            ),
+          ],
+        ),
+      ],
     ),
 
+    // Other screens that should be on top of the bottom navigation
     // Report settings screen
     GoRoute(
       path: Routes.reportSettings,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const ReportSettingsScreen(),
     ),
 
     // Add chicken screen
     GoRoute(
       path: Routes.addChicken,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const AddChickenScreen(),
     ),
 
     // Add multiple chickens screen
     GoRoute(
       path: Routes.addMultipleChickens,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const AddMultipleChickensScreen(),
-    ),
-
-    // Chicken list screen
-    GoRoute(
-      path: Routes.chickenList,
-      builder: (context, state) => const ChickenListScreen(),
     ),
 
     // Chicken detail screen - receives chicken object via extras
     GoRoute(
       path: Routes.chickenDetail,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final extra = state.extra;
         if (extra is! ChickenModel) {
-          // Guard against missing/wrong extra (e.g. deep link or state loss)
           WidgetsBinding.instance.addPostFrameCallback(
             (_) => context.go(Routes.home),
           );
@@ -123,6 +193,7 @@ final goRouter = GoRouter(
     // Log production screen
     GoRoute(
       path: Routes.logProduction,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final extra = state.extra;
         return LogProductionScreen(
@@ -131,48 +202,34 @@ final goRouter = GoRouter(
       },
     ),
 
-    // Production history screen
-    GoRoute(
-      path: Routes.productionHistory,
-      builder: (context, state) => const ProductionHistoryScreen(),
-    ),
-
     // Analytics dashboard screen
     GoRoute(
       path: Routes.analytics,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const AnalyticsDashboardScreen(),
     ),
 
     // Reports screen
     GoRoute(
       path: Routes.reports,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const ReportsScreen(),
-    ),
-
-    // Sales screen
-    GoRoute(
-      path: Routes.sales,
-      builder: (context, state) => const SalesScreen(),
     ),
 
     // Add sale screen
     GoRoute(
       path: Routes.addSale,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final extra = state.extra;
         return AddSaleScreen(saleToEdit: extra is SaleModel ? extra : null);
       },
     ),
 
-    // Expenses screen
-    GoRoute(
-      path: Routes.expenses,
-      builder: (context, state) => const ExpensesScreen(),
-    ),
-
     // Add expense screen
     GoRoute(
       path: Routes.addExpense,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final extra = state.extra;
         return AddExpenseScreen(expenseToEdit: extra is ExpenseModel ? extra : null);
@@ -182,6 +239,7 @@ final goRouter = GoRouter(
     // Category expenses screen
     GoRoute(
       path: Routes.categoryExpenses,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final category = state.pathParameters['category'] ?? '';
         return CategoryExpensesScreen(category: category);
@@ -191,12 +249,14 @@ final goRouter = GoRouter(
     // Flock purchases screen
     GoRoute(
       path: Routes.flockPurchases,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const FlockPurchasesScreen(),
     ),
 
     // Add flock purchase screen
     GoRoute(
       path: Routes.addFlockPurchase,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final extra = state.extra;
         return AddFlockPurchaseScreen(
@@ -208,12 +268,14 @@ final goRouter = GoRouter(
     // Flock losses screen
     GoRoute(
       path: Routes.flockLosses,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const FlockLossesScreen(),
     ),
 
     // Add flock loss screen
     GoRoute(
       path: Routes.addFlockLoss,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final extra = state.extra;
         return AddFlockLossScreen(
@@ -225,24 +287,28 @@ final goRouter = GoRouter(
     // Data management screen
     GoRoute(
       path: Routes.dataManagement,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const DataManagementScreen(),
     ),
 
     // About screen
     GoRoute(
       path: Routes.about,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const AboutScreen(),
     ),
 
     // Reminders screen
     GoRoute(
       path: Routes.reminders,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const RemindersScreen(),
     ),
 
     // Add / edit reminder screen
     GoRoute(
       path: Routes.addReminder,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final extra = state.extra;
         return AddReminderScreen(
@@ -254,12 +320,14 @@ final goRouter = GoRouter(
     // Guides home screen
     GoRoute(
       path: Routes.guidesHome,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const GuidesHomeScreen(),
     ),
 
     // Guides library screen
     GoRoute(
       path: Routes.guides,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final category = state.uri.queryParameters['category'];
         return GuidesListScreen(initialCategory: category);
@@ -269,6 +337,7 @@ final goRouter = GoRouter(
     // Guide detail screen (deep link ready)
     GoRoute(
       path: Routes.guideDetail,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final id = state.pathParameters['id'] ?? '';
         return GuideDetailScreen(guideId: id);
@@ -278,18 +347,21 @@ final goRouter = GoRouter(
     // Saved guides screen
     GoRoute(
       path: Routes.savedGuides,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const SavedGuidesScreen(),
     ),
 
     // Care logs screen
     GoRoute(
       path: Routes.careLogs,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const CareLogsScreen(),
     ),
 
     // Add / edit care log screen
     GoRoute(
       path: Routes.addCareLog,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final extra = state.extra;
         return AddCareLogScreen(
@@ -301,7 +373,42 @@ final goRouter = GoRouter(
     // Care log photo gallery
     GoRoute(
       path: Routes.careLogGallery,
+      parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const CareLogGalleryScreen(),
+    ),
+
+    // CRM / Order details (pushed on top of stack)
+    GoRoute(
+      path: Routes.orderDetail,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+        return OrderDetailScreen(orderId: id);
+      },
+    ),
+    GoRoute(
+      path: Routes.createOrder,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final orderId = state.extra as int?;
+        return CreateOrderScreen(orderId: orderId);
+      },
+    ),
+    GoRoute(
+      path: Routes.addCustomer,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final customerId = state.extra as int?;
+        return AddCustomerScreen(customerId: customerId);
+      },
+    ),
+    GoRoute(
+      path: Routes.customerDetail,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+        return CustomerDetailScreen(customerId: id);
+      },
     ),
   ],
 

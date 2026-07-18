@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/backup_service.dart';
-import 'database_providers.dart';
+import 'database_instance_provider.dart';
 
 /// Provider to track and manage first app launch
 final firstLaunchProvider = StateNotifierProvider<FirstLaunchNotifier, bool>((ref) {

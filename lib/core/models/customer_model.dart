@@ -11,6 +11,7 @@ class CustomerModel {
   final DateTime createdAt;
   final DateTime? lastOrderDate;
   final double totalSpent;
+  final double unpaidBalance;
 
   CustomerModel({
     required this.id,
@@ -22,6 +23,7 @@ class CustomerModel {
     required this.createdAt,
     this.lastOrderDate,
     this.totalSpent = 0.0,
+    this.unpaidBalance = 0.0,
   });
 
   CustomerModel copyWith({
@@ -34,6 +36,7 @@ class CustomerModel {
     DateTime? createdAt,
     DateTime? lastOrderDate,
     double? totalSpent,
+    double? unpaidBalance,
   }) {
     return CustomerModel(
       id: id ?? this.id,
@@ -45,6 +48,7 @@ class CustomerModel {
       createdAt: createdAt ?? this.createdAt,
       lastOrderDate: lastOrderDate ?? this.lastOrderDate,
       totalSpent: totalSpent ?? this.totalSpent,
+      unpaidBalance: unpaidBalance ?? this.unpaidBalance,
     );
   }
 

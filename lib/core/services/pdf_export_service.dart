@@ -5,6 +5,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import '../models/report_model.dart';
+import '../models/order_model.dart';
 import '../providers/report_settings_provider.dart';
 
 /// Service for exporting reports to PDF format
@@ -614,6 +615,207 @@ class PdfExportService {
     final dir = await getApplicationDocumentsDirectory();
     final fileName =
         'Flock_Losses_Report_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.pdf';
+    final file = File('${dir.path}/$fileName');
+    await file.writeAsBytes(await pdf.save());
+    return file;
+  }
+
+  /// Generate a professional invoice PDF for a single order (multi-line support).
+  /// Matches the existing farm report styling (header image, brown accents).
+  static Future<File> generateInvoicePdf({
+    required OrderWithDetails orderDetails,
+    required String farmName,
+    String? farmAddress,
+    String? farmPhone,
+  }) async {
+    final pdf = pw.Document();
+    final order = orderDetails.order;
+    final items = orderDetails.items;
+    final customer = orderDetails.customer;
+
+    final header = await _buildStyledHeader(
+      farmName: farmName,
+      title: 'INVOICE',
+      period: order.invoiceNumber ?? 'Order #${order.id}',
+      generated: 'Generated ${DateFormat('MMM d, yyyy').format(DateTime.now())}',
+    );
+
+    final dateFmt = DateFormat('MMM d, yyyy');
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: pw.EdgeInsets.zero,
+        footer: (_) => _buildStyledFooter(),
+        build: (context) => [
+          header,
+          pw.Container(
+            color: _lightBg,
+            padding: const pw.EdgeInsets.fromLTRB(32, 20, 32, 16),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                // Invoice meta + Bill To
+                pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Expanded(
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Text('Bill To',
+                              style: pw.TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: pw.FontWeight.bold,
+                                  color: _accentBrown)),
+                          pw.SizedBox(height: 4),
+                          pw.Text(orderDetails.customerDisplayName,
+                              style: pw.TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: pw.FontWeight.bold)),
+                          if (customer?.phone != null)
+                            pw.Text(customer!.phone!,
+                                style: const pw.TextStyle(fontSize: 9)),
+                          if (customer?.email != null)
+                            pw.Text(customer!.email!,
+                                style: const pw.TextStyle(fontSize: 9)),
+                          if (customer?.address != null)
+                            pw.Text(customer!.address!,
+                                style: const pw.TextStyle(fontSize: 9)),
+                        ],
+                      ),
+                    ),
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.end,
+                      children: [
+                        pw.Text('Invoice #: ${order.invoiceNumber ?? order.id}',
+                            style: pw.TextStyle(
+                                fontSize: 10,
+                                fontWeight: pw.FontWeight.bold)),
+                        pw.SizedBox(height: 4),
+                        pw.Text('Order Date: ${dateFmt.format(order.orderDate)}',
+                            style: const pw.TextStyle(fontSize: 9)),
+                        if (order.deliveryDate != null)
+                          pw.Text(
+                              'Delivery Date: ${dateFmt.format(order.deliveryDate!)}',
+                              style: const pw.TextStyle(fontSize: 9)),
+                        pw.SizedBox(height: 4),
+                        pw.Text('Status: ${order.statusLabel}',
+                            style: pw.TextStyle(
+                                fontSize: 9,
+                                fontWeight: pw.FontWeight.bold,
+                                color: _accentBrown)),
+                      ],
+                    ),
+                  ],
+                ),
+                pw.SizedBox(height: 20),
+
+                // Line items table
+                pw.Text('Items',
+                    style: pw.TextStyle(
+                        fontSize: 12,
+                        fontWeight: pw.FontWeight.bold,
+                        color: _accentBrown)),
+                pw.SizedBox(height: 8),
+                _buildStyledTable(
+                  columns: [
+                    'Description',
+                    'Qty',
+                    'Unit',
+                    'Unit Price',
+                    'Line Total'
+                  ],
+                  rows: items
+                      .map((i) => [
+                            i.description,
+                            i.quantity.toStringAsFixed(
+                                i.quantity == i.quantity.roundToDouble()
+                                    ? 0
+                                    : 1),
+                            i.unit,
+                            '\$${i.unitPrice.toStringAsFixed(2)}',
+                            '\$${i.lineTotal.toStringAsFixed(2)}',
+                          ])
+                      .toList(),
+                ),
+                pw.SizedBox(height: 16),
+
+                // Totals
+                pw.Align(
+                  alignment: pw.Alignment.centerRight,
+                  child: pw.Container(
+                    width: 200,
+                    child: pw.Column(
+                      children: [
+                        pw.Row(
+                          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                          children: [
+                            pw.Text('Subtotal',
+                                style: const pw.TextStyle(fontSize: 10)),
+                            pw.Text(
+                                '\$${order.subtotal.toStringAsFixed(2)}',
+                                style: const pw.TextStyle(fontSize: 10)),
+                          ],
+                        ),
+                        pw.SizedBox(height: 6),
+                        pw.Divider(color: _borderColor),
+                        pw.SizedBox(height: 6),
+                        pw.Row(
+                          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                          children: [
+                            pw.Text('TOTAL',
+                                style: pw.TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: _accentBrown)),
+                            pw.Text(
+                                '\$${order.totalAmount.toStringAsFixed(2)}',
+                                style: pw.TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: _accentBrown)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                if (order.notes != null && order.notes!.isNotEmpty) ...[
+                  pw.SizedBox(height: 20),
+                  pw.Text('Notes',
+                      style: pw.TextStyle(
+                          fontSize: 10,
+                          fontWeight: pw.FontWeight.bold,
+                          color: _accentBrown)),
+                  pw.SizedBox(height: 4),
+                  pw.Text(order.notes!,
+                      style: const pw.TextStyle(fontSize: 9)),
+                ],
+
+                pw.SizedBox(height: 30),
+                pw.Center(
+                  child: pw.Text(
+                    'Thank you for supporting local eggs & chickens!',
+                    style: pw.TextStyle(
+                        fontSize: 10,
+                        fontStyle: pw.FontStyle.italic,
+                        color: _mutedText),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final dir = await getApplicationDocumentsDirectory();
+    final safeInv = (order.invoiceNumber ?? 'Order_${order.id}')
+        .replaceAll(RegExp(r'[^\w\-]'), '_');
+    final fileName =
+        'Invoice_${safeInv}_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.pdf';
     final file = File('${dir.path}/$fileName');
     await file.writeAsBytes(await pdf.save());
     return file;

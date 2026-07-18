@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'database_providers.dart';
+import 'database_instance_provider.dart';
 import 'notification_providers.dart';
 import '../repositories/chicken_repository.dart';
 import '../repositories/reminder_repository.dart';
@@ -7,6 +7,7 @@ import '../repositories/care_log_repository.dart';
 import '../repositories/customer_repository.dart';
 import '../repositories/order_repository.dart';
 import '../services/image_storage_service.dart';
+import '../services/migration_service.dart';
 import '../models/care_log_model.dart';
 import '../../features/guides/repositories/guides_repository.dart';
 
@@ -111,12 +112,14 @@ final orderRepositoryProvider = Provider<OrderRepository>((ref) {
   return OrderRepository(db, customerRepo);
 });
 
-/// Stream of all customers
-final allCustomersProvider = StreamProvider((ref) {
-  return ref.watch(customerRepositoryProvider).watchAllCustomers();
-});
-
-/// Stream of all orders with details
-final allOrdersProvider = StreamProvider((ref) {
-  return ref.watch(orderRepositoryProvider).watchAllOrders();
+/// Service provider for database migrations
+final migrationServiceProvider = Provider<MigrationService>((ref) {
+  final db = ref.watch(databaseProvider);
+  final orderRepo = ref.watch(orderRepositoryProvider);
+  final customerRepo = ref.watch(customerRepositoryProvider);
+  return MigrationService(
+    database: db,
+    orderRepository: orderRepo,
+    customerRepository: customerRepo,
+  );
 });

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../database/app_database.dart';
-import 'database_providers.dart';
+import 'database_instance_provider.dart';
 
 /// Provider for current theme mode
 /// Reads from database settings and provides ThemeMode

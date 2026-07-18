@@ -7,7 +7,9 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 
 import '../../../core/providers/database_providers.dart';
+import '../../../core/providers/database_instance_provider.dart';
 import '../../../core/providers/theme_providers.dart';
+import '../../../core/providers/repository_providers.dart';
 import '../../../core/services/backup_service.dart';
 import '../../../core/services/backup_scheduler_service.dart';
 import '../../../core/services/csv_import_service.dart';
@@ -409,10 +411,35 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
       ref.invalidate(allFlockLossesProvider);
       ref.invalidate(allRemindersProvider);
       ref.invalidate(dueRemindersCountProvider);
+      ref.invalidate(allOrdersProvider);
+      ref.invalidate(allCustomersProvider);
 
       _showMessage('✓ Sample data loaded successfully!');
     } catch (e) {
       _showMessage('Failed to load sample data: $e', isError: true);
+    } finally {
+      if (mounted) setState(() => _isWorking = false);
+    }
+  }
+
+  Future<void> _migrateLegacySales() async {
+    final confirmed = await _confirmAction(
+      title: 'Migrate Legacy Sales?',
+      message: 'This will convert all your simple sales records into the new multi-line order system and create customer profiles for them.',
+      confirmText: 'Migrate Now',
+      destructive: false,
+    );
+    if (confirmed != true) return;
+
+    setState(() => _isWorking = true);
+    try {
+      final count = await ref.read(migrationServiceProvider).migrateSalesToOrders();
+      ref.invalidate(allSalesProvider);
+      ref.invalidate(allOrdersProvider);
+      ref.invalidate(allCustomersProvider);
+      _showMessage('Successfully migrated $count sales to the new system.');
+    } catch (e) {
+      _showMessage('Migration failed: $e', isError: true);
     } finally {
       if (mounted) setState(() => _isWorking = false);
     }
@@ -833,12 +860,24 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
             ),
             const SizedBox(height: 8),
             Card(
-              child: ListTile(
-                leading: const Icon(Icons.download, color: Colors.blue),
-                title: const Text('Load Sample Data'),
-                subtitle: const Text(
-                    'Populate the app with demo data to explore features.'),
-                onTap: _loadSampleData,
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.download, color: Colors.blue),
+                    title: const Text('Load Sample Data'),
+                    subtitle: const Text(
+                        'Populate the app with demo data to explore features.'),
+                    onTap: _loadSampleData,
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.auto_awesome, color: Colors.amber),
+                    title: const Text('Migrate Legacy Sales'),
+                    subtitle: const Text(
+                        'Convert old single-line sales to the new CRM & Order system.'),
+                    onTap: _migrateLegacySales,
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 12),

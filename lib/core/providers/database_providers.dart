@@ -1,17 +1,13 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../database/app_database.dart';
 import '../models/chicken_model.dart';
 import '../models/reminder_model.dart';
 import '../models/activity_model.dart';
+import '../models/order_model.dart';
+import '../models/customer_model.dart';
 import '../repositories/reminder_repository.dart';
-
-/// Provider for the AppDatabase instance (singleton)
-final databaseProvider = Provider<AppDatabase>((ref) {
-  final db = AppDatabase();
-  ref.onDispose(() => db.close());
-  return db;
-});
+import 'database_instance_provider.dart';
+import 'repository_providers.dart';
 
 /// Provider for all chickens as a stream
 final allChickensProvider = StreamProvider<List<ChickenModel>>((ref) async* {
@@ -196,13 +192,16 @@ final thisMonthExpensesTotalProvider = FutureProvider<double>((ref) async {
 
 /// Provider for this month's sales total
 final thisMonthSalesTotalProvider = FutureProvider<double>((ref) async {
-  final sales = await ref.watch(allSalesProvider.future);
+  final orders = await ref.watch(allOrdersProvider.future);
   final now = DateTime.now();
 
-  return sales
-      .where(
-          (sale) => sale.date.year == now.year && sale.date.month == now.month)
-      .fold<double>(0.0, (sum, item) => sum + item.amount);
+  return orders
+      .where((o) =>
+          o.order.orderDate.year == now.year &&
+          o.order.orderDate.month == now.month &&
+          o.order.status != 'cancelled' &&
+          o.order.status != 'draft')
+      .fold<double>(0.0, (sum, item) => sum + item.order.totalAmount);
 });
 
 /// Provider for this month's egg total
@@ -331,14 +330,14 @@ final dueRemindersCountProvider = Provider<int>((ref) {
 /// Provider for a combined list of recent activities (production, sales, expenses)
 final recentActivityProvider = Provider<List<RecentActivityItem>>((ref) {
   final logs = ref.watch(allDailyLogsProvider).value ?? [];
-  final sales = ref.watch(allSalesProvider).value ?? [];
+  final orders = ref.watch(allOrdersProvider).value ?? [];
   final expenses = ref.watch(allExpensesProvider).value ?? [];
 
   final List<RecentActivityItem> combined = [
     ...logs.map((e) =>
         RecentActivityItem(date: e.date, type: ActivityType.production, data: e)),
-    ...sales.map((e) =>
-        RecentActivityItem(date: e.date, type: ActivityType.sale, data: e)),
+    ...orders.map((e) =>
+        RecentActivityItem(date: e.order.orderDate, type: ActivityType.order, data: e)),
     ...expenses.map((e) =>
         RecentActivityItem(date: e.date, type: ActivityType.expense, data: e)),
   ];
@@ -347,4 +346,19 @@ final recentActivityProvider = Provider<List<RecentActivityItem>>((ref) {
   combined.sort((a, b) => b.date.compareTo(a.date));
 
   return combined;
+});
+
+/// Stream of all customers
+final allCustomersProvider = StreamProvider<List<CustomerModel>>((ref) {
+  return ref.watch(customerRepositoryProvider).watchAllCustomers();
+});
+
+/// Stream of all orders with details
+final allOrdersProvider = StreamProvider<List<OrderWithDetails>>((ref) {
+  return ref.watch(orderRepositoryProvider).watchAllOrders();
+});
+
+/// Stream of orders for a specific customer
+final customerOrdersProvider = StreamProvider.family<List<OrderWithDetails>, int>((ref, customerId) {
+  return ref.watch(orderRepositoryProvider).watchOrdersForCustomer(customerId);
 });

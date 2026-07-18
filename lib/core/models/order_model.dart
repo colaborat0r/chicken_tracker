@@ -72,6 +72,8 @@ class OrderModel {
   final DateTime orderDate;
   final DateTime? deliveryDate;
   final String status; // draft, confirmed, paid, delivered, cancelled
+  final bool isPaid;
+  final bool isDelivered;
   final String? invoiceNumber;
   final String? notes;
   final double subtotal;
@@ -85,6 +87,8 @@ class OrderModel {
     required this.orderDate,
     this.deliveryDate,
     required this.status,
+    required this.isPaid,
+    required this.isDelivered,
     this.invoiceNumber,
     this.notes,
     required this.subtotal,
@@ -99,6 +103,8 @@ class OrderModel {
     DateTime? orderDate,
     DateTime? deliveryDate,
     String? status,
+    bool? isPaid,
+    bool? isDelivered,
     String? invoiceNumber,
     String? notes,
     double? subtotal,
@@ -112,6 +118,8 @@ class OrderModel {
       orderDate: orderDate ?? this.orderDate,
       deliveryDate: deliveryDate ?? this.deliveryDate,
       status: status ?? this.status,
+      isPaid: isPaid ?? this.isPaid,
+      isDelivered: isDelivered ?? this.isDelivered,
       invoiceNumber: invoiceNumber ?? this.invoiceNumber,
       notes: notes ?? this.notes,
       subtotal: subtotal ?? this.subtotal,
@@ -121,8 +129,6 @@ class OrderModel {
     );
   }
 
-  bool get isPaid => status == 'paid' || status == 'delivered';
-  bool get isDelivered => status == 'delivered';
   bool get isCancelled => status == 'cancelled';
 
   String get statusLabel {

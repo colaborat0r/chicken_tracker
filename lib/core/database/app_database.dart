@@ -149,6 +149,7 @@ class Customers extends Table {
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get lastOrderDate => dateTime().nullable()();
   RealColumn get totalSpent => real().withDefault(const Constant(0.0))();
+  RealColumn get unpaidBalance => real().withDefault(const Constant(0.0))();
 }
 
 // 14. Orders (header – supports multi-line items + delivery date)
@@ -160,6 +161,8 @@ class Orders extends Table {
   DateTimeColumn get deliveryDate => dateTime().nullable()();
   TextColumn get status =>
       text().withDefault(const Constant('confirmed'))(); // draft, confirmed, paid, delivered, cancelled
+  BoolColumn get isPaid => boolean().withDefault(const Constant(false))();
+  BoolColumn get isDelivered => boolean().withDefault(const Constant(false))();
   TextColumn get invoiceNumber => text().nullable()();
   TextColumn get notes => text().nullable()();
   RealColumn get subtotal => real().withDefault(const Constant(0.0))();
@@ -205,7 +208,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -238,6 +241,13 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(customers);
         await m.createTable(orders);
         await m.createTable(orderItems);
+      }
+      if (from < 9) {
+        await m.addColumn(orders, orders.isPaid);
+        await m.addColumn(orders, orders.isDelivered);
+      }
+      if (from < 10) {
+        await m.addColumn(customers, customers.unpaidBalance);
       }
     },
   );
@@ -472,4 +482,37 @@ class AppDatabase extends _$AppDatabase {
 
   Future<CareLogPhoto?> getCareLogPhotoById(int id) =>
       (select(careLogPhotos)..where((p) => p.id.equals(id))).getSingleOrNull();
+
+  // ====================== CRM / ORDERS DAO ======================
+  Future<List<Customer>> getAllCustomers() =>
+      (select(customers)..orderBy([(c) => OrderingTerm(expression: c.name)]))
+          .get();
+
+  Future<Customer?> getCustomerById(int id) =>
+      (select(customers)..where((c) => c.id.equals(id))).getSingleOrNull();
+
+  Future<int> addCustomer(CustomersCompanion customer) =>
+      into(customers).insert(customer);
+
+  Future<void> updateCustomer(Customer customer) =>
+      update(customers).replace(customer);
+
+  Future<void> deleteCustomer(int id) =>
+      (delete(customers)..where((c) => c.id.equals(id))).go();
+
+  Future<List<Order>> getAllOrders() =>
+      (select(orders)..orderBy([(o) => OrderingTerm(expression: o.orderDate, mode: OrderingMode.desc)]))
+          .get();
+
+  Future<Order?> getOrderById(int id) =>
+      (select(orders)..where((o) => o.id.equals(id))).getSingleOrNull();
+
+  Future<List<OrderItem>> getOrderItems(int orderId) =>
+      (select(orderItems)..where((i) => i.orderId.equals(orderId))).get();
+
+  Future<List<Order>> getOrdersForCustomer(int customerId) =>
+      (select(orders)
+            ..where((o) => o.customerId.equals(customerId))
+            ..orderBy([(o) => OrderingTerm(expression: o.orderDate, mode: OrderingMode.desc)]))
+          .get();
 }

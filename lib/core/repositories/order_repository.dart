@@ -17,6 +17,8 @@ class OrderRepository {
     required DateTime orderDate,
     DateTime? deliveryDate,
     String status = 'confirmed',
+    bool isPaid = false,
+    bool isDelivered = false,
     String? notes,
     required List<OrderItemInput> items,
   }) async {
@@ -24,7 +26,7 @@ class OrderRepository {
       throw ArgumentError('An order must have at least one line item.');
     }
 
-    return database.transaction(() async {
+    final orderId = await database.transaction(() async {
       final subtotal = items.fold(0.0, (sum, i) => sum + i.lineTotal);
       final now = DateTime.now();
 
@@ -36,12 +38,14 @@ class OrderRepository {
           .then((list) => list.length + 1);
       final invoiceNumber = 'INV-$year-${count.toString().padLeft(4, '0')}';
 
-      final orderId = await database.into(database.orders).insert(
+      final newOrderId = await database.into(database.orders).insert(
             OrdersCompanion(
               customerId: Value(customerId),
               orderDate: Value(orderDate),
               deliveryDate: Value(deliveryDate),
               status: Value(status),
+              isPaid: Value(isPaid),
+              isDelivered: Value(isDelivered),
               invoiceNumber: Value(invoiceNumber),
               notes: Value(_nullIfEmpty(notes)),
               subtotal: Value(subtotal),
@@ -54,7 +58,7 @@ class OrderRepository {
       for (final item in items) {
         await database.into(database.orderItems).insert(
               OrderItemsCompanion(
-                orderId: Value(orderId),
+                orderId: Value(newOrderId),
                 type: Value(item.type),
                 description: Value(item.description),
                 quantity: Value(item.quantity),
@@ -66,23 +70,20 @@ class OrderRepository {
             );
       }
 
-      // Update customer totals if linked and status indicates money received
-      if (customerId != null &&
-          (status == 'paid' || status == 'delivered')) {
-        await customerRepository.recordOrderForCustomer(
-          customerId: customerId,
-          orderDate: orderDate,
-          amount: subtotal,
-        );
-      }
-
-      return orderId;
+      return newOrderId;
     });
+
+    // Update customer totals after transaction completes to ensure data visibility
+    if (customerId != null) {
+      await customerRepository.syncCustomerTotals(customerId);
+    }
+
+    return orderId;
   }
 
   Future<void> updateOrderStatus(int orderId, String newStatus) async {
     final order = await getOrderById(orderId);
-    if (order == null) return;
+    final customerId = order?.order.customerId;
 
     await (database.update(database.orders)
           ..where((o) => o.id.equals(orderId)))
@@ -91,23 +92,60 @@ class OrderRepository {
       updatedAt: Value(DateTime.now()),
     ));
 
-    // If moving to paid/delivered and has a customer, update totals
-    if (order.order.customerId != null &&
-        (newStatus == 'paid' || newStatus == 'delivered') &&
-        !(order.order.status == 'paid' || order.order.status == 'delivered')) {
-      await customerRepository.recordOrderForCustomer(
-        customerId: order.order.customerId!,
-        orderDate: order.order.orderDate,
-        amount: order.order.totalAmount,
-      );
+    if (customerId != null) {
+      await customerRepository.syncCustomerTotals(customerId);
+    }
+  }
+
+  Future<void> togglePaidStatus(int orderId) async {
+    final orderDetails = await getOrderById(orderId);
+    if (orderDetails == null) return;
+
+    final newPaid = !orderDetails.order.isPaid;
+
+    await (database.update(database.orders)
+          ..where((o) => o.id.equals(orderId)))
+        .write(OrdersCompanion(
+      isPaid: Value(newPaid),
+      updatedAt: Value(DateTime.now()),
+    ));
+
+    // If moving to paid and has a customer, update totals
+    if (orderDetails.order.customerId != null) {
+      await customerRepository.syncCustomerTotals(orderDetails.order.customerId!);
+    }
+  }
+
+  Future<void> toggleDeliveredStatus(int orderId) async {
+    final orderDetails = await getOrderById(orderId);
+    if (orderDetails == null) return;
+
+    final customerId = orderDetails.order.customerId;
+
+    await (database.update(database.orders)
+          ..where((o) => o.id.equals(orderId)))
+        .write(OrdersCompanion(
+      isDelivered: Value(!orderDetails.order.isDelivered),
+      updatedAt: Value(DateTime.now()),
+    ));
+
+    if (customerId != null) {
+      await customerRepository.syncCustomerTotals(customerId);
     }
   }
 
   Future<void> deleteOrder(int orderId) async {
+    final order = await getOrderById(orderId);
+    final customerId = order?.order.customerId;
+
     // OrderItems cascade automatically thanks to onDelete: KeyAction.cascade
     await (database.delete(database.orders)
           ..where((o) => o.id.equals(orderId)))
         .go();
+
+    if (customerId != null) {
+      await customerRepository.syncCustomerTotals(customerId);
+    }
   }
 
   Future<OrderWithDetails?> getOrderById(int id) async {
@@ -139,24 +177,84 @@ class OrderRepository {
           ]))
         .get();
 
-    final result = <OrderWithDetails>[];
-    for (final row in orderRows) {
-      final details = await getOrderById(row.id);
-      if (details != null) result.add(details);
+    if (orderRows.isEmpty) return [];
+
+    // Optimization: Fetch all items for these orders in one query
+    final orderIds = orderRows.map((o) => o.id).toList();
+    final allItems = await (database.select(database.orderItems)
+          ..where((i) => i.orderId.isIn(orderIds)))
+        .get();
+
+    // Group items by orderId
+    final itemMap = <int, List<OrderItem>>{};
+    for (final item in allItems) {
+      itemMap.putIfAbsent(item.orderId, () => []).add(item);
     }
-    return result;
+
+    // Optimization: Fetch all unique customers in one query
+    final customerIds = orderRows.where((o) => o.customerId != null).map((o) => o.customerId!).toSet().toList();
+    final customerMap = <int, CustomerModel>{};
+    if (customerIds.isNotEmpty) {
+      final customers = await (database.select(database.customers)
+            ..where((c) => c.id.isIn(customerIds)))
+          .get();
+      for (final c in customers) {
+        customerMap[c.id] = customerRepository.mapCustomer(c); // Use public repo mapping
+      }
+    }
+
+    return orderRows.map((row) {
+      return OrderWithDetails(
+        order: _mapOrder(row),
+        items: (itemMap[row.id] ?? []).map(_mapItem).toList(),
+        customer: row.customerId != null ? customerMap[row.customerId] : null,
+      );
+    }).toList();
   }
 
   Stream<List<OrderWithDetails>> watchAllOrders() {
-    // Simple approach: re-fetch on any change to orders or items
+    // Watch orders table for changes
     return database.select(database.orders).watch().asyncMap((_) async {
       return getAllOrders();
     });
   }
 
   Future<List<OrderWithDetails>> getOrdersForCustomer(int customerId) async {
-    final all = await getAllOrders();
-    return all.where((o) => o.order.customerId == customerId).toList();
+    final orderRows = await (database.select(database.orders)
+          ..where((o) => o.customerId.equals(customerId))
+          ..orderBy([
+            (o) => OrderingTerm(expression: o.orderDate, mode: OrderingMode.desc)
+          ]))
+        .get();
+
+    if (orderRows.isEmpty) return [];
+
+    // Optimization: Fetch all items for these orders in one query
+    final orderIds = orderRows.map((o) => o.id).toList();
+    final allItems = await (database.select(database.orderItems)
+          ..where((i) => i.orderId.isIn(orderIds)))
+        .get();
+
+    final itemMap = <int, List<OrderItem>>{};
+    for (final item in allItems) {
+      itemMap.putIfAbsent(item.orderId, () => []).add(item);
+    }
+
+    CustomerModel? customer = await customerRepository.getCustomerById(customerId);
+
+    return orderRows.map((row) {
+      return OrderWithDetails(
+        order: _mapOrder(row),
+        items: (itemMap[row.id] ?? []).map(_mapItem).toList(),
+        customer: customer,
+      );
+    }).toList();
+  }
+
+  Stream<List<OrderWithDetails>> watchOrdersForCustomer(int customerId) {
+    return database.select(database.orders).watch().asyncMap((_) async {
+      return getOrdersForCustomer(customerId);
+    });
   }
 
   OrderModel _mapOrder(Order row) => OrderModel(
@@ -165,6 +263,8 @@ class OrderRepository {
         orderDate: row.orderDate,
         deliveryDate: row.deliveryDate,
         status: row.status,
+        isPaid: row.isPaid,
+        isDelivered: row.isDelivered,
         invoiceNumber: row.invoiceNumber,
         notes: row.notes,
         subtotal: row.subtotal,

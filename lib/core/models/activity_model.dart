@@ -1,6 +1,7 @@
 import 'chicken_model.dart';
+import 'order_model.dart';
 
-enum ActivityType { production, sale, expense }
+enum ActivityType { production, sale, expense, order }
 
 class RecentActivityItem {
   final DateTime date;
@@ -18,4 +19,6 @@ class RecentActivityItem {
   SaleModel? get sale => type == ActivityType.sale ? data as SaleModel : null;
   ExpenseModel? get expense =>
       type == ActivityType.expense ? data as ExpenseModel : null;
+  OrderWithDetails? get order =>
+      type == ActivityType.order ? data as OrderWithDetails : null;
 }

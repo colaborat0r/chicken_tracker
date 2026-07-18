@@ -222,6 +222,23 @@ class ChickenRepository {
     final laying = await getLayingChickens();
     return laying.length;
   }
+
+  /// Automatically updates 'growing' birds to 'laying' if they are 140+ days old.
+  /// Returns the number of birds updated.
+  Future<int> autoUpdateGrowingBirds() async {
+    final chickens = await getAllChickens();
+    final birdsToUpdate = chickens
+        .where((c) => c.status == 'growing' && c.ageInDays >= 140)
+        .toList();
+
+    if (birdsToUpdate.isEmpty) return 0;
+
+    for (final chicken in birdsToUpdate) {
+      await updateChicken(chicken.copyWith(status: 'laying'));
+    }
+
+    return birdsToUpdate.length;
+  }
 }
 
 /// Repository for managing daily production logs

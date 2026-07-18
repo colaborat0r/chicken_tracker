@@ -11,6 +11,7 @@ import '../../../core/providers/repository_providers.dart';
 import '../../../core/providers/first_launch_provider.dart';
 import '../../../config/router.dart';
 import '../../../core/services/pdf_export_service.dart';
+import '../../../core/widgets/app_ui_components.dart';
 import '../../../core/widgets/first_launch_dialog.dart';
 import 'farm_report_dialog.dart';
 
@@ -197,7 +198,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const Divider(),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Text('Finance',
+              child: Text('Finance & CRM',
                   style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -205,10 +206,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.receipt_long, color: Colors.indigo),
-              title: const Text('Sales'),
+              title: const Text('Sales & CRM'),
+              subtitle: const Text('Orders, Invoices, Customers'),
               onTap: () {
                 Navigator.pop(context);
-                context.push(Routes.sales);
+                context.push(Routes.crmHub);
               },
             ),
             ListTile(
@@ -328,7 +330,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 _SectionReveal(
                   child: _HeroHeader(
                     onPrimaryAction: () => context.push(Routes.logProduction),
-                    onSecondaryAction: () => context.push(Routes.sales),
+                    onSecondaryAction: () => context.push(Routes.crmHub),
                     onTertiaryAction: () => context.push(Routes.expenses),
                   ),
                 ),
@@ -376,7 +378,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       provider: thisMonthSalesTotalProvider,
                       formatter: (value) => NumberFormat.currency(symbol: '\$')
                           .format((value as num?) ?? 0),
-                      onTap: () => context.push(Routes.sales),
+                      onTap: () => context.push(Routes.crmHub),
                     ),
                     _StatCardAsync(
                       label: 'Profit/Loss',
@@ -418,10 +420,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       onPressed: () => context.push(Routes.logProduction),
                     ),
                     _ActionChip(
-                      label: 'Sales',
+                      label: 'Sales & CRM',
                       icon: Icons.receipt_long,
                       color: const Color(0xFF1565C0),
-                      onPressed: () => context.push(Routes.sales),
+                      onPressed: () => context.push(Routes.crmHub),
                     ),
                     _ActionChip(
                       label: 'Expenses',
@@ -449,6 +451,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 24),
+                const _SectionTitle(
+                  title: 'Recent Orders',
+                  subtitle: 'Manage your latest sales',
+                ),
+                const SizedBox(height: 12),
+                const _RecentOrdersCard(),
                 const SizedBox(height: 24),
                 const _SectionTitle(
                   title: "Today's Reminders",
@@ -564,7 +573,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             trailing = '${log.eggsPerHen.toStringAsFixed(2)}/hen';
                             onTap = () => context.push(Routes.productionHistory);
                             break;
+                          case ActivityType.order:
+                            final orderWithDetails = activity.order!;
+                            final order = orderWithDetails.order;
+                            leading = const Icon(Icons.receipt_long, color: Color(0xFF0E7A4F));
+                            title = 'Order: ${NumberFormat.currency(symbol: '\$').format(order.totalAmount)}';
+                            subtitle = '$formattedDate • ${order.isPaid ? 'Paid' : 'Unpaid'} • ${order.isDelivered ? 'Delivered' : 'Pending'}';
+                            if (orderWithDetails.customerDisplayName.isNotEmpty) {
+                              subtitle += ' • ${orderWithDetails.customerDisplayName}';
+                            }
+                            onTap = () => context.push(
+                              Routes.orderDetail.replaceFirst(':id', order.id.toString()),
+                            );
+                            break;
                           case ActivityType.sale:
+                            // Legacy - handled just in case but should be migrated
                             final sale = activity.sale!;
                             leading = const Icon(Icons.receipt_long, color: Color(0xFF0E7A4F));
                             title = 'Sale: ${NumberFormat.currency(symbol: '\$').format(sale.amount)}';
@@ -572,7 +595,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             if (sale.customerName != null && sale.customerName!.isNotEmpty) {
                               subtitle += ' • ${sale.customerName}';
                             }
-                            onTap = () => context.push(Routes.sales);
+                            onTap = () => context.push(Routes.crmHub);
                             break;
                           case ActivityType.expense:
                             final expense = activity.expense!;
@@ -633,12 +656,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           if (_quickAddOpen) ...[
             _QuickAddButton(
-              label: 'Add Sale',
-              icon: Icons.receipt_long,
+              label: 'New Order',
+              icon: Icons.add_shopping_cart,
               color: const Color(0xFF0E7A4F),
               onTap: () {
                 setState(() => _quickAddOpen = false);
-                context.push(Routes.addSale);
+                context.push(Routes.createOrder);
+              },
+            ),
+            const SizedBox(height: 8),
+            _QuickAddButton(
+              label: 'New Customer',
+              icon: Icons.person_add,
+              color: const Color(0xFF1565C0),
+              onTap: () {
+                setState(() => _quickAddOpen = false);
+                context.push(Routes.addCustomer);
               },
             ),
             const SizedBox(height: 8),
@@ -795,6 +828,72 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         SnackBar(content: Text('Error generating report: $e')),
       );
     }
+  }
+}
+
+class _RecentOrdersCard extends ConsumerWidget {
+  const _RecentOrdersCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ordersAsync = ref.watch(allOrdersProvider);
+
+    return ordersAsync.when(
+      data: (all) {
+        if (all.isEmpty) {
+          return Card(
+            child: ListTile(
+              onTap: () => context.push(Routes.createOrder),
+              leading: const Icon(Icons.receipt_long_outlined, color: Colors.grey),
+              title: const Text('No orders yet'),
+              subtitle: const Text('Tap to create your first order'),
+              trailing: const Icon(Icons.add, color: Colors.blue),
+            ),
+          );
+        }
+
+        final recent = all.take(3).toList();
+        return Column(
+          children: [
+            for (final orderWithDetails in recent)
+              Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  onTap: () => context.push(
+                    Routes.orderDetail.replaceFirst(':id', orderWithDetails.order.id.toString()),
+                  ),
+                  title: Row(
+                    children: [
+                      Text(
+                        orderWithDetails.order.invoiceNumber ?? 'Order #${orderWithDetails.order.id}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '\$${orderWithDetails.order.totalAmount.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  subtitle: Text(
+                    '${orderWithDetails.customerDisplayName} • ${DateFormat('MMM d').format(orderWithDetails.order.orderDate)}',
+                  ),
+                  trailing: const Icon(Icons.chevron_right, size: 16),
+                ),
+              ),
+            TextButton(
+              onPressed: () => context.push(Routes.crmHub),
+              child: const Text('View All Orders & CRM'),
+            ),
+          ],
+        );
+      },
+      loading: () => const AppSkeletonCard(lines: 2),
+      error: (_, __) => const SizedBox.shrink(),
+    );
   }
 }
 
