@@ -193,15 +193,22 @@ final thisMonthExpensesTotalProvider = FutureProvider<double>((ref) async {
 /// Provider for this month's sales total
 final thisMonthSalesTotalProvider = FutureProvider<double>((ref) async {
   final orders = await ref.watch(allOrdersProvider.future);
+  final legacySales = await ref.watch(allSalesProvider.future);
   final now = DateTime.now();
 
-  return orders
+  final crmSales = orders
       .where((o) =>
           o.order.orderDate.year == now.year &&
           o.order.orderDate.month == now.month &&
           o.order.status != 'cancelled' &&
           o.order.status != 'draft')
       .fold<double>(0.0, (sum, item) => sum + item.order.totalAmount);
+
+  final legacyTotal = legacySales
+      .where((s) => s.date.year == now.year && s.date.month == now.month)
+      .fold<double>(0.0, (sum, item) => sum + item.amount);
+
+  return crmSales + legacyTotal;
 });
 
 /// Provider for this month's egg total

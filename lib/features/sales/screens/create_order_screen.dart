@@ -26,6 +26,7 @@ class _CreateOrderScreenState extends ConsumerState<CreateOrderScreen> {
   int? _selectedCustomerId;
   final List<OrderItemInput> _items = [];
   final _notesController = TextEditingController();
+  String _status = 'confirmed';
   bool _isLoading = false;
   
   // For Editing
@@ -49,6 +50,7 @@ class _CreateOrderScreenState extends ConsumerState<CreateOrderScreen> {
         _deliveryDate = order.order.deliveryDate;
         _selectedCustomerId = order.order.customerId;
         _notesController.text = order.order.notes ?? '';
+        _status = order.order.status;
         _items.addAll(order.items.map((i) => OrderItemInput(
           type: i.type,
           description: i.description,
@@ -81,20 +83,25 @@ class _CreateOrderScreenState extends ConsumerState<CreateOrderScreen> {
     setState(() => _isLoading = true);
     try {
       if (_editingOrder != null) {
-        // For simplicity, we delete and recreate or just show "Update not supported"
-        // The repository doesn't have a full updateOrder yet. I'll add a simplified version or use create.
-        // Let's add updateOrder to repository or just warn user.
-        // Actually, let's implement updateOrder in OrderRepository.
-        await ref.read(orderRepositoryProvider).deleteOrder(_editingOrder!.order.id);
+        await ref.read(orderRepositoryProvider).updateOrder(
+              orderId: _editingOrder!.order.id,
+              customerId: _selectedCustomerId,
+              orderDate: _orderDate,
+              deliveryDate: _deliveryDate,
+              status: _status,
+              notes: _notesController.text,
+              items: _items,
+            );
+      } else {
+        await ref.read(orderRepositoryProvider).createOrder(
+          customerId: _selectedCustomerId,
+          orderDate: _orderDate,
+          deliveryDate: _deliveryDate,
+          status: _status,
+          notes: _notesController.text,
+          items: _items,
+        );
       }
-
-      await ref.read(orderRepositoryProvider).createOrder(
-        customerId: _selectedCustomerId,
-        orderDate: _orderDate,
-        deliveryDate: _deliveryDate,
-        notes: _notesController.text,
-        items: _items,
-      );
 
       if (mounted) context.pop();
     } catch (e) {
@@ -123,6 +130,8 @@ class _CreateOrderScreenState extends ConsumerState<CreateOrderScreen> {
             children: [
               _buildMetaSection(context, customersAsync),
               const SizedBox(height: 24),
+              _buildStatusSection(context),
+              const SizedBox(height: 24),
               _buildItemsSection(context),
               const SizedBox(height: 24),
               const AppSectionHeader(title: 'Overall Notes', subtitle: 'Appear at the bottom of the invoice'),
@@ -145,6 +154,37 @@ class _CreateOrderScreenState extends ConsumerState<CreateOrderScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildStatusSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const AppSectionHeader(
+          title: 'Order Status',
+          subtitle: 'Mark as draft to work on it later',
+        ),
+        const SizedBox(height: 10),
+        SegmentedButton<String>(
+          segments: const [
+            ButtonSegment(
+              value: 'draft',
+              label: Text('Draft'),
+              icon: Icon(Icons.edit_note),
+            ),
+            ButtonSegment(
+              value: 'confirmed',
+              label: Text('Confirmed'),
+              icon: Icon(Icons.check_circle_outline),
+            ),
+          ],
+          selected: {_status},
+          onSelectionChanged: (selection) {
+            setState(() => _status = selection.first);
+          },
+        ),
+      ],
     );
   }
 

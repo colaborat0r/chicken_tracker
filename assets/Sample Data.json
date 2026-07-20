@@ -607,6 +607,88 @@
       "weightUnit": "lbs",
       "darkMode": true
     }
+  ],
+  "customers": [
+    {
+      "id": 1,
+      "name": "Alice Johnson",
+      "phone": "555-0101",
+      "email": "alice@example.com",
+      "address": "123 Orchard Lane",
+      "notes": "Prefers brown eggs only",
+      "createdAt": "2026-03-01T10:00:00.000Z",
+      "lastOrderDate": "2026-04-18T14:30:00.000Z",
+      "totalSpent": 45.0,
+      "unpaidBalance": 0.0
+    },
+    {
+      "id": 2,
+      "name": "Bob's Diner",
+      "phone": "555-0202",
+      "email": "orders@bobsdiner.com",
+      "address": "456 Main St",
+      "notes": "Weekly delivery on Tuesday mornings",
+      "createdAt": "2026-03-15T09:00:00.000Z",
+      "lastOrderDate": "2026-04-21T08:00:00.000Z",
+      "totalSpent": 120.0,
+      "unpaidBalance": 35.0
+    }
+  ],
+  "orders": [
+    {
+      "id": 1,
+      "customerId": 1,
+      "orderDate": "2026-04-18T14:30:00.000Z",
+      "deliveryDate": "2026-04-19T10:00:00.000Z",
+      "status": "delivered",
+      "isPaid": true,
+      "isDelivered": true,
+      "invoiceNumber": "INV-2026-0001",
+      "notes": "Left on porch",
+      "subtotal": 45.0,
+      "totalAmount": 45.0,
+      "createdAt": "2026-04-18T14:30:00.000Z",
+      "updatedAt": "2026-04-19T10:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "customerId": 2,
+      "orderDate": "2026-04-21T08:00:00.000Z",
+      "deliveryDate": "2026-04-22T09:00:00.000Z",
+      "status": "confirmed",
+      "isPaid": false,
+      "isDelivered": false,
+      "invoiceNumber": "INV-2026-0002",
+      "notes": "Standard weekly restock",
+      "subtotal": 35.0,
+      "totalAmount": 35.0,
+      "createdAt": "2026-04-21T08:00:00.000Z",
+      "updatedAt": "2026-04-21T08:00:00.000Z"
+    }
+  ],
+  "orderItems": [
+    {
+      "id": 1,
+      "orderId": 1,
+      "type": "eggs",
+      "description": "3 Dozen Brown Eggs",
+      "quantity": 3.0,
+      "unit": "dozens",
+      "unitPrice": 15.0,
+      "lineTotal": 45.0,
+      "notes": null
+    },
+    {
+      "id": 2,
+      "orderId": 2,
+      "type": "eggs",
+      "description": "2 Crates Mixed Eggs",
+      "quantity": 2.0,
+      "unit": "crates",
+      "unitPrice": 17.5,
+      "lineTotal": 35.0,
+      "notes": null
+    }
   ]
 }
 

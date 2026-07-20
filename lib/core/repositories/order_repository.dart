@@ -121,13 +121,71 @@ class OrderRepository {
     if (orderDetails == null) return;
 
     final customerId = orderDetails.order.customerId;
+    final newDelivered = !orderDetails.order.isDelivered;
 
     await (database.update(database.orders)
           ..where((o) => o.id.equals(orderId)))
         .write(OrdersCompanion(
-      isDelivered: Value(!orderDetails.order.isDelivered),
+      isDelivered: Value(newDelivered),
+      status: Value(newDelivered ? 'delivered' : 'confirmed'),
       updatedAt: Value(DateTime.now()),
     ));
+
+    if (customerId != null) {
+      await customerRepository.syncCustomerTotals(customerId);
+    }
+  }
+
+  /// Update an existing order
+  Future<void> updateOrder({
+    required int orderId,
+    int? customerId,
+    required DateTime orderDate,
+    DateTime? deliveryDate,
+    required String status,
+    String? notes,
+    required List<OrderItemInput> items,
+  }) async {
+    final subtotal = items.fold(0.0, (sum, i) => sum + i.lineTotal);
+    final now = DateTime.now();
+
+    await database.transaction(() async {
+      // Update Order Header
+      await (database.update(database.orders)
+            ..where((o) => o.id.equals(orderId)))
+          .write(
+        OrdersCompanion(
+          customerId: Value(customerId),
+          orderDate: Value(orderDate),
+          deliveryDate: Value(deliveryDate),
+          status: Value(status),
+          notes: Value(_nullIfEmpty(notes)),
+          subtotal: Value(subtotal),
+          totalAmount: Value(subtotal),
+          updatedAt: Value(now),
+        ),
+      );
+
+      // Replace Order Items: Delete old, add new
+      await (database.delete(database.orderItems)
+            ..where((i) => i.orderId.equals(orderId)))
+          .go();
+
+      for (final item in items) {
+        await database.into(database.orderItems).insert(
+              OrderItemsCompanion(
+                orderId: Value(orderId),
+                type: Value(item.type),
+                description: Value(item.description),
+                quantity: Value(item.quantity),
+                unit: Value(item.unit),
+                unitPrice: Value(item.unitPrice),
+                lineTotal: Value(item.lineTotal),
+                notes: Value(_nullIfEmpty(item.notes)),
+              ),
+            );
+      }
+    });
 
     if (customerId != null) {
       await customerRepository.syncCustomerTotals(customerId);

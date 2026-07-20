@@ -50,6 +50,9 @@ class BackupService {
     final flockPurchasesData = await db.select(db.flockPurchases).get();
     final flockLossesData = await db.select(db.flockLosses).get();
     final settingsData = await db.select(db.settings).get();
+    final customersData = await db.select(db.customers).get();
+    final ordersData = await db.select(db.orders).get();
+    final orderItemsData = await db.select(db.orderItems).get();
 
     final payload = <String, dynamic>{
       'metadata': {
@@ -65,6 +68,9 @@ class BackupService {
       'flockPurchases': flockPurchasesData.map((row) => row.toJson()).toList(),
       'flockLosses': flockLossesData.map((row) => row.toJson()).toList(),
       'settings': settingsData.map((row) => row.toJson()).toList(),
+      'customers': customersData.map((row) => row.toJson()).toList(),
+      'orders': ordersData.map((row) => row.toJson()).toList(),
+      'orderItems': orderItemsData.map((row) => row.toJson()).toList(),
     };
 
     final file = File(backupPath);
@@ -139,11 +145,25 @@ class BackupService {
     final settingsData = (parsed['settings'] as List<dynamic>? ?? [])
         .whereType<Map<String, dynamic>>()
         .toList();
+    final customersData = (parsed['customers'] as List<dynamic>? ?? [])
+        .whereType<Map<String, dynamic>>()
+        .toList();
+    final ordersData = (parsed['orders'] as List<dynamic>? ?? [])
+        .whereType<Map<String, dynamic>>()
+        .toList();
+    final orderItemsData = (parsed['orderItems'] as List<dynamic>? ?? [])
+        .whereType<Map<String, dynamic>>()
+        .toList();
 
-    debugPrint('[restoreFromBackup] Data counts: birds=${birdsData.length}, logs=${dailyLogsData.length}, sales=${salesData.length}, expenses=${expensesData.length}');
+    debugPrint('[restoreFromBackup] Data counts: birds=${birdsData.length}, logs=${dailyLogsData.length}, sales=${salesData.length}, expenses=${expensesData.length}, customers=${customersData.length}, orders=${ordersData.length}');
 
     await db.transaction(() async {
       debugPrint('[restoreFromBackup] Starting transaction');
+      // Delete in correct order to respect foreign keys
+      await db.delete(db.orderItems).go();
+      await db.delete(db.orders).go();
+      await db.delete(db.customers).go();
+      
       await db.delete(db.dailyLogs).go();
       await db.delete(db.sales).go();
       await db.delete(db.expenses).go();
@@ -251,6 +271,63 @@ class BackupService {
               );
         }
       }
+
+      // CRM Data
+      for (final json in customersData) {
+        final row = Customer.fromJson(json);
+        await db.into(db.customers).insert(
+              CustomersCompanion.insert(
+                id: Value(row.id),
+                name: row.name,
+                phone: Value(row.phone),
+                email: Value(row.email),
+                address: Value(row.address),
+                notes: Value(row.notes),
+                createdAt: row.createdAt,
+                lastOrderDate: Value(row.lastOrderDate),
+                totalSpent: Value(row.totalSpent),
+                unpaidBalance: Value(row.unpaidBalance),
+              ),
+            );
+      }
+
+      for (final json in ordersData) {
+        final row = Order.fromJson(json);
+        await db.into(db.orders).insert(
+              OrdersCompanion.insert(
+                id: Value(row.id),
+                customerId: Value(row.customerId),
+                orderDate: row.orderDate,
+                deliveryDate: Value(row.deliveryDate),
+                status: Value(row.status),
+                isPaid: Value(row.isPaid),
+                isDelivered: Value(row.isDelivered),
+                invoiceNumber: Value(row.invoiceNumber),
+                notes: Value(row.notes),
+                subtotal: Value(row.subtotal),
+                totalAmount: Value(row.totalAmount),
+                createdAt: row.createdAt,
+                updatedAt: row.updatedAt,
+              ),
+            );
+      }
+
+      for (final json in orderItemsData) {
+        final row = OrderItem.fromJson(json);
+        await db.into(db.orderItems).insert(
+              OrderItemsCompanion.insert(
+                id: Value(row.id),
+                orderId: row.orderId,
+                type: row.type,
+                description: row.description,
+                quantity: row.quantity,
+                unit: row.unit,
+                unitPrice: row.unitPrice,
+                lineTotal: row.lineTotal,
+                notes: Value(row.notes),
+              ),
+            );
+      }
     });
     debugPrint('[restoreFromBackup] Transaction completed successfully');
   }
@@ -259,6 +336,13 @@ class BackupService {
     debugPrint('[resetAllData] Starting database reset...');
     try {
       await db.transaction(() async {
+        debugPrint('[resetAllData] Deleting orderItems...');
+        await db.delete(db.orderItems).go();
+        debugPrint('[resetAllData] Deleting orders...');
+        await db.delete(db.orders).go();
+        debugPrint('[resetAllData] Deleting customers...');
+        await db.delete(db.customers).go();
+
         debugPrint('[resetAllData] Deleting dailyLogs...');
         await db.delete(db.dailyLogs).go();
         debugPrint('[resetAllData] ✓ dailyLogs deleted');

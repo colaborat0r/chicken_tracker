@@ -29,9 +29,9 @@ class ChickenModel {
     return ageInDays ~/ 30;
   }
 
-  /// Check if chicken is currently laying (status and age)
+  /// Check if chicken is currently laying
   bool get isLaying {
-    return status == 'laying' && ageInDays >= 140; // ~5 months
+    return status == 'laying';
   }
 
   /// Check if chicken is healthy (not sold/deceased)

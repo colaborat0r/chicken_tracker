@@ -1,0 +1,4 @@
+- [x] Simplify `isLaying` logic in `chicken_model.dart`
+- [x] Ensure `autoUpdateGrowingBirds` in `chicken_repository.dart` is robust
+- [x] Trigger auto-update in `chicken_list_screen.dart` and unify status display logic
+- [ ] Verify consistent counts between list and summary card

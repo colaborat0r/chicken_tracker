@@ -17,6 +17,25 @@ class _ChickenListScreenState extends ConsumerState<ChickenListScreen> {
   String _statusFilter = 'all';
 
   @override
+  void initState() {
+    super.initState();
+    _autoUpdateStatus();
+  }
+
+  Future<void> _autoUpdateStatus() async {
+    try {
+      final repo = ref.read(chickenRepositoryProvider);
+      final updated = await repo.autoUpdateGrowingBirds();
+      if (updated > 0 && mounted) {
+        debugPrint('[Flock] Auto-updated $updated birds to laying status.');
+        // No need to manually refresh, allChickensProvider is a StreamProvider
+      }
+    } catch (e) {
+      debugPrint('[Flock] Auto-update error: $e');
+    }
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -475,9 +494,9 @@ class _AgeStatusSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final totalChickens = chickens.length;
     
-    // Age-based categories
+    // Status-based categories
     final layingCount = chickens
-        .where((c) => c.status == 'laying' && c.ageInDays >= 140)
+        .where((c) => c.status == 'laying')
         .length;
     final growingCount =
         chickens.where((c) => c.status == 'growing').length;

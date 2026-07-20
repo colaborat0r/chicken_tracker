@@ -316,7 +316,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
               icon: Icons.local_shipping,
               onTap: () => _toggleDelivered(order.id),
             ),
-            if (order.status != 'confirmed')
+            if (order.status == 'draft' || order.status == 'cancelled')
               _ActionBtn(
                 label: 'Confirm Order',
                 color: Colors.deepPurple,

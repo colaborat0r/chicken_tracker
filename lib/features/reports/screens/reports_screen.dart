@@ -105,39 +105,70 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     if (_selectedStartDate == null || _selectedEndDate == null) return null;
 
     final sales = await ref.read(allSalesProvider.future);
+    final orders = await ref.read(allOrdersProvider.future);
 
     final filteredSales = sales
         .where((sale) =>
             sale.date.isAfter(
                 _selectedStartDate!.subtract(const Duration(days: 1))) &&
             sale.date.isBefore(_selectedEndDate!.add(const Duration(days: 1))))
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
-
-    final lineItems = filteredSales
-        .map((sale) => SalesReportLineItem(
-              date: sale.date,
-              type: sale.type,
-              quantity: sale.quantity,
-              unit: sale.unit,
-              amount: sale.amount,
-              unitPrice: sale.unitPrice,
-              customerName: sale.customerName,
-            ))
         .toList();
+
+    final filteredOrders = orders
+        .where((o) =>
+            o.order.orderDate.isAfter(
+                _selectedStartDate!.subtract(const Duration(days: 1))) &&
+            o.order.orderDate.isBefore(_selectedEndDate!.add(const Duration(days: 1))) &&
+            o.order.status != 'cancelled' &&
+            o.order.status != 'draft')
+        .toList();
+
+    final List<SalesReportLineItem> lineItems = [];
+
+    // Add legacy sales
+    lineItems.addAll(filteredSales.map((sale) => SalesReportLineItem(
+          date: sale.date,
+          type: sale.type,
+          quantity: sale.quantity,
+          unit: sale.unit,
+          amount: sale.amount,
+          unitPrice: sale.unitPrice,
+          customerName: sale.customerName,
+        )));
+
+    // Add CRM orders flattened
+    for (final orderWithDetails in filteredOrders) {
+      for (final item in orderWithDetails.items) {
+        lineItems.add(SalesReportLineItem(
+          date: orderWithDetails.order.orderDate,
+          type: item.type,
+          quantity: item.quantity,
+          unit: item.unit,
+          amount: item.lineTotal,
+          unitPrice: item.unitPrice,
+          customerName: orderWithDetails.customerDisplayName,
+        ));
+      }
+    }
+
+    lineItems.sort((a, b) => a.date.compareTo(b.date));
+
+    final totalRevenue = lineItems.fold(0.0, (sum, item) => sum + item.amount);
+    final totalEggsSold = lineItems
+        .where((item) => item.type == 'eggs')
+        .fold(0.0, (sum, item) => sum + item.quantity);
+    final totalChickensSold = lineItems
+        .where((item) => item.type == 'chickens')
+        .fold(0.0, (sum, item) => sum + item.quantity);
 
     return SalesReport(
       startDate: _selectedStartDate!,
       endDate: _selectedEndDate!,
       lineItems: lineItems,
       title: title,
-      totalRevenue: filteredSales.fold(0.0, (sum, sale) => sum + sale.amount),
-      totalEggsSold: filteredSales
-          .where((sale) => sale.type == 'eggs')
-          .fold(0.0, (sum, sale) => sum + sale.quantity),
-      totalChickensSold: filteredSales
-          .where((sale) => sale.type == 'chickens')
-          .fold(0.0, (sum, sale) => sum + sale.quantity),
+      totalRevenue: totalRevenue,
+      totalEggsSold: totalEggsSold,
+      totalChickensSold: totalChickensSold,
     );
   }
 
@@ -505,9 +536,10 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                   error: (_, __) => const SizedBox.shrink(),
                 ),
                 const SizedBox(height: 12),
-                if (salesAsync.hasValue && expensesAsync.hasValue)
+                if (salesAsync.hasValue && expensesAsync.hasValue && ref.watch(allOrdersProvider).hasValue)
                   _SalesVsExpensesChartCard(
                     sales: salesAsync.value!,
+                    orders: ref.watch(allOrdersProvider).value!,
                     expenses: expensesAsync.value!,
                     startDate: _selectedStartDate,
                     endDate: _selectedEndDate,
@@ -1044,12 +1076,14 @@ class _EggTrendChartCard extends StatelessWidget {
 
 class _SalesVsExpensesChartCard extends StatelessWidget {
   final List<dynamic> sales;
+  final List<OrderWithDetails> orders;
   final List<dynamic> expenses;
   final DateTime? startDate;
   final DateTime? endDate;
 
   const _SalesVsExpensesChartCard({
     required this.sales,
+    required this.orders,
     required this.expenses,
     required this.startDate,
     required this.endDate,
@@ -1073,11 +1107,21 @@ class _SalesVsExpensesChartCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final filteredSales = sales.where((item) => _inRange(item.date)).toList();
+    final filteredOrders = orders.where((item) => 
+      _inRange(item.order.orderDate) && 
+      item.order.status != 'cancelled' && 
+      item.order.status != 'draft'
+    ).toList();
     final filteredExpenses =
         expenses.where((item) => _inRange(item.date)).toList();
 
-    final salesTotal =
+    final legacySalesTotal =
         filteredSales.fold<double>(0.0, (sum, item) => sum + item.amount);
+    final crmSalesTotal =
+        filteredOrders.fold<double>(0.0, (sum, item) => sum + item.order.totalAmount);
+    
+    final salesTotal = legacySalesTotal + crmSalesTotal;
+    
     final expensesTotal =
         filteredExpenses.fold<double>(0.0, (sum, item) => sum + item.amount);
     final rawMax = salesTotal > expensesTotal ? salesTotal : expensesTotal;
