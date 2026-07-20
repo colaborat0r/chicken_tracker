@@ -1,4 +1,5 @@
-- [x] Simplify `isLaying` logic in `chicken_model.dart`
-- [x] Ensure `autoUpdateGrowingBirds` in `chicken_repository.dart` is robust
-- [x] Trigger auto-update in `chicken_list_screen.dart` and unify status display logic
-- [ ] Verify consistent counts between list and summary card
+- [ ] Merge `feature/crm-orders` into `main`
+- [ ] Bump version in `pubspec.yaml` to `1.3.0+7`
+- [ ] Update `README.md` with new CRM features and changelog
+- [ ] Commit and push changes to `main`
+- [ ] Final verification
