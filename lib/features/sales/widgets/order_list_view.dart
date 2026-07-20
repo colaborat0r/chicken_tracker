@@ -169,16 +169,16 @@ class _OrderListViewState extends ConsumerState<OrderListView> {
                               ],
                             ),
                             const SizedBox(height: 2),
-                            Row(
+                            Wrap(
+                              spacing: 4,
+                              runSpacing: 4,
+                              crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
                                 const Icon(Icons.calendar_today_outlined, size: 14, color: Colors.grey),
-                                const SizedBox(width: 4),
                                 Text(DateFormat('MMM d, yyyy').format(order.orderDate)),
-                                const Spacer(),
+                                const SizedBox(width: 4),
                                 _buildStatusBadge(order.status),
-                                const SizedBox(width: 4),
                                 _buildFlagBadge(order.isPaid ? 'PAID' : 'UNPAID', order.isPaid ? Colors.green : Colors.amber),
-                                const SizedBox(width: 4),
                                 _buildFlagBadge(order.isDelivered ? 'DELIVERED' : 'PENDING', order.isDelivered ? Colors.blue : Colors.orange),
                               ],
                             ),

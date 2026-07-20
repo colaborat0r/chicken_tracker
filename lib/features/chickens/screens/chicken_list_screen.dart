@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/providers/database_providers.dart';
-import '../../../config/router.dart';
-import '../../../core/widgets/app_ui_components.dart';
+import 'package:chicken_tracker/core/providers/database_providers.dart';
+import 'package:chicken_tracker/core/providers/repository_providers.dart';
+import 'package:chicken_tracker/config/router.dart';
+import 'package:chicken_tracker/core/widgets/app_ui_components.dart';
 
 class ChickenListScreen extends ConsumerStatefulWidget {
   const ChickenListScreen({super.key});
@@ -297,14 +298,14 @@ class _ChickenListScreenState extends ConsumerState<ChickenListScreen> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           FloatingActionButton.extended(
-            heroTag: 'add-one-chicken',
+            heroTag: null,
             onPressed: () => context.push(Routes.addChicken),
             icon: const Icon(Icons.add),
             label: const Text('Add One Chicken'),
           ),
           const SizedBox(height: 10),
           FloatingActionButton.extended(
-            heroTag: 'add-multiple-chickens',
+            heroTag: null,
             onPressed: () => context.push(Routes.addMultipleChickens),
             icon: const Icon(Icons.groups),
             label: const Text('Add Multiple Chickens'),

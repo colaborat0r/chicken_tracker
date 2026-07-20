@@ -1,13 +1,13 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/chicken_model.dart';
-import '../models/reminder_model.dart';
-import '../models/activity_model.dart';
-import '../models/order_model.dart';
-import '../models/customer_model.dart';
-import '../repositories/reminder_repository.dart';
-import 'database_instance_provider.dart';
-import 'repository_providers.dart';
+import 'package:chicken_tracker/core/models/chicken_model.dart';
+import 'package:chicken_tracker/core/models/reminder_model.dart';
+import 'package:chicken_tracker/core/models/activity_model.dart';
+import 'package:chicken_tracker/core/models/order_model.dart';
+import 'package:chicken_tracker/core/models/customer_model.dart';
+import 'package:chicken_tracker/core/repositories/reminder_repository.dart';
+import 'package:chicken_tracker/core/providers/database_instance_provider.dart';
+import 'package:chicken_tracker/core/providers/repository_providers.dart';
 
 /// Provider for all chickens as a stream
 final allChickensProvider = StreamProvider<List<ChickenModel>>((ref) async* {

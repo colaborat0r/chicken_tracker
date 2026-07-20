@@ -1,9 +1,9 @@
 // lib/core/repositories/order_repository.dart
 import 'package:drift/drift.dart';
-import '../database/app_database.dart';
-import '../models/customer_model.dart';
-import '../models/order_model.dart';
-import 'customer_repository.dart';
+import 'package:chicken_tracker/core/database/app_database.dart';
+import 'package:chicken_tracker/core/models/customer_model.dart';
+import 'package:chicken_tracker/core/models/order_model.dart';
+import 'package:chicken_tracker/core/repositories/customer_repository.dart';
 
 class OrderRepository {
   final AppDatabase database;

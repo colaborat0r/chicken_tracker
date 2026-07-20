@@ -3,12 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../core/models/report_model.dart';
-import '../../../core/providers/database_providers.dart';
-import '../../../core/providers/farm_name_provider.dart';
-import '../../../core/services/pdf_export_service.dart';
-import '../../../core/services/csv_export_service.dart';
-import '../../../core/widgets/app_ui_components.dart';
+import 'package:chicken_tracker/core/models/report_model.dart';
+import 'package:chicken_tracker/core/models/order_model.dart';
+import 'package:chicken_tracker/core/providers/database_providers.dart';
+import 'package:chicken_tracker/core/providers/farm_name_provider.dart';
+import 'package:chicken_tracker/core/services/pdf_export_service.dart';
+import 'package:chicken_tracker/core/services/csv_export_service.dart';
+import 'package:chicken_tracker/core/widgets/app_ui_components.dart';
 
 class ReportsScreen extends ConsumerStatefulWidget {
   const ReportsScreen({super.key});
@@ -118,7 +119,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         .where((o) =>
             o.order.orderDate.isAfter(
                 _selectedStartDate!.subtract(const Duration(days: 1))) &&
-            o.order.orderDate.isBefore(_selectedEndDate!.add(const Duration(days: 1))) &&
+            o.order.orderDate
+                .isBefore(_selectedEndDate!.add(const Duration(days: 1))) &&
             o.order.status != 'cancelled' &&
             o.order.status != 'draft')
         .toList();
@@ -343,7 +345,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       if (report == null) throw Exception('Failed to generate report');
 
       final farmName = ref.read(farmNameProvider);
-      final file = await PdfExportService.generatePdf(report, farmName: farmName);
+      final file =
+          await PdfExportService.generatePdf(report, farmName: farmName);
 
       if (!mounted) return;
       setState(() => _exportStatus = 'Sharing...');
@@ -536,7 +539,9 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                   error: (_, __) => const SizedBox.shrink(),
                 ),
                 const SizedBox(height: 12),
-                if (salesAsync.hasValue && expensesAsync.hasValue && ref.watch(allOrdersProvider).hasValue)
+                if (salesAsync.hasValue &&
+                    expensesAsync.hasValue &&
+                    ref.watch(allOrdersProvider).hasValue)
                   _SalesVsExpensesChartCard(
                     sales: salesAsync.value!,
                     orders: ref.watch(allOrdersProvider).value!,
@@ -1107,21 +1112,22 @@ class _SalesVsExpensesChartCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final filteredSales = sales.where((item) => _inRange(item.date)).toList();
-    final filteredOrders = orders.where((item) => 
-      _inRange(item.order.orderDate) && 
-      item.order.status != 'cancelled' && 
-      item.order.status != 'draft'
-    ).toList();
+    final filteredOrders = orders
+        .where((item) =>
+            _inRange(item.order.orderDate) &&
+            item.order.status != 'cancelled' &&
+            item.order.status != 'draft')
+        .toList();
     final filteredExpenses =
         expenses.where((item) => _inRange(item.date)).toList();
 
     final legacySalesTotal =
         filteredSales.fold<double>(0.0, (sum, item) => sum + item.amount);
-    final crmSalesTotal =
-        filteredOrders.fold<double>(0.0, (sum, item) => sum + item.order.totalAmount);
-    
+    final crmSalesTotal = filteredOrders.fold<double>(
+        0.0, (sum, item) => sum + item.order.totalAmount);
+
     final salesTotal = legacySalesTotal + crmSalesTotal;
-    
+
     final expensesTotal =
         filteredExpenses.fold<double>(0.0, (sum, item) => sum + item.amount);
     final rawMax = salesTotal > expensesTotal ? salesTotal : expensesTotal;
@@ -1259,12 +1265,14 @@ class _SalesVsExpensesChartCard extends StatelessWidget {
                 const _ChartLegendDot(color: Color(0xFF0E7A4F)),
                 const SizedBox(width: 6),
                 Text('Sales: ${_formatAmount(salesTotal)}',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                    style: const TextStyle(
+                        fontSize: 13, fontWeight: FontWeight.w600)),
                 const SizedBox(width: 20),
                 const _ChartLegendDot(color: Color(0xFFC5392A)),
                 const SizedBox(width: 6),
                 Text('Expenses: ${_formatAmount(expensesTotal)}',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                    style: const TextStyle(
+                        fontSize: 13, fontWeight: FontWeight.w600)),
               ],
             ),
           ],

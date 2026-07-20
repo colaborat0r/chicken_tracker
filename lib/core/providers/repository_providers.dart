@@ -1,15 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'database_instance_provider.dart';
-import 'notification_providers.dart';
-import '../repositories/chicken_repository.dart';
-import '../repositories/reminder_repository.dart';
-import '../repositories/care_log_repository.dart';
-import '../repositories/customer_repository.dart';
-import '../repositories/order_repository.dart';
-import '../services/image_storage_service.dart';
-import '../services/migration_service.dart';
-import '../models/care_log_model.dart';
-import '../../features/guides/repositories/guides_repository.dart';
+import 'package:chicken_tracker/core/providers/database_instance_provider.dart';
+import 'package:chicken_tracker/core/providers/notification_providers.dart';
+import 'package:chicken_tracker/core/repositories/chicken_repository.dart';
+import 'package:chicken_tracker/core/repositories/reminder_repository.dart';
+import 'package:chicken_tracker/core/repositories/care_log_repository.dart';
+import 'package:chicken_tracker/core/repositories/customer_repository.dart';
+import 'package:chicken_tracker/core/repositories/order_repository.dart';
+import 'package:chicken_tracker/core/services/image_storage_service.dart';
+import 'package:chicken_tracker/core/services/migration_service.dart';
+import 'package:chicken_tracker/core/models/care_log_model.dart';
+import 'package:chicken_tracker/features/guides/repositories/guides_repository.dart';
 
 /// Repository provider for chickens
 final chickenRepositoryProvider = Provider<ChickenRepository>((ref) {

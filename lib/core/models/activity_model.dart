@@ -1,5 +1,5 @@
-import 'chicken_model.dart';
-import 'order_model.dart';
+import 'package:chicken_tracker/core/models/chicken_model.dart';
+import 'package:chicken_tracker/core/models/order_model.dart';
 
 enum ActivityType { production, sale, expense, order }
 
