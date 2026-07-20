@@ -1,0 +1,5 @@
+- [x] Add `package_info_plus` to `pubspec.yaml`
+- [x] Create `package_info_provider.dart`
+- [x] Remove hardcoded constants from `app_constants.dart`
+- [x] Update `about_screen.dart` to use `packageInfoProvider`
+- [x] Verify changes

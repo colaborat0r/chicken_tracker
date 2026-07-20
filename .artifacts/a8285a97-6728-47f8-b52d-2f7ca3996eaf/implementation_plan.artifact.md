@@ -1,28 +1,18 @@
-# Implementation Plan - Merge CRM Features to Main and Update Versioning
+# Implementation Plan - Upload Release v1.3.0
 
-This plan outlines the steps to merge the `feature/crm-orders` branch into `main`, bump the app version, and update the project documentation.
+This plan covers renaming the release APK to include the version number and uploading it to a new GitHub release.
 
 ## Proposed Changes
 
-### Version Control
+### Build Artifacts
+- Rename `build/app/outputs/flutter-apk/app-release.apk` to `chicken_tracker_v1.3.0.apk`.
 
-- Merge `feature/crm-orders` into `main`.
-- Push the updated `main` branch to GitHub.
-
-### Project Configuration
-
-#### [MODIFY] [pubspec.yaml](file:///C:/Users/User/Documents/Chicken%20Tracker/chicken_tracker/pubspec.yaml)
-- Bump version from `1.2.3+6` to `1.3.0+7`.
-
-### Documentation
-
-#### [MODIFY] [README.md](file:///C:/Users/User/Documents/Chicken%20Tracker/chicken_tracker/README.md)
-- Update the **Features** table to highlight the new CRM and multi-line order capabilities.
-- Add a new entry to the **Changelog** table for version `1.3.0`.
+### GitHub Release
+- Create a new GitHub release with tag `v1.3.0`.
+- Upload `chicken_tracker_v1.3.0.apk` as a release asset.
 
 ## Verification Plan
 
 ### Manual Verification
-- Verify that the app builds successfully on the `main` branch.
-- Confirm the version number is updated in the `pubspec.yaml`.
-- Review the `README.md` for accuracy and formatting.
+- Verify the release exists on GitHub at `https://github.com/colaborat0r/chicken_tracker/releases/tag/v1.3.0`.
+- Confirm the uploaded file name is `chicken_tracker_v1.3.0.apk`.

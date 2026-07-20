@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../core/config/app_constants.dart';
+import '../../../core/providers/package_info_provider.dart';
 
 class AboutScreen extends ConsumerWidget {
   const AboutScreen({super.key});
@@ -24,6 +24,7 @@ class AboutScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
+    final packageInfo = ref.watch(packageInfoProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('About')),
@@ -58,7 +59,21 @@ class AboutScreen extends ConsumerWidget {
                               style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
                             ),
                             const SizedBox(height: 6),
-                            Text('Version ${AppConstants.appVersion}', style: textTheme.bodyMedium?.copyWith(color: Colors.grey[600])),
+                            packageInfo.when(
+                              data: (info) => Text(
+                                'Version ${info.version} (${info.buildNumber})',
+                                style: textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                              ),
+                              loading: () => const SizedBox(
+                                height: 14,
+                                width: 14,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                              error: (_, __) => Text(
+                                'Version unknown',
+                                style: textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                              ),
+                            ),
                             const SizedBox(height: 6),
                             Text(
                               'Built for homesteaders, backyard farmers, and small flock owners who want to track their egg production the easy way.',

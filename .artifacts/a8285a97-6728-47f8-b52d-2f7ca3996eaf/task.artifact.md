@@ -1,5 +1,4 @@
-- [ ] Merge `feature/crm-orders` into `main`
-- [ ] Bump version in `pubspec.yaml` to `1.3.0+7`
-- [ ] Update `README.md` with new CRM features and changelog
-- [ ] Commit and push changes to `main`
-- [ ] Final verification
+- [x] Rename release APK to `chicken_tracker_v1.3.0.apk`
+- [x] Create GitHub release `v1.3.0`
+- [x] Upload `chicken_tracker_v1.3.0.apk` to the release
+- [x] Final verification of the release

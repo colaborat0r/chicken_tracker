@@ -33,6 +33,7 @@ All releases are available on the [Releases page](https://github.com/colaborat0r
 |---|---|
 | 🥚 **Daily Logging** | Log egg counts by total or per hen, with color breakdown (brown / white / colored) |
 | 🐔 **Flock Management** | Track breeds, hatch dates, age, status, and notes for every bird |
+| 🤝 **CRM & Sales** | Full CRM with customer management, invoices, and multi-line orders |
 | 💰 **Sales Tracking** | Record egg and chicken sales with customer info and revenue summaries |
 | 💸 **Expense Tracking** | Log feed, supplies, vet costs and other expenses by category |
 | 🛒 **Flock Purchases** | Track chick and hatching egg purchases, suppliers, and hatch rates |
@@ -90,6 +91,7 @@ See [Releases](https://github.com/colaborat0r/chicken_tracker/releases) for the 
 
 | Version | Highlights |
 |---|---|
+| **1.3.0** | Full CRM system; Multi-line orders & invoices; Customer tracking; Automated bird status updates |
 | **1.2.3** | Combined activity feed; Egg unit conversions (Crates/Dozens); Sale payment status tracking |
 | **1.2.2** | Reports & Exports PDFs match Farm Report Card branding; farm name on all PDF banners |
 | **1.2.1** | Stability improvements, Android crash fixes |
