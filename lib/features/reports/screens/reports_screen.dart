@@ -551,6 +551,16 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                   )
                 else
                   const AppSkeletonCard(lines: 5),
+                const SizedBox(height: 12),
+                salesAsync.when(
+                  data: (sales) => _SalesTrendChartCard(
+                    sales: sales,
+                    startDate: _selectedStartDate,
+                    endDate: _selectedEndDate,
+                  ),
+                  loading: () => const AppSkeletonCard(lines: 5),
+                  error: (_, __) => const SizedBox.shrink(),
+                ),
                 const SizedBox(height: 16),
                 const Text(
                   'Quick Range',
@@ -575,6 +585,11 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       avatar: const Icon(Icons.calendar_month, size: 18),
                       label: const Text('90 Days'),
                       onPressed: _isExporting ? null : () => _setQuickRange(90),
+                    ),
+                    ActionChip(
+                      avatar: const Icon(Icons.history, size: 18),
+                      label: const Text('6 Months'),
+                      onPressed: _isExporting ? null : () => _setQuickRange(180),
                     ),
                   ],
                 ),
@@ -1003,28 +1018,99 @@ class _EggTrendChartCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = _aggregate();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Calculate maxY with some headroom
+    final double maxY = data.isEmpty 
+        ? 10 
+        : (data.map((e) => e.value).reduce((a, b) => a > b ? a : b).toDouble() * 1.2).clamp(5, double.infinity);
+
     return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Egg Trend',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w700),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Egg Trend',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                if (data.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDAA520).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Total: ${data.fold(0, (sum, e) => sum + e.value)}',
+                      style: const TextStyle(
+                        color: Color(0xFFB8860B),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 24),
             SizedBox(
-              height: 180,
+              height: 220,
               child: data.isEmpty
                   ? const Center(child: Text('No production data in range'))
                   : LineChart(
                       LineChartData(
                         minY: 0,
-                        gridData: const FlGridData(show: true),
+                        maxY: maxY,
+                        lineTouchData: LineTouchData(
+                          touchTooltipData: LineTouchTooltipData(
+                            getTooltipColor: (spot) => isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                            tooltipRoundedRadius: 8,
+                            getTooltipItems: (touchedSpots) {
+                              return touchedSpots.map((spot) {
+                                return LineTooltipItem(
+                                  '${data[spot.x.toInt()].key}\n',
+                                  const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: '${spot.y.toInt()} Eggs',
+                                      style: const TextStyle(
+                                        color: Color(0xFFDAA520),
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }).toList();
+                            },
+                          ),
+                          handleBuiltInTouches: true,
+                        ),
+                        gridData: FlGridData(
+                          show: true,
+                          drawVerticalLine: false,
+                          getDrawingHorizontalLine: (value) => FlLine(
+                            color: Theme.of(context).dividerColor.withValues(alpha: 0.05),
+                            strokeWidth: 1,
+                          ),
+                        ),
                         titlesData: FlTitlesData(
                           topTitles: const AxisTitles(
                             sideTitles: SideTitles(showTitles: false),
@@ -1035,21 +1121,47 @@ class _EggTrendChartCard extends StatelessWidget {
                           bottomTitles: AxisTitles(
                             sideTitles: SideTitles(
                               showTitles: true,
-                              reservedSize: 28,
+                              reservedSize: 32,
+                              interval: 1,
                               getTitlesWidget: (value, meta) {
                                 final i = value.toInt();
                                 if (i < 0 || i >= data.length) {
                                   return const SizedBox.shrink();
                                 }
-                                return Text(
-                                  data[i].key,
-                                  style: Theme.of(context).textTheme.labelSmall,
+                                // Show fewer labels if many points
+                                if (data.length > 10 && i % 2 != 0) {
+                                  return const SizedBox.shrink();
+                                }
+                                return SideTitleWidget(
+                                  meta: meta,
+                                  space: 8,
+                                  child: Text(
+                                    data[i].key,
+                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                      color: Theme.of(context).hintColor,
+                                      fontSize: 10,
+                                    ),
+                                  ),
                                 );
                               },
                             ),
                           ),
-                          leftTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: true),
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 35,
+                              getTitlesWidget: (value, meta) {
+                                return SideTitleWidget(
+                                  meta: meta,
+                                  child: Text(
+                                    value.toInt().toString(),
+                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                      color: Theme.of(context).hintColor,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                         ),
                         borderData: FlBorderData(show: false),
@@ -1064,9 +1176,31 @@ class _EggTrendChartCard extends StatelessWidget {
                                     ))
                                 .toList(),
                             isCurved: true,
+                            curveSmoothness: 0.35,
                             color: const Color(0xFFDAA520),
-                            barWidth: 3,
-                            dotData: const FlDotData(show: true),
+                            barWidth: 4,
+                            isStrokeCapRound: true,
+                            dotData: FlDotData(
+                              show: true,
+                              getDotPainter: (spot, percent, barData, index) =>
+                                  FlDotCirclePainter(
+                                radius: 4,
+                                color: Colors.white,
+                                strokeWidth: 2,
+                                strokeColor: const Color(0xFFDAA520),
+                              ),
+                            ),
+                            belowBarData: BarAreaData(
+                              show: true,
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFFDAA520).withValues(alpha: 0.3),
+                                  const Color(0xFFDAA520).withValues(alpha: 0.0),
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -1274,6 +1408,261 @@ class _SalesVsExpensesChartCard extends StatelessWidget {
                     style: const TextStyle(
                         fontSize: 13, fontWeight: FontWeight.w600)),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SalesTrendChartCard extends StatelessWidget {
+  final List<dynamic> sales;
+  final DateTime? startDate;
+  final DateTime? endDate;
+
+  const _SalesTrendChartCard({
+    required this.sales,
+    required this.startDate,
+    required this.endDate,
+  });
+
+  List<MapEntry<String, double>> _aggregate() {
+    final filtered = sales.where((sale) {
+      if (startDate == null || endDate == null) return true;
+      return !sale.date.isBefore(startDate!) && !sale.date.isAfter(endDate!);
+    }).toList();
+
+    final grouped = <String, double>{};
+    // Ensure all months in range are present
+    if (startDate != null && endDate != null) {
+      var current = DateTime(startDate!.year, startDate!.month);
+      final end = DateTime(endDate!.year, endDate!.month);
+      while (!current.isAfter(end)) {
+        grouped[DateFormat('MMM yy').format(current)] = 0.0;
+        current = DateTime(current.year, current.month + 1);
+      }
+    }
+
+    for (final sale in filtered) {
+      final key = DateFormat('MMM yy').format(sale.date);
+      grouped[key] = (grouped[key] ?? 0) + sale.amount;
+    }
+
+    final entries = grouped.entries.toList();
+    entries.sort((a, b) {
+      final dateA = DateFormat('MMM yy').parse(a.key);
+      final dateB = DateFormat('MMM yy').parse(b.key);
+      return dateA.compareTo(dateB);
+    });
+
+    return entries;
+  }
+
+  String _formatAmount(double value) {
+    if (value >= 1000) return '\$${(value / 1000).toStringAsFixed(1)}k';
+    return '\$${value.toStringAsFixed(0)}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final data = _aggregate();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final double maxY = data.isEmpty
+        ? 100
+        : (data.map((e) => e.value).reduce((a, b) => a > b ? a : b) * 1.2)
+            .clamp(50, double.infinity);
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Sales Trend',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                if (data.isNotEmpty)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2E7D32).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Total: ${_formatAmount(data.fold(0, (sum, e) => sum + e.value))}',
+                      style: const TextStyle(
+                        color: Color(0xFF2E7D32),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              height: 220,
+              child: data.isEmpty
+                  ? const Center(child: Text('No sales data in range'))
+                  : LineChart(
+                      LineChartData(
+                        minY: 0,
+                        maxY: maxY,
+                        lineTouchData: LineTouchData(
+                          touchTooltipData: LineTouchTooltipData(
+                            getTooltipColor: (spot) =>
+                                isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                            tooltipRoundedRadius: 8,
+                            getTooltipItems: (touchedSpots) {
+                              return touchedSpots.map((spot) {
+                                return LineTooltipItem(
+                                  '${data[spot.x.toInt()].key}\n',
+                                  const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: _formatAmount(spot.y),
+                                      style: const TextStyle(
+                                        color: Color(0xFF2E7D32),
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }).toList();
+                            },
+                          ),
+                          handleBuiltInTouches: true,
+                        ),
+                        gridData: FlGridData(
+                          show: true,
+                          drawVerticalLine: false,
+                          getDrawingHorizontalLine: (value) => FlLine(
+                            color: Theme.of(context)
+                                .dividerColor
+                                .withValues(alpha: 0.05),
+                            strokeWidth: 1,
+                          ),
+                        ),
+                        titlesData: FlTitlesData(
+                          topTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          rightTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 32,
+                              interval: 1,
+                              getTitlesWidget: (value, meta) {
+                                final i = value.toInt();
+                                if (i < 0 || i >= data.length) {
+                                  return const SizedBox.shrink();
+                                }
+                                if (data.length > 8 && i % 2 != 0) {
+                                  return const SizedBox.shrink();
+                                }
+                                return SideTitleWidget(
+                                  meta: meta,
+                                  space: 8,
+                                  child: Text(
+                                    data[i].key,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall
+                                        ?.copyWith(
+                                          color: Theme.of(context).hintColor,
+                                          fontSize: 10,
+                                        ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 40,
+                              getTitlesWidget: (value, meta) {
+                                return SideTitleWidget(
+                                  meta: meta,
+                                  child: Text(
+                                    _formatAmount(value),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall
+                                        ?.copyWith(
+                                          color: Theme.of(context).hintColor,
+                                        ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        borderData: FlBorderData(show: false),
+                        lineBarsData: [
+                          LineChartBarData(
+                            spots: data
+                                .asMap()
+                                .entries
+                                .map((e) => FlSpot(
+                                      e.key.toDouble(),
+                                      e.value.value.toDouble(),
+                                    ))
+                                .toList(),
+                            isCurved: true,
+                            curveSmoothness: 0.35,
+                            color: const Color(0xFF2E7D32),
+                            barWidth: 4,
+                            isStrokeCapRound: true,
+                            dotData: FlDotData(
+                              show: true,
+                              getDotPainter: (spot, percent, barData, index) =>
+                                  FlDotCirclePainter(
+                                radius: 4,
+                                color: Colors.white,
+                                strokeWidth: 2,
+                                strokeColor: const Color(0xFF2E7D32),
+                              ),
+                            ),
+                            belowBarData: BarAreaData(
+                              show: true,
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF2E7D32).withValues(alpha: 0.3),
+                                  const Color(0xFF2E7D32).withValues(alpha: 0.0),
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
             ),
           ],
         ),

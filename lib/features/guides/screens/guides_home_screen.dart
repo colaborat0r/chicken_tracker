@@ -136,17 +136,12 @@ class _HeroCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Farm Wisdom, Always Offline',
+            'Practical Guides',
             style: TextStyle(
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.w800,
             ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Search practical guides for brooding, feeding, biosecurity, and seasonal care.',
-            style: TextStyle(color: Colors.white, height: 1.35),
           ),
           const SizedBox(height: 12),
           Wrap(
