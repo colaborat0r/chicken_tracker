@@ -1,0 +1,9 @@
+- [x] Remove `_EggTrendChartCard` from `reports_screen.dart`
+    - [x] Remove class definition
+    - [x] Remove usage in `build`
+- [x] Remove "Insights View" section from `reports_screen.dart`
+- [x] Clean up unused variables/methods related to the chart
+    - [x] Removed `_periodView` state variable
+    - [x] Removed `logsAsync` watch in `build`
+    - [x] Hardcoded `ReportType.daily` in `_generateReport`
+- [x] Verify export functionality still works with default period

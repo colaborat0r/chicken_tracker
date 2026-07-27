@@ -25,7 +25,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   String? _exportStatus;
   String _selectedReportType =
       'production'; // 'production', 'sales', 'expenses', 'purchases', 'losses'
-  String _periodView = 'daily'; // daily, weekly, monthly
 
   @override
   void initState() {
@@ -90,11 +89,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         .toList();
 
     return ProductionReport(
-      reportType: _periodView == 'monthly'
-          ? ReportType.monthly
-          : _periodView == 'weekly'
-              ? ReportType.weekly
-              : ReportType.daily,
+      reportType: ReportType.daily,
       startDate: _selectedStartDate!,
       endDate: _selectedEndDate!,
       lineItems: lineItems,
@@ -448,7 +443,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final logsAsync = ref.watch(allDailyLogsProvider);
     final salesAsync = ref.watch(allSalesProvider);
     final expensesAsync = ref.watch(allExpensesProvider);
 
@@ -479,66 +473,11 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                   endDate: _selectedEndDate,
                 ),
                 const SizedBox(height: 16),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Insights View',
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                        ),
-                        const SizedBox(height: 10),
-                        SegmentedButton<String>(
-                          segments: const [
-                            ButtonSegment(
-                              value: 'daily',
-                              icon: Icon(Icons.today),
-                              label: Text('Daily'),
-                            ),
-                            ButtonSegment(
-                              value: 'weekly',
-                              icon: Icon(Icons.view_week),
-                              label: Text('Weekly'),
-                            ),
-                            ButtonSegment(
-                              value: 'monthly',
-                              icon: Icon(Icons.calendar_month),
-                              label: Text('Monthly'),
-                            ),
-                          ],
-                          selected: {_periodView},
-                          onSelectionChanged: (selection) {
-                            setState(() {
-                              _periodView = selection.first;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
                 const Text(
                   'Performance Charts',
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 8),
-                logsAsync.when(
-                  data: (logs) => _EggTrendChartCard(
-                    logs: logs,
-                    periodView: _periodView,
-                    startDate: _selectedStartDate,
-                    endDate: _selectedEndDate,
-                  ),
-                  loading: () => const AppSkeletonCard(lines: 5),
-                  error: (_, __) => const SizedBox.shrink(),
-                ),
-                const SizedBox(height: 12),
                 if (salesAsync.hasValue &&
                     expensesAsync.hasValue &&
                     ref.watch(allOrdersProvider).hasValue)
@@ -969,244 +908,6 @@ class _ExportCard extends StatelessWidget {
                 Icon(Icons.arrow_forward, color: color),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _EggTrendChartCard extends StatelessWidget {
-  final List<dynamic> logs;
-  final String periodView;
-  final DateTime? startDate;
-  final DateTime? endDate;
-
-  const _EggTrendChartCard({
-    required this.logs,
-    required this.periodView,
-    required this.startDate,
-    required this.endDate,
-  });
-
-  List<MapEntry<String, int>> _aggregate() {
-    final filtered = logs.where((log) {
-      if (startDate == null || endDate == null) return true;
-      return !log.date.isBefore(startDate!) && !log.date.isAfter(endDate!);
-    }).toList();
-
-    final grouped = <String, int>{};
-    for (final log in filtered) {
-      late String key;
-      if (periodView == 'monthly') {
-        key = DateFormat('MMM yy').format(log.date);
-      } else if (periodView == 'weekly') {
-        final start = log.date.subtract(Duration(days: log.date.weekday - 1));
-        key = 'Wk ${DateFormat('M/d').format(start)}';
-      } else {
-        key = DateFormat('M/d').format(log.date);
-      }
-      grouped[key] = (grouped[key] ?? 0) + (log.totalEggs as int);
-    }
-
-    final entries = grouped.entries.toList();
-    if (entries.length > 8) {
-      return entries.sublist(entries.length - 8);
-    }
-    return entries;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final data = _aggregate();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    // Calculate maxY with some headroom
-    final double maxY = data.isEmpty 
-        ? 10 
-        : (data.map((e) => e.value).reduce((a, b) => a > b ? a : b).toDouble() * 1.2).clamp(5, double.infinity);
-
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Egg Trend',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w800),
-                ),
-                if (data.isNotEmpty)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDAA520).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'Total: ${data.fold(0, (sum, e) => sum + e.value)}',
-                      style: const TextStyle(
-                        color: Color(0xFFB8860B),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              height: 220,
-              child: data.isEmpty
-                  ? const Center(child: Text('No production data in range'))
-                  : LineChart(
-                      LineChartData(
-                        minY: 0,
-                        maxY: maxY,
-                        lineTouchData: LineTouchData(
-                          touchTooltipData: LineTouchTooltipData(
-                            getTooltipColor: (spot) => isDark ? const Color(0xFF2C2C2C) : Colors.white,
-                            tooltipRoundedRadius: 8,
-                            getTooltipItems: (touchedSpots) {
-                              return touchedSpots.map((spot) {
-                                return LineTooltipItem(
-                                  '${data[spot.x.toInt()].key}\n',
-                                  const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                      text: '${spot.y.toInt()} Eggs',
-                                      style: const TextStyle(
-                                        color: Color(0xFFDAA520),
-                                        fontWeight: FontWeight.w900,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }).toList();
-                            },
-                          ),
-                          handleBuiltInTouches: true,
-                        ),
-                        gridData: FlGridData(
-                          show: true,
-                          drawVerticalLine: false,
-                          getDrawingHorizontalLine: (value) => FlLine(
-                            color: Theme.of(context).dividerColor.withValues(alpha: 0.05),
-                            strokeWidth: 1,
-                          ),
-                        ),
-                        titlesData: FlTitlesData(
-                          topTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false),
-                          ),
-                          rightTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false),
-                          ),
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              reservedSize: 32,
-                              interval: 1,
-                              getTitlesWidget: (value, meta) {
-                                final i = value.toInt();
-                                if (i < 0 || i >= data.length) {
-                                  return const SizedBox.shrink();
-                                }
-                                // Show fewer labels if many points
-                                if (data.length > 10 && i % 2 != 0) {
-                                  return const SizedBox.shrink();
-                                }
-                                return SideTitleWidget(
-                                  meta: meta,
-                                  space: 8,
-                                  child: Text(
-                                    data[i].key,
-                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: Theme.of(context).hintColor,
-                                      fontSize: 10,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          leftTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              reservedSize: 35,
-                              getTitlesWidget: (value, meta) {
-                                return SideTitleWidget(
-                                  meta: meta,
-                                  child: Text(
-                                    value.toInt().toString(),
-                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: Theme.of(context).hintColor,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                        borderData: FlBorderData(show: false),
-                        lineBarsData: [
-                          LineChartBarData(
-                            spots: data
-                                .asMap()
-                                .entries
-                                .map((e) => FlSpot(
-                                      e.key.toDouble(),
-                                      e.value.value.toDouble(),
-                                    ))
-                                .toList(),
-                            isCurved: true,
-                            curveSmoothness: 0.35,
-                            color: const Color(0xFFDAA520),
-                            barWidth: 4,
-                            isStrokeCapRound: true,
-                            dotData: FlDotData(
-                              show: true,
-                              getDotPainter: (spot, percent, barData, index) =>
-                                  FlDotCirclePainter(
-                                radius: 4,
-                                color: Colors.white,
-                                strokeWidth: 2,
-                                strokeColor: const Color(0xFFDAA520),
-                              ),
-                            ),
-                            belowBarData: BarAreaData(
-                              show: true,
-                              gradient: LinearGradient(
-                                colors: [
-                                  const Color(0xFFDAA520).withValues(alpha: 0.3),
-                                  const Color(0xFFDAA520).withValues(alpha: 0.0),
-                                ],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-            ),
-          ],
         ),
       ),
     );
