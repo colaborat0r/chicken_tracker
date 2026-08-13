@@ -101,6 +101,14 @@ See [Releases](https://github.com/colaborat0r/chicken_tracker/releases) for the 
 
 ---
 
+## ☕ Support
+
+If you find this app helpful and want to support its development, you can buy me a coffee!
+
+[![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/chicktrack)
+
+---
+
 ## 📄 License
 
 This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International** license.
