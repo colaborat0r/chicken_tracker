@@ -200,6 +200,10 @@ class _AddFlockLossScreenState extends ConsumerState<AddFlockLossScreen> {
                   controller: _quantityController,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(labelText: 'Quantity', border: OutlineInputBorder()),
+                  onTap: () => _quantityController.selection = TextSelection(
+                    baseOffset: 0,
+                    extentOffset: _quantityController.text.length,
+                  ),
                   validator: (value) {
                     final parsed = int.tryParse(value?.trim() ?? '');
                     if (parsed == null || parsed <= 0) return 'Quantity must be greater than 0';

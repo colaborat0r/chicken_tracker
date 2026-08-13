@@ -301,6 +301,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                           labelText: 'Amount',
                           prefixText: '\$',
                           border: OutlineInputBorder()),
+                      onTap: () => _amountController.selection = TextSelection(
+                        baseOffset: 0,
+                        extentOffset: _amountController.text.length,
+                      ),
                       validator: (value) {
                         final parsed = double.tryParse(value?.trim() ?? '');
                         if (parsed == null || parsed <= 0) {
@@ -346,6 +350,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                         decoration: const InputDecoration(
                             labelText: 'Weight (lbs, optional)',
                             border: OutlineInputBorder()),
+                        onTap: () => _poundsController.selection = TextSelection(
+                          baseOffset: 0,
+                          extentOffset: _poundsController.text.length,
+                        ),
                         validator: (value) {
                           if ((value ?? '').trim().isEmpty) return null;
                           final parsed = double.tryParse(value!.trim());

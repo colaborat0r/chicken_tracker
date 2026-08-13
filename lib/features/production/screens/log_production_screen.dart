@@ -40,9 +40,9 @@ class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
       _notesController = TextEditingController(text: l.notes ?? '');
     } else {
       _layingHensController = TextEditingController();
-      _brownController = TextEditingController(text: '0');
-      _coloredController = TextEditingController(text: '0');
-      _whiteController = TextEditingController(text: '0');
+      _brownController = TextEditingController();
+      _coloredController = TextEditingController();
+      _whiteController = TextEditingController();
       _notesController = TextEditingController();
       _selectedDate = DateTime.now();
     }
@@ -86,19 +86,19 @@ class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
          await repo.updateLog(DailyProductionModel(
            id: widget.logToEdit!.id,
            date: _selectedDate,
-           layingHens: int.parse(_layingHensController.text),
-           eggsBrown: int.parse(_brownController.text),
-           eggsColored: int.parse(_coloredController.text),
-           eggsWhite: int.parse(_whiteController.text),
+           layingHens: int.tryParse(_layingHensController.text) ?? 0,
+           eggsBrown: int.tryParse(_brownController.text) ?? 0,
+           eggsColored: int.tryParse(_coloredController.text) ?? 0,
+           eggsWhite: int.tryParse(_whiteController.text) ?? 0,
            notes: _notesController.text.isEmpty ? null : _notesController.text,
          ));
        } else {
          await repo.logDailyProduction(
            date: _selectedDate,
-           layingHens: int.parse(_layingHensController.text),
-           eggsBrown: int.parse(_brownController.text),
-           eggsColored: int.parse(_coloredController.text),
-           eggsWhite: int.parse(_whiteController.text),
+           layingHens: int.tryParse(_layingHensController.text) ?? 0,
+           eggsBrown: int.tryParse(_brownController.text) ?? 0,
+           eggsColored: int.tryParse(_coloredController.text) ?? 0,
+           eggsWhite: int.tryParse(_whiteController.text) ?? 0,
            notes: _notesController.text.isEmpty ? null : _notesController.text,
          );
        }
@@ -173,6 +173,10 @@ class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
                         ),
                       ),
                       keyboardType: TextInputType.number,
+                      onTap: () => _layingHensController.selection = TextSelection(
+                        baseOffset: 0,
+                        extentOffset: _layingHensController.text.length,
+                      ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter number of laying hens';
@@ -202,8 +206,12 @@ class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
                         ),
                       ),
                       keyboardType: TextInputType.number,
+                      onTap: () => _brownController.selection = TextSelection(
+                        baseOffset: 0,
+                        extentOffset: _brownController.text.length,
+                      ),
                       validator: (value) {
-                        if (value != null && int.tryParse(value) == null) {
+                        if (value != null && value.isNotEmpty && int.tryParse(value) == null) {
                           return 'Please enter a valid number';
                         }
                         return null;
@@ -220,8 +228,12 @@ class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
                         ),
                       ),
                       keyboardType: TextInputType.number,
+                      onTap: () => _coloredController.selection = TextSelection(
+                        baseOffset: 0,
+                        extentOffset: _coloredController.text.length,
+                      ),
                       validator: (value) {
-                        if (value != null && int.tryParse(value) == null) {
+                        if (value != null && value.isNotEmpty && int.tryParse(value) == null) {
                           return 'Please enter a valid number';
                         }
                         return null;
@@ -238,8 +250,12 @@ class _LogProductionScreenState extends ConsumerState<LogProductionScreen> {
                         ),
                       ),
                       keyboardType: TextInputType.number,
+                      onTap: () => _whiteController.selection = TextSelection(
+                        baseOffset: 0,
+                        extentOffset: _whiteController.text.length,
+                      ),
                       validator: (value) {
-                        if (value != null && int.tryParse(value) == null) {
+                        if (value != null && value.isNotEmpty && int.tryParse(value) == null) {
                           return 'Please enter a valid number';
                         }
                         return null;

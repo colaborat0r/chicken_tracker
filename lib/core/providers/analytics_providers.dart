@@ -5,8 +5,14 @@ import 'database_providers.dart';
 // Chart view mode enum
 enum ChartViewMode { line, bar }
 
+/// Statistics range enum for overall stats
+enum StatsRange { sevenDays, thirtyDays, ninetyDays, yearToDate, allTime }
+
 /// Provider for tracking which chart view mode is selected (line or bar)
 final chartViewModeProvider = StateProvider<ChartViewMode>((ref) => ChartViewMode.bar);
+
+/// Provider for tracking which statistics range is selected
+final statsRangeProvider = StateProvider<StatsRange>((ref) => StatsRange.allTime);
 
 /// Helper function to get the start of the week (Monday)
 DateTime _getWeekStart(DateTime date) {
@@ -207,16 +213,42 @@ final last12MonthsProvider = FutureProvider<List<MonthlyProductionSummary>>((ref
 
 /// Provider for production stats summary
 final productionStatsSummaryProvider = FutureProvider<({
-  int totalEggsAllTime,
+  int totalEggs,
   double averageEggsPerDay,
   double averageEggsPerHen,
   int daysTracked,
 })>((ref) async {
   final logs = await ref.watch(allDailyLogsProvider.future);
+  final range = ref.watch(statsRangeProvider);
   
   if (logs.isEmpty) {
     return (
-      totalEggsAllTime: 0,
+      totalEggs: 0,
+      averageEggsPerDay: 0.0,
+      averageEggsPerHen: 0.0,
+      daysTracked: 0,
+    );
+  }
+
+  final now = DateTime.now();
+  final filteredLogs = logs.where((log) {
+    switch (range) {
+      case StatsRange.sevenDays:
+        return log.date.isAfter(now.subtract(const Duration(days: 7)));
+      case StatsRange.thirtyDays:
+        return log.date.isAfter(now.subtract(const Duration(days: 30)));
+      case StatsRange.ninetyDays:
+        return log.date.isAfter(now.subtract(const Duration(days: 90)));
+      case StatsRange.yearToDate:
+        return log.date.year == now.year;
+      case StatsRange.allTime:
+        return true;
+    }
+  }).toList();
+
+  if (filteredLogs.isEmpty) {
+    return (
+      totalEggs: 0,
       averageEggsPerDay: 0.0,
       averageEggsPerHen: 0.0,
       daysTracked: 0,
@@ -226,15 +258,15 @@ final productionStatsSummaryProvider = FutureProvider<({
   int totalEggs = 0;
   double totalHenDays = 0;
 
-  for (var log in logs) {
+  for (var log in filteredLogs) {
     totalEggs += log.totalEggs;
     totalHenDays += log.layingHens;
   }
 
   return (
-    totalEggsAllTime: totalEggs,
-    averageEggsPerDay: logs.isEmpty ? 0.0 : totalEggs / logs.length,
+    totalEggs: totalEggs,
+    averageEggsPerDay: totalEggs / filteredLogs.length,
     averageEggsPerHen: totalHenDays == 0 ? 0.0 : totalEggs / totalHenDays,
-    daysTracked: logs.length,
+    daysTracked: filteredLogs.length,
   );
 });

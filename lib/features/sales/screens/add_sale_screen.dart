@@ -228,6 +228,10 @@ class _AddSaleScreenState extends ConsumerState<AddSaleScreen> {
                               labelText: 'Quantity',
                               border: OutlineInputBorder(),
                             ),
+                            onTap: () => _quantityController.selection = TextSelection(
+                              baseOffset: 0,
+                              extentOffset: _quantityController.text.length,
+                            ),
                             validator: (value) {
                               final parsed = double.tryParse(value?.trim() ?? '');
                               if (parsed == null || parsed <= 0) return 'Required';
@@ -264,6 +268,10 @@ class _AddSaleScreenState extends ConsumerState<AddSaleScreen> {
                       controller: _amountController,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       decoration: const InputDecoration(labelText: 'Amount', prefixText: '\$', border: OutlineInputBorder()),
+                      onTap: () => _amountController.selection = TextSelection(
+                        baseOffset: 0,
+                        extentOffset: _amountController.text.length,
+                      ),
                       validator: (value) {
                         final parsed = double.tryParse(value?.trim() ?? '');
                         if (parsed == null || parsed <= 0) return 'Amount must be greater than 0';

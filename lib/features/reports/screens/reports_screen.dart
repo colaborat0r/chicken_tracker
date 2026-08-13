@@ -445,6 +445,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final salesAsync = ref.watch(allSalesProvider);
     final expensesAsync = ref.watch(allExpensesProvider);
+    final ordersAsync = ref.watch(allOrdersProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -480,10 +481,10 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 const SizedBox(height: 8),
                 if (salesAsync.hasValue &&
                     expensesAsync.hasValue &&
-                    ref.watch(allOrdersProvider).hasValue)
+                    ordersAsync.hasValue)
                   _SalesVsExpensesChartCard(
                     sales: salesAsync.value!,
-                    orders: ref.watch(allOrdersProvider).value!,
+                    orders: ordersAsync.value!,
                     expenses: expensesAsync.value!,
                     startDate: _selectedStartDate,
                     endDate: _selectedEndDate,
@@ -491,15 +492,17 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 else
                   const AppSkeletonCard(lines: 5),
                 const SizedBox(height: 12),
-                salesAsync.when(
-                  data: (sales) => _SalesTrendChartCard(
-                    sales: sales,
+                if (salesAsync.hasValue && ordersAsync.hasValue)
+                  _SalesTrendChartCard(
+                    sales: salesAsync.value!,
+                    orders: ordersAsync.value!,
                     startDate: _selectedStartDate,
                     endDate: _selectedEndDate,
-                  ),
-                  loading: () => const AppSkeletonCard(lines: 5),
-                  error: (_, __) => const SizedBox.shrink(),
-                ),
+                  )
+                else if (salesAsync.isLoading || ordersAsync.isLoading)
+                  const AppSkeletonCard(lines: 5)
+                else
+                  const SizedBox.shrink(),
                 const SizedBox(height: 16),
                 const Text(
                   'Quick Range',
@@ -1119,19 +1122,29 @@ class _SalesVsExpensesChartCard extends StatelessWidget {
 
 class _SalesTrendChartCard extends StatelessWidget {
   final List<dynamic> sales;
+  final List<OrderWithDetails> orders;
   final DateTime? startDate;
   final DateTime? endDate;
 
   const _SalesTrendChartCard({
     required this.sales,
+    required this.orders,
     required this.startDate,
     required this.endDate,
   });
 
   List<MapEntry<String, double>> _aggregate() {
-    final filtered = sales.where((sale) {
+    final filteredSales = sales.where((sale) {
       if (startDate == null || endDate == null) return true;
       return !sale.date.isBefore(startDate!) && !sale.date.isAfter(endDate!);
+    }).toList();
+
+    final filteredOrders = orders.where((o) {
+      if (startDate == null || endDate == null) return true;
+      return !o.order.orderDate.isBefore(startDate!) &&
+          !o.order.orderDate.isAfter(endDate!) &&
+          o.order.status != 'cancelled' &&
+          o.order.status != 'draft';
     }).toList();
 
     final grouped = <String, double>{};
@@ -1145,9 +1158,14 @@ class _SalesTrendChartCard extends StatelessWidget {
       }
     }
 
-    for (final sale in filtered) {
+    for (final sale in filteredSales) {
       final key = DateFormat('MMM yy').format(sale.date);
       grouped[key] = (grouped[key] ?? 0) + sale.amount;
+    }
+
+    for (final order in filteredOrders) {
+      final key = DateFormat('MMM yy').format(order.order.orderDate);
+      grouped[key] = (grouped[key] ?? 0) + order.order.totalAmount;
     }
 
     final entries = grouped.entries.toList();

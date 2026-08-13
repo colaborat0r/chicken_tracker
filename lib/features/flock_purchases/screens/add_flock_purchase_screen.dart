@@ -364,6 +364,10 @@ class _AddFlockPurchaseScreenState
                         labelText: 'Quantity',
                         border: OutlineInputBorder(),
                       ),
+                      onTap: () => _quantityController.selection = TextSelection(
+                        baseOffset: 0,
+                        extentOffset: _quantityController.text.length,
+                      ),
                       validator: (value) {
                         final parsed = int.tryParse(value?.trim() ?? '');
                         if (parsed == null || parsed <= 0) {
@@ -382,6 +386,10 @@ class _AddFlockPurchaseScreenState
                         prefixText: '\$',
                         border: OutlineInputBorder(),
                       ),
+                      onTap: () => _costController.selection = TextSelection(
+                        baseOffset: 0,
+                        extentOffset: _costController.text.length,
+                      ),
                       validator: (value) {
                         final parsed = double.tryParse(value?.trim() ?? '');
                         if (parsed == null || parsed <= 0) {
@@ -398,6 +406,10 @@ class _AddFlockPurchaseScreenState
                         decoration: const InputDecoration(
                           labelText: 'Hatched Count (optional)',
                           border: OutlineInputBorder(),
+                        ),
+                        onTap: () => _hatchedCountController.selection = TextSelection(
+                          baseOffset: 0,
+                          extentOffset: _hatchedCountController.text.length,
                         ),
                         validator: (value) {
                           if ((value ?? '').trim().isEmpty) return null;

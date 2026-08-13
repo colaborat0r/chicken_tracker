@@ -1,0 +1,10 @@
+- [x] Update `analytics_providers.dart`
+    - [x] Add `StatsRange` enum
+    - [x] Add `statsRangeProvider`
+    - [x] Update `productionStatsSummaryProvider` to support ranges
+- [x] Update `analytics_dashboard_screen.dart`
+    - [x] Implement range selection UI (ChoiceChips)
+    - [x] Update stats cards to react to selected range
+- [x] Verification
+    - [x] Run `flutter analyze`
+    - [x] Manual verification summary

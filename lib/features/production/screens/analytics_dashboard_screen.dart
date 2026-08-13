@@ -32,6 +32,42 @@ class AnalyticsDashboardScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 12),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: StatsRange.values.map((range) {
+                    final isSelected = ref.watch(statsRangeProvider) == range;
+                    final label = switch (range) {
+                      StatsRange.sevenDays => '7d',
+                      StatsRange.thirtyDays => '30d',
+                      StatsRange.ninetyDays => '90d',
+                      StatsRange.yearToDate => 'YTD',
+                      StatsRange.allTime => 'All',
+                    };
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: ChoiceChip(
+                        label: Text(
+                          label,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          if (selected) {
+                            ref.read(statsRangeProvider.notifier).state = range;
+                          }
+                        },
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(height: 12),
               summaryData.when(
                 data: (stats) => GridView.count(
                   crossAxisCount: 2,
@@ -42,7 +78,7 @@ class AnalyticsDashboardScreen extends ConsumerWidget {
                   children: [
                     _StatCard(
                       label: 'Total Eggs',
-                      value: stats.totalEggsAllTime.toString(),
+                      value: stats.totalEggs.toString(),
                       icon: Icons.egg,
                       color: Colors.amber,
                     ),
