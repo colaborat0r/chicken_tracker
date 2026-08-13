@@ -6,6 +6,7 @@
 
 [![Latest Release](https://img.shields.io/github/v/release/colaborat0r/chicken_tracker)](https://github.com/colaborat0r/chicken_tracker/releases/latest)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
+[![Support on Ko-fi](https://img.shields.io/badge/Support-Ko--fi-F16061?logo=ko-fi&logoColor=white)](https://ko-fi.com/chicktrack)
 
 **Offline-first egg production & flock management for homesteaders**
 
